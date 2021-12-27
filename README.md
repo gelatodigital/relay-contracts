@@ -1,3 +1,3 @@
-# LP Eject
+# Gelato Relayer
 
-Auto Eject Uniswap V3 positions at target prices.
+Solidity Contracts + Tests.
