@@ -21,8 +21,20 @@ contract GelatoRelayer {
         bytes payload;
     }
 
+    bytes32 public constant REQUEST_TYPEHASH =
+        keccak256(
+            bytes(
+                // solhint-disable-next-line max-line-length
+                "Request(address from,address to,uint256 value,uint256 gasLimit,uint256 relayerNonce,uint256 chainId,uint256 deadline,uint256 paymentToken,bool isToEIP2771Compliant,bool isFlashbotsTx,bytes payload)"
+            )
+        );
+    // solhint-disable-next-line max-line-length
+    string public constant EIP712_DOMAIN_TYPE =
+        "EIP712Domain(string name,string version,address verifyingContract,bytes32 salt)";
+
     address public immutable gelato;
     uint256 public immutable chainId;
+    bytes32 public immutable domainSeparator;
 
     mapping(address => uint256) private _relayerNonces;
 
@@ -34,6 +46,15 @@ contract GelatoRelayer {
             _chainId := chainid()
         }
         chainId = _chainId;
+        domainSeparator = keccak256(
+            abi.encode(
+                keccak256(bytes(EIP712_DOMAIN_TYPE)),
+                keccak256(bytes("GelatoRelayer")),
+                keccak256(bytes("0.1")),
+                address(this),
+                bytes32(chainId)
+            )
+        );
     }
 
     function execute(Request calldata req, bytes calldata signature)
@@ -73,10 +94,14 @@ contract GelatoRelayer {
 
     function _verifySignature(Request calldata req, bytes calldata signature)
         private
-        pure
+        view
     {
         bytes32 message = keccak256(
-            abi.encodePacked("\x19\x01", keccak256(_abiEncodeRequest(req)))
+            abi.encodePacked(
+                "\x19\x01",
+                domainSeparator,
+                keccak256(_abiEncodeRequest(req))
+            )
         );
         address from = ECDSA.recover(message, signature);
         require(
@@ -91,6 +116,7 @@ contract GelatoRelayer {
         returns (bytes memory encodedReq)
     {
         encodedReq = abi.encode(
+            REQUEST_TYPEHASH,
             req.from,
             req.to,
             req.value,
@@ -100,7 +126,7 @@ contract GelatoRelayer {
             req.deadline,
             req.isToEIP2771Compliant,
             req.isFlashbotsTx,
-            req.payload
+            keccak256(req.payload)
         );
     }
 }
