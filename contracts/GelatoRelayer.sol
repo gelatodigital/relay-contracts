@@ -271,6 +271,7 @@ contract GelatoRelayer is ReentrancyGuard {
             req.chainId,
             req.deadline,
             req.isTargetEIP2771Compliant,
+            req.isSelfPayingTx,
             req.isFlashbotsTx,
             keccak256(abi.encode(req.payloads))
         );
