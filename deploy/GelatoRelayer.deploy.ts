@@ -17,9 +17,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const addresses = getAddresses(hre.network.name);
   await deploy("GelatoRelayer", {
     from: deployer,
-    proxy: {
-      owner: deployer,
-    },
     args: [addresses.Gelato],
     log: hre.network.name != "hardhat" ? true : false,
   });

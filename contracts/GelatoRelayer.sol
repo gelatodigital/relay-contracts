@@ -1,11 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.11;
 
+import {NATIVE_TOKEN} from "./constants/Tokens.sol";
 import {IOracleAggregator} from "./interfaces/IOracleAggregator.sol";
 import {IGelatoRelayerExecutor} from "./interfaces/IGelatoRelayerExecutor.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {
+    EnumerableSet
+} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {
+    SafeERC20
+} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+// solhint-disable-next-line max-states-count
 contract GelatoRelayer {
+    using EnumerableSet for EnumerableSet.AddressSet;
+
     struct Request {
         address from;
         address[] targets;
@@ -32,6 +43,7 @@ contract GelatoRelayer {
         "EIP712Domain(string name,string version,address verifyingContract,bytes32 salt)";
     uint256 public constant DIAMOND_CALL_OVERHEAD = 21000;
 
+    address public immutable owner;
     address public immutable gelato;
     uint256 public immutable chainId;
     bytes32 public immutable domainSeparator;
@@ -41,6 +53,12 @@ contract GelatoRelayer {
     uint256 public relayerFeePct;
     mapping(address => uint256) private _relayerNonces;
     mapping(address => mapping(address => uint256)) private _userTokenBalances;
+    EnumerableSet.AddressSet private _paymentTokens;
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only callable by owner");
+        _;
+    }
 
     modifier onlyGelato() {
         require(msg.sender == gelato, "Only callable by gelato");
@@ -48,12 +66,14 @@ contract GelatoRelayer {
     }
 
     constructor(
+        address _owner,
         address _gelato,
         address _oracleAggregator,
         address _gelatoRelayerExecutor,
         uint256 _relayerFeePct,
         string memory _version
     ) {
+        owner = _owner;
         gelato = _gelato;
         uint256 _chainId;
         // solhint-disable-next-line no-inline-assembly
@@ -75,22 +95,18 @@ contract GelatoRelayer {
         relayerFeePct = _relayerFeePct;
     }
 
+    // solhint-disable-next-line no-empty-blocks
+    receive() external payable {}
+
     function executeRequest(Request calldata req, bytes calldata signature)
         external
         onlyGelato
     {
         uint256 startGas = gasleft();
-        require(
-            // solhint-disable-next-line not-rely-on-time
-            req.deadline == 0 || block.timestamp <= req.deadline,
-            "GelatoRelayer.execute: Expired"
-        );
+        _verifyDeadline(req.deadline);
         _verifyAndIncrementNonce(req.relayerNonce, req.from);
         _verifySignature(req, signature);
-        require(
-            req.chainId == chainId,
-            "GelatoRelayer.execute: Invalid chainId"
-        );
+        _verifyChainId(req.chainId);
         uint256 credit;
         if (req.isSelfPayingTx) {
             credit = gelatoRelayerExecutor.execSelfPayingTx(
@@ -114,16 +130,112 @@ contract GelatoRelayer {
                 req.isTargetEIP2771Compliant,
                 req.payloads
             );
-            _updateUserBalance(req.from, req.paymentToken, credit);
+            _decrementUserBalance(req.from, req.paymentToken, credit);
         }
     }
 
-    function getRelayerNonce(address _from)
+    function setRelayerFeePct(uint256 _relayerFeePct) external onlyOwner {
+        require(_relayerFeePct <= 100, "Invalid percentage");
+        relayerFeePct = _relayerFeePct;
+    }
+
+    function addPaymentToken(address _paymentToken) external onlyOwner {
+        require(_paymentToken != address(0), "Invalid paymentToken address");
+        require(
+            !_paymentTokens.contains(_paymentToken),
+            "paymentToken already whitelisted"
+        );
+        _paymentTokens.add(_paymentToken);
+    }
+
+    function removePaymentToken(address _paymentToken) external onlyOwner {
+        require(_paymentToken != address(0), "Invalid paymentToken address");
+        require(
+            _paymentTokens.contains(_paymentToken),
+            "paymentToken not whitelisted"
+        );
+        _paymentTokens.remove(_paymentToken);
+    }
+
+    function depositEth() external payable {
+        require(tx.origin == msg.sender, "EOA only");
+        require(msg.value > 0, "Invalid ETH deposit amount");
+        require(_paymentTokens.contains(NATIVE_TOKEN), "ETH not whitelisted");
+        _incrementUserBalance(msg.sender, NATIVE_TOKEN, msg.value);
+    }
+
+    function withdrawEth(uint256 _amount) external {
+        require(tx.origin == msg.sender, "EOA only");
+        require(_amount > 0, "Invalid ETH withdrawal amount");
+        uint256 ethBalance = userBalance(msg.sender, NATIVE_TOKEN);
+        require(_amount <= ethBalance, "Insufficient balance");
+        payable(msg.sender).transfer(_amount);
+        _decrementUserBalance(msg.sender, NATIVE_TOKEN, _amount);
+    }
+
+    function depositBalance(address _paymentToken, uint256 _amount) external {
+        require(tx.origin == msg.sender, "EOA only");
+        require(_amount > 0, "Invalid deposit amount");
+        require(
+            _paymentTokens.contains(_paymentToken),
+            "paymentToken not whitelisted"
+        );
+        require(_paymentToken != NATIVE_TOKEN, "paymentToken cannot be ETH");
+        IERC20 paymentToken = IERC20(_paymentToken);
+        SafeERC20.safeTransferFrom(
+            paymentToken,
+            msg.sender,
+            address(this),
+            _amount
+        );
+        _incrementUserBalance(
+            msg.sender,
+            _paymentToken,
+            paymentToken.balanceOf(address(this))
+        );
+    }
+
+    function withdrawToken(address _paymentToken, uint256 _amount) external {
+        require(tx.origin == msg.sender, "EOA only");
+        require(_amount > 0, "Invalid withdrawal amount");
+        require(
+            _paymentTokens.contains(_paymentToken),
+            "paymentToken not whitelisted"
+        );
+        require(_paymentToken != NATIVE_TOKEN, "paymentToken cannot be ETH");
+        uint256 balance = userBalance(msg.sender, _paymentToken);
+        require(_amount <= balance, "Insufficient balance");
+        IERC20 paymentToken = IERC20(_paymentToken);
+        SafeERC20.safeTransfer(paymentToken, msg.sender, _amount);
+        _decrementUserBalance(msg.sender, _paymentToken, _amount);
+    }
+
+    function relayerNonce(address _from)
         external
         view
-        returns (uint256 relayerNonce)
+        returns (uint256 relayerNonce_)
     {
-        relayerNonce = _relayerNonces[_from];
+        relayerNonce_ = _relayerNonces[_from];
+    }
+
+    function paymentTokens()
+        external
+        view
+        returns (address[] memory paymentTokens_)
+    {
+        uint256 length = _paymentTokens.length();
+        paymentTokens_ = new address[](length);
+        for (uint256 i; i < length; i++) {
+            paymentTokens_[i] = _paymentTokens.at(i);
+        }
+    }
+
+    function userBalance(address _user, address _token)
+        public
+        view
+        returns (uint256 balance)
+    {
+        balance = _userTokenBalances[_user][_token];
     }
 
     function _verifyAndIncrementNonce(uint256 _relayerNonce, address _from)
@@ -136,17 +248,37 @@ contract GelatoRelayer {
         _relayerNonces[_from] += 1;
     }
 
-    function _updateUserBalance(
+    function _decrementUserBalance(
         address _user,
         address _token,
-        uint256 credit
+        uint256 _credit
     ) private {
-        uint256 userTokenBalance = _userTokenBalances[_user][_token];
+        uint256 userTokenBalance = userBalance(_user, _token);
         require(
-            userTokenBalance >= credit,
+            userTokenBalance >= _credit,
             "GelatoRelayer.execute: Insuficient user balance"
         );
-        _userTokenBalances[_user][_token] -= credit;
+        _userTokenBalances[_user][_token] -= _credit;
+    }
+
+    function _incrementUserBalance(
+        address _user,
+        address _token,
+        uint256 _amount
+    ) private {
+        _userTokenBalances[_user][_token] += _amount;
+    }
+
+    function _verifyDeadline(uint256 _deadline) private view {
+        require(
+            // solhint-disable-next-line not-rely-on-time
+            _deadline == 0 || block.timestamp <= _deadline,
+            "Expired"
+        );
+    }
+
+    function _verifyChainId(uint256 _chainId) private view {
+        require(_chainId == chainId, "Invalid Chain Id");
     }
 
     function _verifySignature(Request calldata req, bytes calldata signature)
