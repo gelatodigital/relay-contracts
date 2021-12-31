@@ -10,23 +10,9 @@ import {
     ReentrancyGuard
 } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract GelatoRelayerExecutor is IGelatoRelayerExecutor, ReentrancyGuard {
+contract GelatoRelayerExecutor is ReentrancyGuard, IGelatoRelayerExecutor {
     using GelatoBytes for bytes;
     using GelatoString for string;
-
-    struct Request {
-        address from;
-        address[] targets;
-        uint256 gasLimit;
-        uint256 relayerNonce;
-        uint256 chainId;
-        uint256 deadline;
-        address paymentToken;
-        bool[] isTargetEIP2771Compliant;
-        bool isSelfPayingTx;
-        bool isFlashbotsTx;
-        bytes[] payloads;
-    }
 
     uint256 public constant DIAMOND_CALL_OVERHEAD = 21000;
 
@@ -47,53 +33,47 @@ contract GelatoRelayerExecutor is IGelatoRelayerExecutor, ReentrancyGuard {
 
     function execSelfPayingTx(
         uint256 _startGas,
-        uint256 _gasLimit,
         uint256 _relayerFeePct,
-        address _from,
-        address _paymentToken,
-        address[] calldata _targets,
-        bool[] calldata _isTargetEIP2771Compliant,
-        bytes[] calldata _payloads
+        Request calldata _req
     )
         external
         override
         onlyGelatoRelayer
         nonReentrant
-        returns (uint256 credit)
+        returns (uint256 gasDebitInCreditToken, uint256 excessCredit)
     {
-        uint256 preBalance = getBalance(_paymentToken, gelatoRelayer);
-        _multiCall(_from, _targets, _isTargetEIP2771Compliant, _payloads);
-        uint256 postBalance = getBalance(_paymentToken, gelatoRelayer);
-        require(
-            postBalance > preBalance,
-            "GelatoRelayer.execute: insufficient paymentToken balance"
+        uint256 preBalance = getBalance(_req.paymentToken, gelatoRelayer);
+        _multiCall(
+            _req.from,
+            _req.targets,
+            _req.isTargetEIP2771Compliant,
+            _req.payloads
         );
+        uint256 postBalance = getBalance(_req.paymentToken, gelatoRelayer);
+        require(postBalance > preBalance, "Insufficient paymentToken balance");
+        uint256 credit;
         unchecked {
             credit = postBalance - preBalance;
         }
         uint256 gasDebitInNativeToken = _getGasDebitInNativeToken(
             _startGas,
-            _gasLimit,
+            _req.gasLimit,
             _relayerFeePct
         );
-        uint256 gasDebitInCreditToken = _paymentToken == NATIVE_TOKEN
+        gasDebitInCreditToken = _req.paymentToken == NATIVE_TOKEN
             ? gasDebitInNativeToken
-            : _getGasDebitInCreditToken(_paymentToken, gasDebitInNativeToken);
-        require(
-            credit >= gasDebitInCreditToken,
-            "GelatoRelayer.execute: Insufficient payment"
-        );
+            : _getGasDebitInCreditToken(
+                _req.paymentToken,
+                gasDebitInNativeToken
+            );
+        require(credit >= gasDebitInCreditToken, "Insufficient payment");
+        excessCredit = credit - gasDebitInCreditToken;
     }
 
     function execPrepaidTx(
         uint256 _startGas,
-        uint256 _gasLimit,
         uint256 _relayerFeePct,
-        address _from,
-        address _paymentToken,
-        address[] calldata _targets,
-        bool[] calldata _isTargetEIP2771Compliant,
-        bytes[] calldata _payloads
+        Request calldata _req
     )
         external
         override
@@ -101,25 +81,23 @@ contract GelatoRelayerExecutor is IGelatoRelayerExecutor, ReentrancyGuard {
         nonReentrant
         returns (uint256 gasDebitInCreditToken)
     {
-        _multiCall(_from, _targets, _isTargetEIP2771Compliant, _payloads);
+        _multiCall(
+            _req.from,
+            _req.targets,
+            _req.isTargetEIP2771Compliant,
+            _req.payloads
+        );
         uint256 gasDebitInNativeToken = _getGasDebitInNativeToken(
             _startGas,
-            _gasLimit,
+            _req.gasLimit,
             _relayerFeePct
         );
-        gasDebitInCreditToken = _paymentToken == NATIVE_TOKEN
+        gasDebitInCreditToken = _req.paymentToken == NATIVE_TOKEN
             ? gasDebitInNativeToken
-            : _getGasDebitInCreditToken(_paymentToken, gasDebitInNativeToken);
-        /*uint256 userTokenBalance = _userTokenBalances[_req.from][
-            _req.paymentToken
-        ];
-        require(
-            userTokenBalance >= gasDebitInCreditToken,
-            "GelatoRelayer.execute: Insuficient user balance"
-        );
-        _userTokenBalances[_req.from][
-            _req.paymentToken
-        ] -= gasDebitInCreditToken;*/
+            : _getGasDebitInCreditToken(
+                _req.paymentToken,
+                gasDebitInNativeToken
+            );
     }
 
     function _multiCall(
@@ -131,7 +109,7 @@ contract GelatoRelayerExecutor is IGelatoRelayerExecutor, ReentrancyGuard {
         require(
             _targets.length == _payloads.length &&
                 _targets.length == _isTargetEIP2771Compliant.length,
-            "GelatoRelayer.execute: Array length mismatch"
+            "Array length mismatch"
         );
         for (uint256 i; i < _targets.length; i++) {
             (bool success, bytes memory returnData) = _targets[i].call(
@@ -139,7 +117,8 @@ contract GelatoRelayerExecutor is IGelatoRelayerExecutor, ReentrancyGuard {
                     ? abi.encodePacked(_payloads[i], _from)
                     : _payloads[i]
             );
-            if (!success) returnData.revertWithError("GelatoRelayer.execute:");
+            if (!success)
+                returnData.revertWithError("GelatoRelayerExecutor._multiCall:");
         }
     }
 
@@ -149,10 +128,7 @@ contract GelatoRelayerExecutor is IGelatoRelayerExecutor, ReentrancyGuard {
         uint256 _relayerFeePct
     ) private view returns (uint256 gasDebitInNativeToken) {
         uint256 gasCost = _startGas + DIAMOND_CALL_OVERHEAD - gasleft();
-        require(
-            gasCost <= _gasLimit,
-            "GelatoRelayer.execute: gasLimit exceeded"
-        );
+        require(gasCost <= _gasLimit, "gasLimit exceeded");
         gasDebitInNativeToken =
             (gasCost * tx.gasprice * (100 + _relayerFeePct)) /
             100;
@@ -171,13 +147,13 @@ contract GelatoRelayerExecutor is IGelatoRelayerExecutor, ReentrancyGuard {
         returns (uint256 gasDebitInCreditToken_, uint256) {
             require(
                 gasDebitInCreditToken_ != 0,
-                "ExecFacet.exec:  _creditToken not on OracleAggregator"
+                "_creditToken not on OracleAggregator"
             );
             gasDebitInCreditToken = gasDebitInCreditToken_;
         } catch Error(string memory err) {
-            err.revertWithInfo("ExecFacet.exec: OracleAggregator:");
+            err.revertWithInfo("OracleAggregator:");
         } catch {
-            revert("ExecFacet.exec: OracleAggregator: unknown error");
+            revert("OracleAggregator: unknown error");
         }
     }
 }

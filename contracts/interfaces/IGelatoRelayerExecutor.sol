@@ -1,26 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.11;
+import {IGelatoRelayerRequestTypes} from "./IGelatoRelayerRequestTypes.sol";
 
-interface IGelatoRelayerExecutor {
+interface IGelatoRelayerExecutor is IGelatoRelayerRequestTypes {
     function execSelfPayingTx(
         uint256 _startGas,
-        uint256 _gasLimit,
         uint256 _relayerFeePct,
-        address _from,
-        address _paymentToken,
-        address[] calldata _targets,
-        bool[] calldata _isTargetEIP2771Compliant,
-        bytes[] calldata _payloads
-    ) external returns (uint256 credit);
+        Request calldata _req
+    ) external returns (uint256 gasDebitInCreditToken, uint256 excessCredit);
 
     function execPrepaidTx(
         uint256 _startGas,
-        uint256 _gasLimit,
         uint256 _relayerFeePct,
-        address _from,
-        address _paymentToken,
-        address[] calldata _targets,
-        bool[] calldata _isTargetEIP2771Compliant,
-        bytes[] calldata _payloads
+        Request calldata _req
     ) external returns (uint256 gasDebitInCreditToken);
 }

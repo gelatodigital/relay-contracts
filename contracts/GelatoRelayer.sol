@@ -2,6 +2,9 @@
 pragma solidity 0.8.11;
 
 import {NATIVE_TOKEN} from "./constants/Tokens.sol";
+import {
+    IGelatoRelayerRequestTypes
+} from "./interfaces/IGelatoRelayerRequestTypes.sol";
 import {IOracleAggregator} from "./interfaces/IOracleAggregator.sol";
 import {IGelatoRelayerExecutor} from "./interfaces/IGelatoRelayerExecutor.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -14,22 +17,8 @@ import {
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 // solhint-disable-next-line max-states-count
-contract GelatoRelayer {
+contract GelatoRelayer is IGelatoRelayerRequestTypes {
     using EnumerableSet for EnumerableSet.AddressSet;
-
-    struct Request {
-        address from;
-        address[] targets;
-        uint256 gasLimit;
-        uint256 relayerNonce;
-        uint256 chainId;
-        uint256 deadline;
-        address paymentToken;
-        bool[] isTargetEIP2771Compliant;
-        bool isSelfPayingTx;
-        bool isFlashbotsTx;
-        bytes[] payloads;
-    }
 
     bytes32 public constant REQUEST_TYPEHASH =
         keccak256(
@@ -62,6 +51,11 @@ contract GelatoRelayer {
 
     modifier onlyGelato() {
         require(msg.sender == gelato, "Only callable by gelato");
+        _;
+    }
+
+    modifier onlyEOA() {
+        require(tx.origin == msg.sender, "Only callable by EOA");
         _;
     }
 
@@ -98,39 +92,36 @@ contract GelatoRelayer {
     // solhint-disable-next-line no-empty-blocks
     receive() external payable {}
 
-    function executeRequest(Request calldata req, bytes calldata signature)
+    function executeRequest(Request calldata _req, bytes calldata _signature)
         external
         onlyGelato
     {
         uint256 startGas = gasleft();
-        _verifyDeadline(req.deadline);
-        _verifyAndIncrementNonce(req.relayerNonce, req.from);
-        _verifySignature(req, signature);
-        _verifyChainId(req.chainId);
+        _verifyDeadline(_req.deadline);
+        _verifyAndIncrementNonce(_req.relayerNonce, _req.from);
+        _verifySignature(_req, _signature);
+        _verifyChainId(_req.chainId);
         uint256 credit;
-        if (req.isSelfPayingTx) {
-            credit = gelatoRelayerExecutor.execSelfPayingTx(
+        if (_req.isSelfPayingTx) {
+            uint256 excessCredit;
+            (credit, excessCredit) = gelatoRelayerExecutor.execSelfPayingTx(
                 startGas,
-                req.gasLimit,
                 relayerFeePct,
-                req.from,
-                req.paymentToken,
-                req.targets,
-                req.isTargetEIP2771Compliant,
-                req.payloads
+                _req
             );
+            if (excessCredit > 0)
+                _incrementUserBalance(
+                    _req.from,
+                    _req.paymentToken,
+                    excessCredit
+                );
         } else {
             credit = gelatoRelayerExecutor.execPrepaidTx(
                 startGas,
-                req.gasLimit,
                 relayerFeePct,
-                req.from,
-                req.paymentToken,
-                req.targets,
-                req.isTargetEIP2771Compliant,
-                req.payloads
+                _req
             );
-            _decrementUserBalance(req.from, req.paymentToken, credit);
+            _decrementUserBalance(_req.from, _req.paymentToken, credit);
         }
     }
 
@@ -157,15 +148,13 @@ contract GelatoRelayer {
         _paymentTokens.remove(_paymentToken);
     }
 
-    function depositEth() external payable {
-        require(tx.origin == msg.sender, "EOA only");
+    function depositEth() external payable onlyEOA {
         require(msg.value > 0, "Invalid ETH deposit amount");
         require(_paymentTokens.contains(NATIVE_TOKEN), "ETH not whitelisted");
         _incrementUserBalance(msg.sender, NATIVE_TOKEN, msg.value);
     }
 
-    function withdrawEth(uint256 _amount) external {
-        require(tx.origin == msg.sender, "EOA only");
+    function withdrawEth(uint256 _amount) external onlyEOA {
         require(_amount > 0, "Invalid ETH withdrawal amount");
         uint256 ethBalance = userBalance(msg.sender, NATIVE_TOKEN);
         require(_amount <= ethBalance, "Insufficient balance");
@@ -173,8 +162,10 @@ contract GelatoRelayer {
         _decrementUserBalance(msg.sender, NATIVE_TOKEN, _amount);
     }
 
-    function depositBalance(address _paymentToken, uint256 _amount) external {
-        require(tx.origin == msg.sender, "EOA only");
+    function depositBalance(address _paymentToken, uint256 _amount)
+        external
+        onlyEOA
+    {
         require(_amount > 0, "Invalid deposit amount");
         require(
             _paymentTokens.contains(_paymentToken),
@@ -195,8 +186,10 @@ contract GelatoRelayer {
         );
     }
 
-    function withdrawToken(address _paymentToken, uint256 _amount) external {
-        require(tx.origin == msg.sender, "EOA only");
+    function withdrawToken(address _paymentToken, uint256 _amount)
+        external
+        onlyEOA
+    {
         require(_amount > 0, "Invalid withdrawal amount");
         require(
             _paymentTokens.contains(_paymentToken),
@@ -243,7 +236,7 @@ contract GelatoRelayer {
     {
         require(
             _relayerNonce == _relayerNonces[_from],
-            "GelatoRelayer.execute: Invalid relayer nonce"
+            "Invalid relayer nonce"
         );
         _relayerNonces[_from] += 1;
     }
@@ -254,10 +247,7 @@ contract GelatoRelayer {
         uint256 _credit
     ) private {
         uint256 userTokenBalance = userBalance(_user, _token);
-        require(
-            userTokenBalance >= _credit,
-            "GelatoRelayer.execute: Insuficient user balance"
-        );
+        require(userTokenBalance >= _credit, "Insuficient user balance");
         _userTokenBalances[_user][_token] -= _credit;
     }
 
@@ -293,10 +283,7 @@ contract GelatoRelayer {
             )
         );
         address from = ECDSA.recover(message, signature);
-        require(
-            from == req.from,
-            "GelatoRelayer._verifySignature: Invalid signature"
-        );
+        require(from == req.from, "Invalid signature");
     }
 
     function _abiEncodeRequest(Request calldata req)
