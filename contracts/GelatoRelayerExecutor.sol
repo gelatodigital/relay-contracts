@@ -10,7 +10,7 @@ import {
     ReentrancyGuard
 } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract GelatoRelayerExecutor is ReentrancyGuard, IGelatoRelayerExecutor {
+contract GelatoRelayerExecutor is IGelatoRelayerExecutor, ReentrancyGuard {
     using GelatoBytes for bytes;
     using GelatoString for string;
 
@@ -32,7 +32,7 @@ contract GelatoRelayerExecutor is ReentrancyGuard, IGelatoRelayerExecutor {
     }
 
     function execSelfPayingTx(
-        uint256 _startGas,
+        uint256 _gasCost,
         uint256 _relayerFeePct,
         Request calldata _req
     )
@@ -56,8 +56,7 @@ contract GelatoRelayerExecutor is ReentrancyGuard, IGelatoRelayerExecutor {
             credit = postBalance - preBalance;
         }
         uint256 gasDebitInNativeToken = _getGasDebitInNativeToken(
-            _startGas,
-            _req.gasLimit,
+            _gasCost,
             _relayerFeePct
         );
         gasDebitInCreditToken = _req.paymentToken == NATIVE_TOKEN
@@ -71,7 +70,7 @@ contract GelatoRelayerExecutor is ReentrancyGuard, IGelatoRelayerExecutor {
     }
 
     function execPrepaidTx(
-        uint256 _startGas,
+        uint256 _gasCost,
         uint256 _relayerFeePct,
         Request calldata _req
     )
@@ -88,8 +87,7 @@ contract GelatoRelayerExecutor is ReentrancyGuard, IGelatoRelayerExecutor {
             _req.payloads
         );
         uint256 gasDebitInNativeToken = _getGasDebitInNativeToken(
-            _startGas,
-            _req.gasLimit,
+            _gasCost,
             _relayerFeePct
         );
         gasDebitInCreditToken = _req.paymentToken == NATIVE_TOKEN
@@ -122,15 +120,25 @@ contract GelatoRelayerExecutor is ReentrancyGuard, IGelatoRelayerExecutor {
         }
     }
 
-    function _getGasDebitInNativeToken(
-        uint256 _startGas,
-        uint256 _gasLimit,
+    function _getGasDebitInNativeToken(uint256 _gasCost, uint256 _relayerFeePct)
+        private
+        view
+        returns (uint256 gasDebitInNativeToken)
+    {
+        gasDebitInNativeToken =
+            (_gasCost * tx.gasprice * (100 + _relayerFeePct)) /
+            100;
+    }
+
+    function _getGasDebitInNativeTokenEIP1559(
+        uint256 _gasCost,
         uint256 _relayerFeePct
     ) private view returns (uint256 gasDebitInNativeToken) {
-        uint256 gasCost = _startGas + DIAMOND_CALL_OVERHEAD - gasleft();
-        require(gasCost <= _gasLimit, "gasLimit exceeded");
+        uint256 _gasDebitBase = block.basefee * _gasCost;
+        uint256 _priorityFee = tx.gasprice - block.basefee;
         gasDebitInNativeToken =
-            (gasCost * tx.gasprice * (100 + _relayerFeePct)) /
+            _gasDebitBase +
+            (_gasCost * _priorityFee * (100 + _relayerFeePct)) /
             100;
     }
 

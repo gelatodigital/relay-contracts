@@ -90,13 +90,14 @@ contract GelatoRelayer is IGelatoRelayer {
     // solhint-disable-next-line no-empty-blocks
     receive() external payable {}
 
-    function executeRequest(Request calldata _req, bytes calldata _signature)
-        external
-        override
-        onlyGelato
-    {
+    function executeRequest(
+        uint256 _gasCost,
+        Request calldata _req,
+        bytes calldata _signature
+    ) external override onlyGelato {
         uint256 startGas = gasleft();
         _verifyDeadline(_req.deadline);
+        _verifyGasLimit(_gasCost, _req.gasLimit);
         _verifyAndIncrementNonce(_req.relayerNonce, _req.from);
         _verifySignature(_req, _signature);
         _verifyChainId(_req.chainId);
@@ -104,7 +105,7 @@ contract GelatoRelayer is IGelatoRelayer {
         if (_req.isSelfPayingTx) {
             uint256 excessCredit;
             (credit, excessCredit) = gelatoRelayerExecutor.execSelfPayingTx(
-                startGas,
+                _gasCost,
                 relayerFeePct,
                 _req
             );
@@ -116,12 +117,13 @@ contract GelatoRelayer is IGelatoRelayer {
                 );
         } else {
             credit = gelatoRelayerExecutor.execPrepaidTx(
-                startGas,
+                _gasCost,
                 relayerFeePct,
                 _req
             );
             _decrementUserBalance(_req.from, _req.paymentToken, credit);
         }
+        _verifyGasCost(startGas, _gasCost);
     }
 
     function setRelayerFeePct(uint256 _relayerFeePct)
@@ -300,6 +302,15 @@ contract GelatoRelayer is IGelatoRelayer {
         );
         address from = ECDSA.recover(message, signature);
         require(from == req.from, "Invalid signature");
+    }
+
+    function _verifyGasCost(uint256 _startGas, uint256 _gasCost) private view {
+        uint256 maxGasCost = DIAMOND_CALL_OVERHEAD + gasleft() - _startGas;
+        require(_gasCost <= maxGasCost, "Executor overcharged in Gas Cost");
+    }
+
+    function _verifyGasLimit(uint256 _gasCost, uint256 _gasLimit) private pure {
+        require(_gasCost <= _gasLimit, "Gas Cost > Gas Limit");
     }
 
     function _abiEncodeRequest(Request calldata req)
