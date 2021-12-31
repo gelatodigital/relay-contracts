@@ -2,9 +2,7 @@
 pragma solidity 0.8.11;
 
 import {NATIVE_TOKEN} from "./constants/Tokens.sol";
-import {
-    IGelatoRelayerRequestTypes
-} from "./interfaces/IGelatoRelayerRequestTypes.sol";
+import {IGelatoRelayer} from "./interfaces/IGelatoRelayer.sol";
 import {IOracleAggregator} from "./interfaces/IOracleAggregator.sol";
 import {IGelatoRelayerExecutor} from "./interfaces/IGelatoRelayerExecutor.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -17,7 +15,7 @@ import {
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 // solhint-disable-next-line max-states-count
-contract GelatoRelayer is IGelatoRelayerRequestTypes {
+contract GelatoRelayer is IGelatoRelayer {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     bytes32 public constant REQUEST_TYPEHASH =
@@ -94,6 +92,7 @@ contract GelatoRelayer is IGelatoRelayerRequestTypes {
 
     function executeRequest(Request calldata _req, bytes calldata _signature)
         external
+        override
         onlyGelato
     {
         uint256 startGas = gasleft();
@@ -125,12 +124,20 @@ contract GelatoRelayer is IGelatoRelayerRequestTypes {
         }
     }
 
-    function setRelayerFeePct(uint256 _relayerFeePct) external onlyOwner {
+    function setRelayerFeePct(uint256 _relayerFeePct)
+        external
+        override
+        onlyOwner
+    {
         require(_relayerFeePct <= 100, "Invalid percentage");
         relayerFeePct = _relayerFeePct;
     }
 
-    function addPaymentToken(address _paymentToken) external onlyOwner {
+    function addPaymentToken(address _paymentToken)
+        external
+        override
+        onlyOwner
+    {
         require(_paymentToken != address(0), "Invalid paymentToken address");
         require(
             !_paymentTokens.contains(_paymentToken),
@@ -139,7 +146,11 @@ contract GelatoRelayer is IGelatoRelayerRequestTypes {
         _paymentTokens.add(_paymentToken);
     }
 
-    function removePaymentToken(address _paymentToken) external onlyOwner {
+    function removePaymentToken(address _paymentToken)
+        external
+        override
+        onlyOwner
+    {
         require(_paymentToken != address(0), "Invalid paymentToken address");
         require(
             _paymentTokens.contains(_paymentToken),
@@ -148,13 +159,13 @@ contract GelatoRelayer is IGelatoRelayerRequestTypes {
         _paymentTokens.remove(_paymentToken);
     }
 
-    function depositEth() external payable onlyEOA {
+    function depositEth() external payable override onlyEOA {
         require(msg.value > 0, "Invalid ETH deposit amount");
         require(_paymentTokens.contains(NATIVE_TOKEN), "ETH not whitelisted");
         _incrementUserBalance(msg.sender, NATIVE_TOKEN, msg.value);
     }
 
-    function withdrawEth(uint256 _amount) external onlyEOA {
+    function withdrawEth(uint256 _amount) external override onlyEOA {
         require(_amount > 0, "Invalid ETH withdrawal amount");
         uint256 ethBalance = userBalance(msg.sender, NATIVE_TOKEN);
         require(_amount <= ethBalance, "Insufficient balance");
@@ -164,6 +175,7 @@ contract GelatoRelayer is IGelatoRelayerRequestTypes {
 
     function depositBalance(address _paymentToken, uint256 _amount)
         external
+        override
         onlyEOA
     {
         require(_amount > 0, "Invalid deposit amount");
@@ -188,6 +200,7 @@ contract GelatoRelayer is IGelatoRelayerRequestTypes {
 
     function withdrawToken(address _paymentToken, uint256 _amount)
         external
+        override
         onlyEOA
     {
         require(_amount > 0, "Invalid withdrawal amount");
@@ -206,6 +219,7 @@ contract GelatoRelayer is IGelatoRelayerRequestTypes {
     function relayerNonce(address _from)
         external
         view
+        override
         returns (uint256 relayerNonce_)
     {
         relayerNonce_ = _relayerNonces[_from];
@@ -214,6 +228,7 @@ contract GelatoRelayer is IGelatoRelayerRequestTypes {
     function paymentTokens()
         external
         view
+        override
         returns (address[] memory paymentTokens_)
     {
         uint256 length = _paymentTokens.length();
@@ -226,6 +241,7 @@ contract GelatoRelayer is IGelatoRelayerRequestTypes {
     function userBalance(address _user, address _token)
         public
         view
+        override
         returns (uint256 balance)
     {
         balance = _userTokenBalances[_user][_token];
