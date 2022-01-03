@@ -15,8 +15,8 @@ contract Treasury is ITreasury {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     address public immutable owner;
-    address public immutable gelatoRelayer;
-
+    
+    address public gelatoRelayer;
     mapping(address => mapping(address => uint256)) private _userTokenBalances;
     EnumerableSet.AddressSet private _paymentTokens;
 
@@ -35,8 +35,14 @@ contract Treasury is ITreasury {
         _;
     }
 
-    constructor(address _owner, address _gelatoRelayer) {
+    constructor(address _owner) {
         owner = _owner;
+    }
+
+    // solhint-disable-next-line no-empty-blocks
+    receive() external payable {}
+
+    function setGelatoRelayer(address _gelatoRelayer) external override onlyOwner {
         gelatoRelayer = _gelatoRelayer;
     }
 

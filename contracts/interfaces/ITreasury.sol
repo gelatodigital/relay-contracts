@@ -2,6 +2,8 @@
 pragma solidity 0.8.11;
 
 interface ITreasury {
+    function setGelatoRelayer(address _gelatoRelayer) external;
+
     function addPaymentToken(address _paymentToken) external;
 
     function removePaymentToken(address _paymentToken) external;
