@@ -120,8 +120,22 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
                     credit
                 );
         }
-        if (credit > 0) _gelatoPayment(_req.paymentToken, credit);
+        if (credit > 0) _transferHandler(_req.paymentToken, gelato, credit);
         _verifyGasCost(startGas, _gasCost);
+    }
+
+    function rescueTokens(
+        address[] calldata _tokens,
+        address[] calldata _receivers
+    ) external override onlyOwner {
+        require(_tokens.length == _receivers.length, "Array length mismatch");
+        for (uint256 i; i < _tokens.length; i++) {
+            _transferHandler(
+                _tokens[i],
+                _receivers[i],
+                IERC20(_tokens[i]).balanceOf(address(this))
+            );
+        }
     }
 
     function setRelayerFeePct(uint256 _relayerFeePct)
@@ -152,13 +166,17 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
         _relayerNonces[_from] += 1;
     }
 
-    function _gelatoPayment(address _paymentToken, uint256 _amount) private {
+    function _transferHandler(
+        address _paymentToken,
+        address _receiver,
+        uint256 _amount
+    ) private {
         if (_paymentToken == NATIVE_TOKEN) {
-            (bool success, ) = gelato.call{value: _amount}("");
-            require(success, "Gelato payment failed");
+            (bool success, ) = _receiver.call{value: _amount}("");
+            require(success, "ETH payment failed");
         } else {
             IERC20 paymentToken = IERC20(_paymentToken);
-            SafeERC20.safeTransfer(paymentToken, gelato, _amount);
+            SafeERC20.safeTransfer(paymentToken, _receiver, _amount);
         }
     }
 
@@ -166,6 +184,8 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
         private
         returns (uint256 gasDebitInCreditToken, uint256 excessCredit)
     {
+        // Q: Requiring direct payment to diamond would save a lot of gas,
+        // but would it hurt UX?
         uint256 preBalance = getBalance(_req.paymentToken, address(this));
         _multiCall(
             _req.from,

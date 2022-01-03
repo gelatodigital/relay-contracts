@@ -9,6 +9,11 @@ interface IGelatoRelayer is IGelatoRelayerRequestTypes {
         bytes calldata _signature
     ) external;
 
+    function rescueTokens(
+        address[] calldata _tokens,
+        address[] calldata _receivers
+    ) external;
+
     function setRelayerFeePct(uint256 _relayerFeePct) external;
 
     function relayerNonce(address _from) external view returns (uint256);
