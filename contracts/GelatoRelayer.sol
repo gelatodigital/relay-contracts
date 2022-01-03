@@ -8,14 +8,16 @@ import {GelatoString} from "./libraries/GelatoString.sol";
 import {IGelatoRelayer} from "./interfaces/IGelatoRelayer.sol";
 import {IOracleAggregator} from "./interfaces/IOracleAggregator.sol";
 import {ITreasury} from "./interfaces/ITreasury.sol";
-import {IGelatoRelayerExecutor} from "./interfaces/IGelatoRelayerExecutor.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {
+    Initializable
+} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract GelatoRelayer is IGelatoRelayer {
+contract GelatoRelayer is Initializable, IGelatoRelayer {
     using GelatoBytes for bytes;
     using GelatoString for string;
 
@@ -36,7 +38,6 @@ contract GelatoRelayer is IGelatoRelayer {
     uint256 public immutable chainId;
     bytes32 public immutable domainSeparator;
     IOracleAggregator public immutable oracleAggregator;
-    IGelatoRelayerExecutor public immutable gelatoRelayerExecutor;
     ITreasury public immutable treasury;
 
     uint256 public relayerFeePct;
@@ -56,9 +57,7 @@ contract GelatoRelayer is IGelatoRelayer {
         address _owner,
         address _gelato,
         address _oracleAggregator,
-        address _gelatoRelayerExecutor,
         address _treasury,
-        uint256 _relayerFeePct,
         string memory _version
     ) {
         owner = _owner;
@@ -79,13 +78,15 @@ contract GelatoRelayer is IGelatoRelayer {
             )
         );
         oracleAggregator = IOracleAggregator(_oracleAggregator);
-        gelatoRelayerExecutor = IGelatoRelayerExecutor(_gelatoRelayerExecutor);
         treasury = ITreasury(_treasury);
-        relayerFeePct = _relayerFeePct;
     }
 
     // solhint-disable-next-line no-empty-blocks
     receive() external payable {}
+
+    function initialize(uint256 _relayerFeePct) external initializer {
+        relayerFeePct = _relayerFeePct;
+    }
 
     function executeRequest(
         uint256 _gasCost,
@@ -222,7 +223,7 @@ contract GelatoRelayer is IGelatoRelayer {
         for (uint256 i; i < _targets.length; i++) {
             require(
                 _targets[i] != address(treasury),
-                "Unsafe call to Treasury"
+                "Unsafe external call to Treasury"
             );
             (bool success, bytes memory returnData) = _targets[i].call(
                 _isTargetEIP2771Compliant[i]
