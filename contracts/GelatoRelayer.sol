@@ -27,8 +27,8 @@ contract GelatoRelayer is IGelatoRelayer {
         );
     // solhint-disable-next-line max-line-length
     string public constant EIP712_DOMAIN_TYPE =
-        "EIP712Domain(string name,string version,address verifyingContract,bytes32 salt)";
-    uint256 public constant DIAMOND_CALL_OVERHEAD = 21000;
+        "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
+    uint256 public constant DIAMOND_CALL_OVERHEAD = 32000;
 
     address public immutable owner;
     address public immutable gelato;
@@ -78,8 +78,8 @@ contract GelatoRelayer is IGelatoRelayer {
                 keccak256(bytes(EIP712_DOMAIN_TYPE)),
                 keccak256(bytes("GelatoRelayer")),
                 keccak256(bytes(_version)),
-                address(this),
-                bytes32(chainId)
+                bytes32(chainId),
+                address(this)
             )
         );
         oracleAggregator = IOracleAggregator(_oracleAggregator);
@@ -98,9 +98,9 @@ contract GelatoRelayer is IGelatoRelayer {
         uint256 startGas = gasleft();
         _verifyDeadline(_req.deadline);
         _verifyGasLimit(_gasCost, _req.gasLimit);
+        _verifyChainId(_req.chainId);
         _verifyAndIncrementNonce(_req.relayerNonce, _req.from);
         _verifySignature(_req, _signature);
-        _verifyChainId(_req.chainId);
         uint256 credit;
         if (_req.isSelfPayingTx) {
             uint256 excessCredit;
@@ -109,20 +109,24 @@ contract GelatoRelayer is IGelatoRelayer {
                 relayerFeePct,
                 _req
             );
-            if (excessCredit > 0)
+            if (excessCredit > 0) {
                 _incrementUserBalance(
                     _req.from,
                     _req.paymentToken,
                     excessCredit
                 );
+                credit = credit - excessCredit;
+            }
         } else {
             credit = gelatoRelayerExecutor.execPrepaidTx(
                 _gasCost,
                 relayerFeePct,
                 _req
             );
-            _decrementUserBalance(_req.from, _req.paymentToken, credit);
+            if (credit > 0)
+                _decrementUserBalance(_req.from, _req.paymentToken, credit);
         }
+        _gelatoPayment(_req.paymentToken, credit);
         _verifyGasCost(startGas, _gasCost);
     }
 
@@ -187,16 +191,18 @@ contract GelatoRelayer is IGelatoRelayer {
         );
         require(_paymentToken != NATIVE_TOKEN, "paymentToken cannot be ETH");
         IERC20 paymentToken = IERC20(_paymentToken);
+        uint256 preBalance = paymentToken.balanceOf(address(this));
         SafeERC20.safeTransferFrom(
             paymentToken,
             msg.sender,
             address(this),
             _amount
         );
+        uint256 postBalance = paymentToken.balanceOf(address(this));
         _incrementUserBalance(
             msg.sender,
             _paymentToken,
-            paymentToken.balanceOf(address(this))
+            postBalance - preBalance
         );
     }
 
@@ -275,6 +281,16 @@ contract GelatoRelayer is IGelatoRelayer {
         uint256 _amount
     ) private {
         _userTokenBalances[_user][_token] += _amount;
+    }
+
+    function _gelatoPayment(address _paymentToken, uint256 _amount) private {
+        if (_paymentToken == NATIVE_TOKEN) {
+            (bool success, ) = gelato.call{value: _amount}("");
+            require(success, "Gelato payment failed");
+        } else {
+            IERC20 paymentToken = IERC20(_paymentToken);
+            SafeERC20.safeTransfer(paymentToken, gelato, _amount);
+        }
     }
 
     function _verifyDeadline(uint256 _deadline) private view {
