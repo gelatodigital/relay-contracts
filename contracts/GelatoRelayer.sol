@@ -2,21 +2,22 @@
 pragma solidity 0.8.11;
 
 import {NATIVE_TOKEN} from "./constants/Tokens.sol";
+import {getBalance} from "./functions/TokenUtils.sol";
+import {GelatoBytes} from "./libraries/GelatoBytes.sol";
+import {GelatoString} from "./libraries/GelatoString.sol";
 import {IGelatoRelayer} from "./interfaces/IGelatoRelayer.sol";
 import {IOracleAggregator} from "./interfaces/IOracleAggregator.sol";
+import {ITreasury} from "./interfaces/ITreasury.sol";
 import {IGelatoRelayerExecutor} from "./interfaces/IGelatoRelayerExecutor.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {
-    EnumerableSet
-} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-// solhint-disable-next-line max-states-count
 contract GelatoRelayer is IGelatoRelayer {
-    using EnumerableSet for EnumerableSet.AddressSet;
+    using GelatoBytes for bytes;
+    using GelatoString for string;
 
     bytes32 public constant REQUEST_TYPEHASH =
         keccak256(
@@ -36,11 +37,10 @@ contract GelatoRelayer is IGelatoRelayer {
     bytes32 public immutable domainSeparator;
     IOracleAggregator public immutable oracleAggregator;
     IGelatoRelayerExecutor public immutable gelatoRelayerExecutor;
+    ITreasury public immutable treasury;
 
     uint256 public relayerFeePct;
     mapping(address => uint256) private _relayerNonces;
-    mapping(address => mapping(address => uint256)) private _userTokenBalances;
-    EnumerableSet.AddressSet private _paymentTokens;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only callable by owner");
@@ -52,16 +52,12 @@ contract GelatoRelayer is IGelatoRelayer {
         _;
     }
 
-    modifier onlyEOA() {
-        require(tx.origin == msg.sender, "Only callable by EOA");
-        _;
-    }
-
     constructor(
         address _owner,
         address _gelato,
         address _oracleAggregator,
         address _gelatoRelayerExecutor,
+        address _treasury,
         uint256 _relayerFeePct,
         string memory _version
     ) {
@@ -84,6 +80,7 @@ contract GelatoRelayer is IGelatoRelayer {
         );
         oracleAggregator = IOracleAggregator(_oracleAggregator);
         gelatoRelayerExecutor = IGelatoRelayerExecutor(_gelatoRelayerExecutor);
+        treasury = ITreasury(_treasury);
         relayerFeePct = _relayerFeePct;
     }
 
@@ -104,13 +101,9 @@ contract GelatoRelayer is IGelatoRelayer {
         uint256 credit;
         if (_req.isSelfPayingTx) {
             uint256 excessCredit;
-            (credit, excessCredit) = gelatoRelayerExecutor.execSelfPayingTx(
-                _gasCost,
-                relayerFeePct,
-                _req
-            );
+            (credit, excessCredit) = _execSelfPayingTx(_gasCost, _req);
             if (excessCredit > 0) {
-                _incrementUserBalance(
+                treasury.incrementUserBalance(
                     _req.from,
                     _req.paymentToken,
                     excessCredit
@@ -118,15 +111,15 @@ contract GelatoRelayer is IGelatoRelayer {
                 credit = credit - excessCredit;
             }
         } else {
-            credit = gelatoRelayerExecutor.execPrepaidTx(
-                _gasCost,
-                relayerFeePct,
-                _req
-            );
+            credit = _execPrepaidTx(_gasCost, _req);
             if (credit > 0)
-                _decrementUserBalance(_req.from, _req.paymentToken, credit);
+                treasury.decrementUserBalance(
+                    _req.from,
+                    _req.paymentToken,
+                    credit
+                );
         }
-        _gelatoPayment(_req.paymentToken, credit);
+        if (credit > 0) _gelatoPayment(_req.paymentToken, credit);
         _verifyGasCost(startGas, _gasCost);
     }
 
@@ -139,120 +132,13 @@ contract GelatoRelayer is IGelatoRelayer {
         relayerFeePct = _relayerFeePct;
     }
 
-    function addPaymentToken(address _paymentToken)
-        external
-        override
-        onlyOwner
-    {
-        require(_paymentToken != address(0), "Invalid paymentToken address");
-        require(
-            !_paymentTokens.contains(_paymentToken),
-            "paymentToken already whitelisted"
-        );
-        _paymentTokens.add(_paymentToken);
-    }
-
-    function removePaymentToken(address _paymentToken)
-        external
-        override
-        onlyOwner
-    {
-        require(_paymentToken != address(0), "Invalid paymentToken address");
-        require(
-            _paymentTokens.contains(_paymentToken),
-            "paymentToken not whitelisted"
-        );
-        _paymentTokens.remove(_paymentToken);
-    }
-
-    function depositEth() external payable override onlyEOA {
-        require(msg.value > 0, "Invalid ETH deposit amount");
-        require(_paymentTokens.contains(NATIVE_TOKEN), "ETH not whitelisted");
-        _incrementUserBalance(msg.sender, NATIVE_TOKEN, msg.value);
-    }
-
-    function withdrawEth(uint256 _amount) external override onlyEOA {
-        require(_amount > 0, "Invalid ETH withdrawal amount");
-        uint256 ethBalance = userBalance(msg.sender, NATIVE_TOKEN);
-        require(_amount <= ethBalance, "Insufficient balance");
-        payable(msg.sender).transfer(_amount);
-        _decrementUserBalance(msg.sender, NATIVE_TOKEN, _amount);
-    }
-
-    function depositBalance(address _paymentToken, uint256 _amount)
-        external
-        override
-        onlyEOA
-    {
-        require(_amount > 0, "Invalid deposit amount");
-        require(
-            _paymentTokens.contains(_paymentToken),
-            "paymentToken not whitelisted"
-        );
-        require(_paymentToken != NATIVE_TOKEN, "paymentToken cannot be ETH");
-        IERC20 paymentToken = IERC20(_paymentToken);
-        uint256 preBalance = paymentToken.balanceOf(address(this));
-        SafeERC20.safeTransferFrom(
-            paymentToken,
-            msg.sender,
-            address(this),
-            _amount
-        );
-        uint256 postBalance = paymentToken.balanceOf(address(this));
-        _incrementUserBalance(
-            msg.sender,
-            _paymentToken,
-            postBalance - preBalance
-        );
-    }
-
-    function withdrawToken(address _paymentToken, uint256 _amount)
-        external
-        override
-        onlyEOA
-    {
-        require(_amount > 0, "Invalid withdrawal amount");
-        require(
-            _paymentTokens.contains(_paymentToken),
-            "paymentToken not whitelisted"
-        );
-        require(_paymentToken != NATIVE_TOKEN, "paymentToken cannot be ETH");
-        uint256 balance = userBalance(msg.sender, _paymentToken);
-        require(_amount <= balance, "Insufficient balance");
-        IERC20 paymentToken = IERC20(_paymentToken);
-        SafeERC20.safeTransfer(paymentToken, msg.sender, _amount);
-        _decrementUserBalance(msg.sender, _paymentToken, _amount);
-    }
-
     function relayerNonce(address _from)
         external
         view
         override
-        returns (uint256 relayerNonce_)
+        returns (uint256)
     {
-        relayerNonce_ = _relayerNonces[_from];
-    }
-
-    function paymentTokens()
-        external
-        view
-        override
-        returns (address[] memory paymentTokens_)
-    {
-        uint256 length = _paymentTokens.length();
-        paymentTokens_ = new address[](length);
-        for (uint256 i; i < length; i++) {
-            paymentTokens_[i] = _paymentTokens.at(i);
-        }
-    }
-
-    function userBalance(address _user, address _token)
-        public
-        view
-        override
-        returns (uint256 balance)
-    {
-        balance = _userTokenBalances[_user][_token];
+        return _relayerNonces[_from];
     }
 
     function _verifyAndIncrementNonce(uint256 _relayerNonce, address _from)
@@ -265,24 +151,6 @@ contract GelatoRelayer is IGelatoRelayer {
         _relayerNonces[_from] += 1;
     }
 
-    function _decrementUserBalance(
-        address _user,
-        address _token,
-        uint256 _credit
-    ) private {
-        uint256 userTokenBalance = userBalance(_user, _token);
-        require(userTokenBalance >= _credit, "Insuficient user balance");
-        _userTokenBalances[_user][_token] -= _credit;
-    }
-
-    function _incrementUserBalance(
-        address _user,
-        address _token,
-        uint256 _amount
-    ) private {
-        _userTokenBalances[_user][_token] += _amount;
-    }
-
     function _gelatoPayment(address _paymentToken, uint256 _amount) private {
         if (_paymentToken == NATIVE_TOKEN) {
             (bool success, ) = gelato.call{value: _amount}("");
@@ -290,6 +158,125 @@ contract GelatoRelayer is IGelatoRelayer {
         } else {
             IERC20 paymentToken = IERC20(_paymentToken);
             SafeERC20.safeTransfer(paymentToken, gelato, _amount);
+        }
+    }
+
+    function _execSelfPayingTx(uint256 _gasCost, Request calldata _req)
+        private
+        returns (uint256 gasDebitInCreditToken, uint256 excessCredit)
+    {
+        uint256 preBalance = getBalance(_req.paymentToken, address(this));
+        _multiCall(
+            _req.from,
+            _req.targets,
+            _req.isTargetEIP2771Compliant,
+            _req.payloads
+        );
+        uint256 postBalance = getBalance(_req.paymentToken, address(this));
+        require(postBalance > preBalance, "Insufficient paymentToken balance");
+        uint256 credit;
+        unchecked {
+            credit = postBalance - preBalance;
+        }
+        uint256 gasDebitInNativeToken = _getGasDebitInNativeToken(_gasCost);
+        gasDebitInCreditToken = _req.paymentToken == NATIVE_TOKEN
+            ? gasDebitInNativeToken
+            : _getGasDebitInCreditToken(
+                _req.paymentToken,
+                gasDebitInNativeToken
+            );
+        require(credit >= gasDebitInCreditToken, "Insufficient payment");
+        excessCredit = credit - gasDebitInCreditToken;
+    }
+
+    function _execPrepaidTx(uint256 _gasCost, Request calldata _req)
+        private
+        returns (uint256 gasDebitInCreditToken)
+    {
+        _multiCall(
+            _req.from,
+            _req.targets,
+            _req.isTargetEIP2771Compliant,
+            _req.payloads
+        );
+        uint256 gasDebitInNativeToken = _getGasDebitInNativeToken(_gasCost);
+        gasDebitInCreditToken = _req.paymentToken == NATIVE_TOKEN
+            ? gasDebitInNativeToken
+            : _getGasDebitInCreditToken(
+                _req.paymentToken,
+                gasDebitInNativeToken
+            );
+    }
+
+    function _multiCall(
+        address _from,
+        address[] calldata _targets,
+        bool[] calldata _isTargetEIP2771Compliant,
+        bytes[] calldata _payloads
+    ) private {
+        require(
+            _targets.length == _payloads.length &&
+                _targets.length == _isTargetEIP2771Compliant.length,
+            "Array length mismatch"
+        );
+        for (uint256 i; i < _targets.length; i++) {
+            require(
+                _targets[i] != address(treasury),
+                "Unsafe call to Treasury"
+            );
+            (bool success, bytes memory returnData) = _targets[i].call(
+                _isTargetEIP2771Compliant[i]
+                    ? abi.encodePacked(_payloads[i], _from)
+                    : _payloads[i]
+            );
+            if (!success)
+                returnData.revertWithError("GelatoRelayerExecutor._multiCall:");
+        }
+    }
+
+    function _getGasDebitInNativeToken(uint256 _gasCost)
+        private
+        view
+        returns (uint256 gasDebitInNativeToken)
+    {
+        gasDebitInNativeToken =
+            (_gasCost * tx.gasprice * (100 + relayerFeePct)) /
+            100;
+    }
+
+    function _getGasDebitInNativeTokenEIP1559(uint256 _gasCost)
+        private
+        view
+        returns (uint256 gasDebitInNativeToken)
+    {
+        uint256 _gasDebitBase = block.basefee * _gasCost;
+        uint256 _priorityFee = tx.gasprice - block.basefee;
+        gasDebitInNativeToken =
+            _gasDebitBase +
+            (_gasCost * _priorityFee * (100 + relayerFeePct)) /
+            100;
+    }
+
+    function _getGasDebitInCreditToken(
+        address _creditToken,
+        uint256 _gasDebitInNativeToken
+    ) private view returns (uint256 gasDebitInCreditToken) {
+        try
+            oracleAggregator.getExpectedReturnAmount(
+                _gasDebitInNativeToken,
+                NATIVE_TOKEN,
+                _creditToken
+            )
+        returns (uint256 gasDebitInCreditToken_, uint256) {
+            require(
+                gasDebitInCreditToken_ != 0,
+                "_creditToken not on OracleAggregator"
+            );
+            gasDebitInCreditToken = gasDebitInCreditToken_;
+        } catch Error(string memory err) {
+            err.revertWithInfo("OracleAggregator:");
+        } catch {
+            revert("OracleAggregator: unknown error");
         }
     }
 
