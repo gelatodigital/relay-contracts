@@ -92,7 +92,6 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
     ) external override onlyGelato {
         uint256 startGas = gasleft();
         _verifyDeadline(_req.deadline);
-        _verifyGasLimit(_gasCost, _req.gasLimit);
         _verifyChainId(_req.chainId);
         _verifyAndIncrementNonce(_req.relayerNonce, _req.from);
         _verifySignature(_req, _signature);
@@ -188,12 +187,15 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
         // Q: Requiring direct payment to diamond would save a lot of gas,
         // but would it hurt UX?
         uint256 preBalance = getBalance(_req.paymentToken, address(this));
+        uint256 preMultiCallGas = gasleft();
         _multiCall(
             _req.from,
             _req.targets,
             _req.isTargetEIP2771Compliant,
             _req.payloads
         );
+        uint256 multiCallGasCost = preMultiCallGas - gasleft();
+        require(multiCallGasCost <= _req.gasLimit, "Gas Limit exceeded");
         uint256 postBalance = getBalance(_req.paymentToken, address(this));
         require(postBalance > preBalance, "Insufficient paymentToken balance");
         uint256 credit;
@@ -332,10 +334,6 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
     function _verifyGasCost(uint256 _startGas, uint256 _gasCost) private view {
         uint256 maxGasCost = DIAMOND_CALL_OVERHEAD + gasleft() - _startGas;
         require(_gasCost <= maxGasCost, "Executor overcharged in Gas Cost");
-    }
-
-    function _verifyGasLimit(uint256 _gasCost, uint256 _gasLimit) private pure {
-        require(_gasCost <= _gasLimit, "Gas Cost > Gas Limit");
     }
 
     function _abiEncodeRequest(Request calldata req)
