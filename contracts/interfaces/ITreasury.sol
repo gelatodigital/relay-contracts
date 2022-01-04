@@ -8,13 +8,21 @@ interface ITreasury {
 
     function removePaymentToken(address _paymentToken) external;
 
-    function depositEth() external payable;
+    function depositEth(address _receiver) external payable;
 
-    function withdrawEth(uint256 _amount) external;
+    function withdrawEth(address _receiver, uint256 _amount) external;
 
-    function depositBalance(address _paymentToken, uint256 _amount) external;
+    function depositToken(
+        address _receiver,
+        address _paymentToken,
+        uint256 _amount
+    ) external;
 
-    function withdrawToken(address _paymentToken, uint256 _amount) external;
+    function withdrawToken(
+        address _receiver,
+        address _paymentToken,
+        uint256 _amount
+    ) external;
 
     function incrementUserBalance(
         address _user,
@@ -22,7 +30,7 @@ interface ITreasury {
         uint256 _amount
     ) external;
 
-    function decrementUserBalance(
+    function creditUserPayment(
         address _user,
         address _token,
         uint256 _amount
@@ -33,8 +41,5 @@ interface ITreasury {
         view
         returns (address[] memory paymentTokens_);
 
-    function userBalance(address _user, address _token)
-        external
-        view
-        returns (uint256 balance);
+    function isPaymentToken(address _token) external view returns (bool);
 }

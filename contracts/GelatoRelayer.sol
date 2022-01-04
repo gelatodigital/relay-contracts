@@ -81,9 +81,6 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
         treasury = ITreasury(_treasury);
     }
 
-    // solhint-disable-next-line no-empty-blocks
-    receive() external payable {}
-
     function initialize(uint256 _relayerFeePct) external initializer {
         relayerFeePct = _relayerFeePct;
     }
@@ -111,16 +108,16 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
                 );
                 credit = credit - excessCredit;
             }
+            if (credit > 0) _transferHandler(_req.paymentToken, gelato, credit);
         } else {
             credit = _execPrepaidTx(_gasCost, _req);
             if (credit > 0)
-                treasury.decrementUserBalance(
+                treasury.creditUserPayment(
                     _req.from,
                     _req.paymentToken,
                     credit
                 );
         }
-        if (credit > 0) _transferHandler(_req.paymentToken, gelato, credit);
         _verifyGasCost(startGas, _gasCost);
     }
 
@@ -184,6 +181,10 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
         private
         returns (uint256 gasDebitInCreditToken, uint256 excessCredit)
     {
+        require(
+            treasury.isPaymentToken(_req.paymentToken),
+            "Invalid paymentToken"
+        );
         // Q: Requiring direct payment to diamond would save a lot of gas,
         // but would it hurt UX?
         uint256 preBalance = getBalance(_req.paymentToken, address(this));

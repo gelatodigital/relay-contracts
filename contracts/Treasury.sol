@@ -17,7 +17,7 @@ contract Treasury is ITreasury {
     address public immutable owner;
 
     address public gelatoRelayer;
-    mapping(address => mapping(address => uint256)) private _userTokenBalances;
+    mapping(address => mapping(address => uint256)) public userTokenBalances;
     EnumerableSet.AddressSet private _paymentTokens;
 
     modifier onlyOwner() {
@@ -30,17 +30,9 @@ contract Treasury is ITreasury {
         _;
     }
 
-    modifier onlyEOA() {
-        require(tx.origin == msg.sender, "Only callable by EOA");
-        _;
-    }
-
     constructor(address _owner) {
         owner = _owner;
     }
-
-    // solhint-disable-next-line no-empty-blocks
-    receive() external payable {}
 
     function setGelatoRelayer(address _gelatoRelayer)
         external
@@ -76,25 +68,28 @@ contract Treasury is ITreasury {
         _paymentTokens.remove(_paymentToken);
     }
 
-    function depositEth() external payable override onlyEOA {
+    function depositEth(address _receiver) external payable override {
+        require(_receiver.code.length == 0, "Receiver must be EOA");
         require(msg.value > 0, "Invalid ETH deposit amount");
         require(_paymentTokens.contains(NATIVE_TOKEN), "ETH not whitelisted");
-        _incrementUserBalance(msg.sender, NATIVE_TOKEN, msg.value);
+        _incrementUserBalance(_receiver, NATIVE_TOKEN, msg.value);
     }
 
-    function withdrawEth(uint256 _amount) external override onlyEOA {
+    function withdrawEth(address _receiver, uint256 _amount) external override {
         require(_amount > 0, "Invalid ETH withdrawal amount");
-        uint256 ethBalance = userBalance(msg.sender, NATIVE_TOKEN);
+        uint256 ethBalance = userTokenBalances[msg.sender][NATIVE_TOKEN];
         require(_amount <= ethBalance, "Insufficient balance");
-        payable(msg.sender).transfer(_amount);
         _decrementUserBalance(msg.sender, NATIVE_TOKEN, _amount);
+        (bool success, ) = _receiver.call{value: _amount}("");
+        require(success, "ETH withdrawal failed");
     }
 
-    function depositBalance(address _paymentToken, uint256 _amount)
-        external
-        override
-        onlyEOA
-    {
+    function depositToken(
+        address _receiver,
+        address _paymentToken,
+        uint256 _amount
+    ) external override {
+        require(_receiver.code.length == 0, "Receiver must be EOA");
         require(_amount > 0, "Invalid deposit amount");
         require(
             _paymentTokens.contains(_paymentToken),
@@ -111,28 +106,24 @@ contract Treasury is ITreasury {
         );
         uint256 postBalance = paymentToken.balanceOf(address(this));
         _incrementUserBalance(
-            msg.sender,
+            _receiver,
             _paymentToken,
             postBalance - preBalance
         );
     }
 
-    function withdrawToken(address _paymentToken, uint256 _amount)
-        external
-        override
-        onlyEOA
-    {
+    function withdrawToken(
+        address _receiver,
+        address _paymentToken,
+        uint256 _amount
+    ) external override {
         require(_amount > 0, "Invalid withdrawal amount");
-        require(
-            _paymentTokens.contains(_paymentToken),
-            "paymentToken not whitelisted"
-        );
         require(_paymentToken != NATIVE_TOKEN, "paymentToken cannot be ETH");
-        uint256 balance = userBalance(msg.sender, _paymentToken);
+        uint256 balance = userTokenBalances[msg.sender][_paymentToken];
         require(_amount <= balance, "Insufficient balance");
         IERC20 paymentToken = IERC20(_paymentToken);
-        SafeERC20.safeTransfer(paymentToken, msg.sender, _amount);
         _decrementUserBalance(msg.sender, _paymentToken, _amount);
+        SafeERC20.safeTransfer(paymentToken, _receiver, _amount);
     }
 
     function incrementUserBalance(
@@ -143,12 +134,13 @@ contract Treasury is ITreasury {
         _incrementUserBalance(_user, _token, _amount);
     }
 
-    function decrementUserBalance(
+    function creditUserPayment(
         address _user,
         address _token,
         uint256 _amount
     ) external override onlyGelatoRelayer {
         _decrementUserBalance(_user, _token, _amount);
+        _incrementUserBalance(owner, _token, _amount);
     }
 
     function paymentTokens()
@@ -164,13 +156,13 @@ contract Treasury is ITreasury {
         }
     }
 
-    function userBalance(address _user, address _token)
-        public
+    function isPaymentToken(address _token)
+        external
         view
         override
-        returns (uint256 balance)
+        returns (bool)
     {
-        balance = _userTokenBalances[_user][_token];
+        return _paymentTokens.contains(_token);
     }
 
     function _decrementUserBalance(
@@ -178,9 +170,9 @@ contract Treasury is ITreasury {
         address _token,
         uint256 _amount
     ) private {
-        uint256 userTokenBalance = userBalance(_user, _token);
+        uint256 userTokenBalance = userTokenBalances[_user][_token];
         require(userTokenBalance >= _amount, "Insuficient user balance");
-        _userTokenBalances[_user][_token] -= _amount;
+        userTokenBalances[_user][_token] -= _amount;
     }
 
     function _incrementUserBalance(
@@ -188,6 +180,6 @@ contract Treasury is ITreasury {
         address _token,
         uint256 _amount
     ) private {
-        _userTokenBalances[_user][_token] += _amount;
+        userTokenBalances[_user][_token] += _amount;
     }
 }

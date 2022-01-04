@@ -18,6 +18,12 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     proxy: {
       owner: gelatoMultiSig,
       proxyContract: "EIP173ProxyWithReceive",
+      execute: {
+        init: {
+          methodName: "initialize",
+          args: [],
+        },
+      },
     },
     args: [gelatoMultiSig],
     log: hre.network.name != "hardhat" ? true : false,
