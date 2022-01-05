@@ -1,23 +1,27 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.11;
 
+import {Request} from "./structs/RequestTypes.sol";
 import {NATIVE_TOKEN} from "./constants/Tokens.sol";
 import {getBalance} from "./functions/TokenUtils.sol";
 import {GelatoBytes} from "./libraries/GelatoBytes.sol";
 import {GelatoString} from "./libraries/GelatoString.sol";
 import {IGelatoRelayer} from "./interfaces/IGelatoRelayer.sol";
 import {IOracleAggregator} from "./interfaces/IOracleAggregator.sol";
-import {ITreasury} from "./interfaces/ITreasury.sol";
+import {IGelatoRelayerTreasury} from "./interfaces/IGelatoRelayerTreasury.sol";
+import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {
-    Initializable
-} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+    OwnableUpgradeable
+} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract GelatoRelayer is Initializable, IGelatoRelayer {
+/// @notice This contract must NEVER hold funds!
+///         Malicious tx payloads could wipe out any funds left here.
+contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
     using GelatoBytes for bytes;
     using GelatoString for string;
 
@@ -25,28 +29,21 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
         keccak256(
             bytes(
                 // solhint-disable-next-line max-line-length
-                "Request(address from,address[] targets,uint256 gasLimit,uint256 relayerNonce,uint256 chainId,uint256 deadline,uint256 paymentToken,bool[] isTargetEIP2771Compliant,bool isSelfPayingTx,bool isFlashbotsTx,bytes[] payloads)"
+                "Request(address from,address[] targets,bytes[] payloads,address feeToken,uint256 fee,uint256 nonce,uint256 chainId,uint256 deadline,bool isSelfPayingTx,bool isFlashbotsTx,bool[] isTargetEIP2771Compliant)"
             )
         );
     // solhint-disable-next-line max-line-length
     string public constant EIP712_DOMAIN_TYPE =
         "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
-    uint256 public constant DIAMOND_CALL_OVERHEAD = 32000;
+    uint256 public constant DIAMOND_CALL_OVERHEAD = 33000;
 
-    address public immutable owner;
     address public immutable gelato;
     uint256 public immutable chainId;
     bytes32 public immutable domainSeparator;
     IOracleAggregator public immutable oracleAggregator;
-    ITreasury public immutable treasury;
-
-    uint256 public relayerFeePct;
-    mapping(address => uint256) private _relayerNonces;
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only callable by owner");
-        _;
-    }
+    IGelatoRelayerTreasury public immutable treasury;
+    
+    mapping(address => uint256) public nonces;
 
     modifier onlyGelato() {
         require(msg.sender == gelato, "Only callable by gelato");
@@ -54,20 +51,21 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
     }
 
     constructor(
-        address _owner,
         address _gelato,
         address _oracleAggregator,
         address _treasury,
         string memory _version
     ) {
-        owner = _owner;
         gelato = _gelato;
+
         uint256 _chainId;
         // solhint-disable-next-line no-inline-assembly
         assembly {
             _chainId := chainid()
         }
+
         chainId = _chainId;
+
         domainSeparator = keccak256(
             abi.encode(
                 keccak256(bytes(EIP712_DOMAIN_TYPE)),
@@ -77,54 +75,46 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
                 address(this)
             )
         );
+
         oracleAggregator = IOracleAggregator(_oracleAggregator);
-        treasury = ITreasury(_treasury);
+
+        treasury = IGelatoRelayerTreasury(_treasury);
     }
 
-    function initialize(uint256 _relayerFeePct) external initializer {
-        relayerFeePct = _relayerFeePct;
+    function initialize() external initializer {
+        __Ownable_init();
     }
 
-    function executeRequest(
-        uint256 _gasCost,
-        Request calldata _req,
-        bytes calldata _signature
-    ) external override onlyGelato {
-        uint256 startGas = gasleft();
+    function executeRequest(Request calldata _req, bytes calldata _signature)
+        external
+        override
+        onlyGelato
+        returns (uint256 credit)
+    {
         _verifyDeadline(_req.deadline);
+
         _verifyChainId(_req.chainId);
-        _verifyAndIncrementNonce(_req.relayerNonce, _req.from);
+
+        _verifyAndIncrementNonce(_req.nonce, _req.from);
+
         _verifySignature(_req, _signature);
-        uint256 credit;
+
         if (_req.isSelfPayingTx) {
-            uint256 excessCredit;
-            (credit, excessCredit) = _execSelfPayingTx(_gasCost, _req);
-            if (excessCredit > 0) {
-                treasury.incrementUserBalance(
-                    _req.from,
-                    _req.paymentToken,
-                    excessCredit
-                );
-                credit = credit - excessCredit;
-            }
-            if (credit > 0) _transferHandler(_req.paymentToken, gelato, credit);
+            credit = _execSelfPayingTx(_req);
         } else {
-            credit = _execPrepaidTx(_gasCost, _req);
+            credit = _execPrepaidTx(_req);
+
             if (credit > 0)
-                treasury.creditUserPayment(
-                    _req.from,
-                    _req.paymentToken,
-                    credit
-                );
+                treasury.chargeGelatoFee(_req.from, _req.feeToken, credit);
         }
-        _verifyGasCost(startGas, _gasCost);
     }
 
-    function rescueTokens(
+    function withdrawTokens(
         address[] calldata _tokens,
         address[] calldata _receivers
     ) external override onlyOwner {
         require(_tokens.length == _receivers.length, "Array length mismatch");
+
         for (uint256 i; i < _tokens.length; i++) {
             _transferHandler(
                 _tokens[i],
@@ -134,32 +124,12 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
         }
     }
 
-    function setRelayerFeePct(uint256 _relayerFeePct)
-        external
-        override
-        onlyOwner
-    {
-        require(_relayerFeePct <= 100, "Invalid percentage");
-        relayerFeePct = _relayerFeePct;
-    }
-
-    function relayerNonce(address _from)
-        external
-        view
-        override
-        returns (uint256)
-    {
-        return _relayerNonces[_from];
-    }
-
     function _verifyAndIncrementNonce(uint256 _relayerNonce, address _from)
         private
     {
-        require(
-            _relayerNonce == _relayerNonces[_from],
-            "Invalid relayer nonce"
-        );
-        _relayerNonces[_from] += 1;
+        require(_relayerNonce == nonces[_from], "Invalid nonce");
+
+        nonces[_from] += 1;
     }
 
     function _transferHandler(
@@ -176,46 +146,27 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
         }
     }
 
-    function _execSelfPayingTx(uint256 _gasCost, Request calldata _req)
+    function _execSelfPayingTx(Request calldata _req)
         private
-        returns (uint256 gasDebitInCreditToken, uint256 excessCredit)
+        returns (uint256 credit)
     {
-        require(
-            treasury.isPaymentToken(_req.paymentToken),
-            "Invalid paymentToken"
-        );
-        // Q: Requiring direct payment to diamond would save a lot of gas,
-        // but would it hurt UX?
-        uint256 preBalance = getBalance(_req.paymentToken, address(this));
-        uint256 preMultiCallGas = gasleft();
+        require(treasury.isPaymentToken(_req.feeToken), "Invalid feeToken");
+
+        uint256 preBalance = getBalance(_req.feeToken, gelato);
         _multiCall(
             _req.from,
             _req.targets,
             _req.isTargetEIP2771Compliant,
             _req.payloads
         );
-        uint256 multiCallGasCost = preMultiCallGas - gasleft();
-        require(multiCallGasCost <= _req.gasLimit, "Gas Limit exceeded");
-        uint256 postBalance = getBalance(_req.paymentToken, address(this));
-        require(postBalance > preBalance, "Insufficient paymentToken balance");
-        uint256 credit;
-        unchecked {
-            credit = postBalance - preBalance;
-        }
-        uint256 gasDebitInNativeToken = _getGasDebitInNativeToken(_gasCost);
-        gasDebitInCreditToken = _req.paymentToken == NATIVE_TOKEN
-            ? gasDebitInNativeToken
-            : _getGasDebitInCreditToken(
-                _req.paymentToken,
-                gasDebitInNativeToken
-            );
-        require(credit >= gasDebitInCreditToken, "Insufficient payment");
-        excessCredit = credit - gasDebitInCreditToken;
+        uint256 postBalance = getBalance(_req.feeToken, gelato);
+
+        credit = postBalance - preBalance;
     }
 
-    function _execPrepaidTx(uint256 _gasCost, Request calldata _req)
+    function _execPrepaidTx(Request calldata _req)
         private
-        returns (uint256 gasDebitInCreditToken)
+        returns (uint256 credit)
     {
         _multiCall(
             _req.from,
@@ -223,13 +174,8 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
             _req.isTargetEIP2771Compliant,
             _req.payloads
         );
-        uint256 gasDebitInNativeToken = _getGasDebitInNativeToken(_gasCost);
-        gasDebitInCreditToken = _req.paymentToken == NATIVE_TOKEN
-            ? gasDebitInNativeToken
-            : _getGasDebitInCreditToken(
-                _req.paymentToken,
-                gasDebitInNativeToken
-            );
+
+        credit = _req.fee;
     }
 
     function _multiCall(
@@ -243,64 +189,21 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
                 _targets.length == _isTargetEIP2771Compliant.length,
             "Array length mismatch"
         );
+
         for (uint256 i; i < _targets.length; i++) {
             require(
                 _targets[i] != address(treasury),
                 "Unsafe external call to Treasury"
             );
+
             (bool success, bytes memory returnData) = _targets[i].call(
                 _isTargetEIP2771Compliant[i]
                     ? abi.encodePacked(_payloads[i], _from)
                     : _payloads[i]
             );
+
             if (!success)
                 returnData.revertWithError("GelatoRelayerExecutor._multiCall:");
-        }
-    }
-
-    function _getGasDebitInNativeToken(uint256 _gasCost)
-        private
-        view
-        returns (uint256 gasDebitInNativeToken)
-    {
-        gasDebitInNativeToken =
-            (_gasCost * tx.gasprice * (100 + relayerFeePct)) /
-            100;
-    }
-
-    function _getGasDebitInNativeTokenEIP1559(uint256 _gasCost)
-        private
-        view
-        returns (uint256 gasDebitInNativeToken)
-    {
-        uint256 _gasDebitBase = block.basefee * _gasCost;
-        uint256 _priorityFee = tx.gasprice - block.basefee;
-        gasDebitInNativeToken =
-            _gasDebitBase +
-            (_gasCost * _priorityFee * (100 + relayerFeePct)) /
-            100;
-    }
-
-    function _getGasDebitInCreditToken(
-        address _creditToken,
-        uint256 _gasDebitInNativeToken
-    ) private view returns (uint256 gasDebitInCreditToken) {
-        try
-            oracleAggregator.getExpectedReturnAmount(
-                _gasDebitInNativeToken,
-                NATIVE_TOKEN,
-                _creditToken
-            )
-        returns (uint256 gasDebitInCreditToken_, uint256) {
-            require(
-                gasDebitInCreditToken_ != 0,
-                "_creditToken not on OracleAggregator"
-            );
-            gasDebitInCreditToken = gasDebitInCreditToken_;
-        } catch Error(string memory err) {
-            err.revertWithInfo("OracleAggregator:");
-        } catch {
-            revert("OracleAggregator: unknown error");
         }
     }
 
@@ -327,32 +230,29 @@ contract GelatoRelayer is Initializable, IGelatoRelayer {
                 keccak256(_abiEncodeRequest(req))
             )
         );
+
         address from = ECDSA.recover(message, signature);
         require(from == req.from, "Invalid signature");
     }
 
-    function _verifyGasCost(uint256 _startGas, uint256 _gasCost) private view {
-        uint256 maxGasCost = DIAMOND_CALL_OVERHEAD + gasleft() - _startGas;
-        require(_gasCost <= maxGasCost, "Executor overcharged in Gas Cost");
-    }
-
-    function _abiEncodeRequest(Request calldata req)
+    function _abiEncodeRequest(Request calldata _req)
         private
         pure
         returns (bytes memory encodedReq)
     {
         encodedReq = abi.encode(
             REQUEST_TYPEHASH,
-            req.from,
-            req.targets,
-            req.gasLimit,
-            req.relayerNonce,
-            req.chainId,
-            req.deadline,
-            req.isTargetEIP2771Compliant,
-            req.isSelfPayingTx,
-            req.isFlashbotsTx,
-            keccak256(abi.encode(req.payloads))
+            _req.from,
+            _req.targets,
+            keccak256(abi.encode(_req.payloads)),
+            _req.feeToken,
+            _req.fee,
+            _req.nonce,
+            _req.chainId,
+            _req.deadline,
+            _req.isSelfPayingTx,
+            _req.isFlashbotsTx,
+            _req.isTargetEIP2771Compliant
         );
     }
 }

@@ -1,20 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.11;
-import {IGelatoRelayerRequestTypes} from "./IGelatoRelayerRequestTypes.sol";
+import {Request} from "../structs/RequestTypes.sol";
 
-interface IGelatoRelayer is IGelatoRelayerRequestTypes {
-    function executeRequest(
-        uint256 _gasCost,
-        Request calldata _req,
-        bytes calldata _signature
-    ) external;
+interface IGelatoRelayer {
+    function executeRequest(Request calldata _req, bytes calldata _signature)
+        external
+        returns (uint256 credit);
 
-    function rescueTokens(
+    function withdrawTokens(
         address[] calldata _tokens,
         address[] calldata _receivers
     ) external;
-
-    function setRelayerFeePct(uint256 _relayerFeePct) external;
-
-    function relayerNonce(address _from) external view returns (uint256);
 }

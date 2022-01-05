@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.11;
 
-interface ITreasury {
+interface IGelatoRelayerTreasury {
     function setGelatoRelayer(address _gelatoRelayer) external;
 
     function addPaymentToken(address _paymentToken) external;
@@ -24,13 +24,7 @@ interface ITreasury {
         uint256 _amount
     ) external;
 
-    function incrementUserBalance(
-        address _user,
-        address _token,
-        uint256 _amount
-    ) external;
-
-    function creditUserPayment(
+    function chargeGelatoFee(
         address _user,
         address _token,
         uint256 _amount
