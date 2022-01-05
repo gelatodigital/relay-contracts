@@ -7,7 +7,6 @@ import {getBalance} from "./functions/TokenUtils.sol";
 import {GelatoBytes} from "./libraries/GelatoBytes.sol";
 import {GelatoString} from "./libraries/GelatoString.sol";
 import {IGelatoRelayer} from "./interfaces/IGelatoRelayer.sol";
-import {IOracleAggregator} from "./interfaces/IOracleAggregator.sol";
 import {IGelatoRelayerTreasury} from "./interfaces/IGelatoRelayerTreasury.sol";
 import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -40,9 +39,8 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
     address public immutable gelato;
     uint256 public immutable chainId;
     bytes32 public immutable domainSeparator;
-    IOracleAggregator public immutable oracleAggregator;
     IGelatoRelayerTreasury public immutable treasury;
-    
+
     mapping(address => uint256) public nonces;
 
     modifier onlyGelato() {
@@ -52,7 +50,6 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
 
     constructor(
         address _gelato,
-        address _oracleAggregator,
         address _treasury,
         string memory _version
     ) {
@@ -75,8 +72,6 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
                 address(this)
             )
         );
-
-        oracleAggregator = IOracleAggregator(_oracleAggregator);
 
         treasury = IGelatoRelayerTreasury(_treasury);
     }
