@@ -13,13 +13,14 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   const { deploy } = deployments;
   const { deployer, gelatoMultiSig } = await getNamedAccounts();
+
   await deploy("Treasury", {
     from: deployer,
     proxy: {
       owner: gelatoMultiSig,
       proxyContract: "EIP173ProxyWithReceive",
     },
-    args: [gelatoMultiSig],
+    args: [],
     log: hre.network.name != "hardhat" ? true : false,
   });
 };

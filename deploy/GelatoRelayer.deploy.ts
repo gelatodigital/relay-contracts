@@ -17,21 +17,20 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const addresses = getAddresses(hre.network.name);
   const treasuryAddress = (await deployments.get("Treasury")).address;
   const version = "0.1";
-  const relayerFeePct = 1;
+
   await deploy("GelatoRelayer", {
     from: deployer,
     proxy: {
       owner: gelatoMultiSig,
-      proxyContract: "EIP173ProxyWithReceive",
+      proxyContract: "EIP173Proxy",
       execute: {
         init: {
           methodName: "initialize",
-          args: [relayerFeePct],
+          args: [],
         },
       },
     },
     args: [
-      gelatoMultiSig,
       addresses.Gelato,
       addresses.OracleAggregator,
       treasuryAddress,
