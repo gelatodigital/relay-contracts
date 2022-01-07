@@ -72,6 +72,11 @@ library LibExecRequest {
         es.nonces[_from] += 1;
     }
 
+    function getNonce(address _from) internal view returns (uint256) {
+        ExecRequestStorage storage es = _execRequestStorage();
+        return es.nonces[_from];
+    }
+
     function verifyDeadline(uint256 _deadline) internal view {
         require(
             // solhint-disable-next-line not-rely-on-time

@@ -37,10 +37,6 @@ library LibDiamond {
         mapping(bytes4 => bool) supportedInterfaces;
         // owner of the contract
         address contractOwner;
-        // Gelato Diamond
-        address gelato;
-        // Gelato Relayer Treasury
-        address treasury;
     }
 
     bytes32 public constant DIAMOND_STORAGE_POSITION =
@@ -49,11 +45,6 @@ library LibDiamond {
     event OwnershipTransferred(
         address indexed previousOwner,
         address indexed newOwner
-    );
-
-    event TreasuryUpgraded(
-        address indexed previousTreasury,
-        address indexed newTreasury
     );
 
     event DiamondCut(
@@ -67,11 +58,6 @@ library LibDiamond {
         address previousOwner = ds.contractOwner;
         ds.contractOwner = _newOwner;
         emit OwnershipTransferred(previousOwner, _newOwner);
-    }
-
-    function setGelato(address _gelato) internal {
-        DiamondStorage storage ds = diamondStorage();
-        ds.gelato = _gelato;
     }
 
     // Internal function version of diamondCut

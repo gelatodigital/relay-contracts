@@ -5,10 +5,6 @@ import {Request} from "../structs/RequestTypes.sol";
 import {NATIVE_TOKEN} from "../constants/Tokens.sol";
 import {LibExecRequest} from "../libraries/diamond/LibExecRequest.sol";
 import {IGelatoRelayerTreasury} from "../interfaces/IGelatoRelayerTreasury.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {
-    SafeERC20
-} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @notice This contract must NEVER hold funds!
 ///         Malicious tx payloads could wipe out any funds left here.
@@ -19,9 +15,8 @@ contract ExecRequestFacet {
     uint256 public constant DIAMOND_CALL_OVERHEAD = 33000;
 
     address public immutable gelato;
-    uint256 public immutable chainId;
-    bytes32 public immutable domainSeparator;
     address public immutable gelatoRelayerTreasury;
+    bytes32 public immutable domainSeparator;
 
     modifier onlyGelato() {
         require(msg.sender == gelato, "Only callable by gelato");
@@ -41,19 +36,17 @@ contract ExecRequestFacet {
             _chainId := chainid()
         }
 
-        chainId = _chainId;
+        gelatoRelayerTreasury = _gelatoRelayerTreasury;
 
         domainSeparator = keccak256(
             abi.encode(
                 keccak256(bytes(EIP712_DOMAIN_TYPE)),
                 keccak256(bytes("GelatoRelayer")),
                 keccak256(bytes(_version)),
-                bytes32(chainId),
+                bytes32(_chainId),
                 address(this)
             )
         );
-
-        gelatoRelayerTreasury = _gelatoRelayerTreasury;
     }
 
     function executeRequest(
@@ -93,5 +86,9 @@ contract ExecRequestFacet {
         }
 
         LibExecRequest.verifyGasCost(_gasCost, startGas, DIAMOND_CALL_OVERHEAD);
+    }
+
+    function getNonce(address _from) external view returns (uint256) {
+        return LibExecRequest.getNonce(_from);
     }
 }
