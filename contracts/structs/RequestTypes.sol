@@ -6,7 +6,7 @@ struct Request {
     address[] targets;
     bytes[] payloads;
     address feeToken;
-    uint256 fee;
+    uint256 feeTokenPriceInNative;
     uint256 nonce;
     uint256 chainId;
     uint256 deadline;

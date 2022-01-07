@@ -28,7 +28,7 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
         keccak256(
             bytes(
                 // solhint-disable-next-line max-line-length
-                "Request(address from,address[] targets,bytes[] payloads,address feeToken,uint256 fee,uint256 nonce,uint256 chainId,uint256 deadline,bool isSelfPayingTx,bool isFlashbotsTx,bool[] isTargetEIP2771Compliant)"
+                "Request(address from,address[] targets,bytes[] payloads,address feeToken,uint256 feeTokenPriceInNative,uint256 nonce,uint256 chainId,uint256 deadline,bool isSelfPayingTx,bool isFlashbotsTx,bool[] isTargetEIP2771Compliant)"
             )
         );
     // solhint-disable-next-line max-line-length
@@ -80,12 +80,13 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
         __Ownable_init();
     }
 
-    function executeRequest(Request calldata _req, bytes calldata _signature)
-        external
-        override
-        onlyGelato
-        returns (uint256 credit)
-    {
+    function executeRequest(
+        uint256 _gasCost,
+        Request calldata _req,
+        bytes calldata _signature
+    ) external override onlyGelato returns (uint256 credit) {
+        uint256 startGas = gasleft();
+
         _verifyDeadline(_req.deadline);
 
         _verifyChainId(_req.chainId);
@@ -94,14 +95,20 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
 
         _verifySignature(_req, _signature);
 
+        uint256 expectedCredit = _req.feeTokenPriceInNative * _gasCost;
+
         if (_req.isSelfPayingTx) {
             credit = _execSelfPayingTx(_req);
         } else {
-            credit = _execPrepaidTx(_req);
+            _execPrepaidTx(_req);
+
+            credit = expectedCredit;
 
             if (credit > 0)
                 treasury.chargeGelatoFee(_req.from, _req.feeToken, credit);
         }
+
+        _verifyGasCost(_gasCost, startGas);
     }
 
     function withdrawTokens(
@@ -119,10 +126,8 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
         }
     }
 
-    function _verifyAndIncrementNonce(uint256 _relayerNonce, address _from)
-        private
-    {
-        require(_relayerNonce == nonces[_from], "Invalid nonce");
+    function _verifyAndIncrementNonce(uint256 _nonce, address _from) private {
+        require(_nonce == nonces[_from], "Invalid nonce");
 
         nonces[_from] += 1;
     }
@@ -159,18 +164,13 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
         credit = postBalance - preBalance;
     }
 
-    function _execPrepaidTx(Request calldata _req)
-        private
-        returns (uint256 credit)
-    {
+    function _execPrepaidTx(Request calldata _req) private {
         _multiCall(
             _req.from,
             _req.targets,
             _req.isTargetEIP2771Compliant,
             _req.payloads
         );
-
-        credit = _req.fee;
     }
 
     function _multiCall(
@@ -230,6 +230,11 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
         require(from == req.from, "Invalid signature");
     }
 
+    function _verifyGasCost(uint256 _gasCost, uint256 _startGas) private view {
+        uint256 gasCost = _startGas + DIAMOND_CALL_OVERHEAD - gasleft();
+        require(_gasCost <= gasCost, "Executor overcharged in Gas Cost");
+    }
+
     function _abiEncodeRequest(Request calldata _req)
         private
         pure
@@ -238,16 +243,16 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
         encodedReq = abi.encode(
             REQUEST_TYPEHASH,
             _req.from,
-            _req.targets,
+            keccak256(abi.encode(_req.targets)),
             keccak256(abi.encode(_req.payloads)),
             _req.feeToken,
-            _req.fee,
+            _req.feeTokenPriceInNative,
             _req.nonce,
             _req.chainId,
             _req.deadline,
             _req.isSelfPayingTx,
             _req.isFlashbotsTx,
-            _req.isTargetEIP2771Compliant
+            keccak256(abi.encode(_req.isTargetEIP2771Compliant))
         );
     }
 }
