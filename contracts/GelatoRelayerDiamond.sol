@@ -17,7 +17,7 @@ contract GelatoRelayerDiamond {
     constructor(
         IDiamondCut.FacetCut[] memory _diamondCut,
         DiamondArgs memory _args
-    ) payable {
+    ) {
         LibDiamond.diamondCut(_diamondCut, address(0), new bytes(0));
         LibDiamond.setContractOwner(_args.owner);
 
@@ -33,7 +33,7 @@ contract GelatoRelayerDiamond {
     // Find facet for function that is called and execute the
     // function if a facet is found and return any value.
     // solhint-disable-next-line no-complex-fallback
-    fallback() external payable {
+    fallback() external {
         LibDiamond.DiamondStorage storage ds;
         bytes32 position = LibDiamond.DIAMOND_STORAGE_POSITION;
         assembly {

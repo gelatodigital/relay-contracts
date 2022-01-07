@@ -5,6 +5,7 @@ import {Request} from "../structs/RequestTypes.sol";
 import {NATIVE_TOKEN} from "../constants/Tokens.sol";
 import {LibExecRequest} from "../libraries/diamond/LibExecRequest.sol";
 import {IGelatoRelayerTreasury} from "../interfaces/IGelatoRelayerTreasury.sol";
+import {IGelatoRelayerDiamond} from "../interfaces/IGelatoRelayerDiamond.sol";
 
 /// @notice This contract must NEVER hold funds!
 ///         Malicious tx payloads could wipe out any funds left here.
