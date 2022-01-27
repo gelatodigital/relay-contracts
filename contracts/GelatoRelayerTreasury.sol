@@ -151,6 +151,7 @@ contract GelatoRelayerTreasury is
         address _token,
         uint256 _amount
     ) external override onlyGelatoRelayer {
+        if (_amount == 0) return;
         _decrementUserBalance(_user, _token, _amount);
         _incrementUserBalance(owner(), _token, _amount);
     }

@@ -7,6 +7,7 @@ import {LibExecRequest} from "../libraries/diamond/LibExecRequest.sol";
 import {IGelatoRelayerTreasury} from "../interfaces/IGelatoRelayerTreasury.sol";
 import {IGelatoRelayerDiamond} from "../interfaces/IGelatoRelayerDiamond.sol";
 
+/// @title Gelato Relayer Facet
 /// @notice This contract must NEVER hold funds!
 ///         Malicious tx payloads could wipe out any funds left here.
 contract ExecRequestFacet {

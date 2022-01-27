@@ -5,6 +5,9 @@ import {BFacetOwner} from "./base/BFacetOwner.sol";
 import {LibTransfer} from "../libraries/diamond/LibTransfer.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+/// @title Gelato Relayer Transfer Facet
+/// @notice Useful in order to withdraw stuck tokens
+/// @dev Permissioned access to owner
 contract TransferFacet is BFacetOwner {
     function withdrawTokens(
         address[] calldata _tokens,

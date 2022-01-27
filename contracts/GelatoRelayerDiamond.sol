@@ -7,6 +7,7 @@ import {IDiamondCut} from "./interfaces/diamond/standard/IDiamondCut.sol";
 import {IERC173} from "./interfaces/diamond/standard/IERC173.sol";
 import {IERC165} from "./interfaces/diamond/standard/IERC165.sol";
 
+/// @title Gelato Relayer Diamond
 contract GelatoRelayerDiamond {
     // more arguments are added to this struct
     // this avoids stack too deep errors
