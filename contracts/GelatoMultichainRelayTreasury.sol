@@ -2,7 +2,10 @@
 pragma solidity 0.8.11;
 
 import {NATIVE_TOKEN} from "./constants/Tokens.sol";
-import {IGelatoRelayerTreasury} from "./interfaces/IGelatoRelayerTreasury.sol";
+import {LibTransfer} from "./libraries/diamond/LibTransfer.sol";
+import {
+    IGelatoMultichainRelayTreasury
+} from "./interfaces/IGelatoMultichainRelayTreasury.sol";
 import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {
@@ -15,10 +18,10 @@ import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract GelatoRelayerTreasury is
+contract GelatoMultichainRelayTreasury is
     Proxied,
     OwnableUpgradeable,
-    IGelatoRelayerTreasury
+    IGelatoMultichainRelayTreasury
 {
     using EnumerableSet for EnumerableSet.AddressSet;
 
@@ -83,18 +86,6 @@ contract GelatoRelayerTreasury is
         _incrementUserBalance(_receiver, NATIVE_TOKEN, msg.value);
     }
 
-    function withdrawEth(address _receiver, uint256 _amount) external override {
-        require(_amount > 0, "Invalid ETH withdrawal amount");
-
-        uint256 ethBalance = userTokenBalances[msg.sender][NATIVE_TOKEN];
-        require(_amount <= ethBalance, "Insufficient balance");
-
-        _decrementUserBalance(msg.sender, NATIVE_TOKEN, _amount);
-
-        (bool success, ) = _receiver.call{value: _amount}("");
-        require(success, "ETH withdrawal failed");
-    }
-
     function depositToken(
         address _receiver,
         address _paymentToken,
@@ -128,32 +119,20 @@ contract GelatoRelayerTreasury is
         );
     }
 
-    function withdrawToken(
-        address _receiver,
-        address _paymentToken,
-        uint256 _amount
-    ) external override {
-        require(_amount > 0, "Invalid withdrawal amount");
+    function collectFees(
+        address[] calldata _tokens,
+        address[] calldata _receivers,
+        uint256[] calldata _amounts
+    ) external override onlyOwner {
+        require(
+            _tokens.length == _receivers.length &&
+                _receivers.length == _amounts.length,
+            "Array length mismatch"
+        );
 
-        require(_paymentToken != NATIVE_TOKEN, "paymentToken cannot be ETH");
-
-        uint256 balance = userTokenBalances[msg.sender][_paymentToken];
-        require(_amount <= balance, "Insufficient balance");
-
-        IERC20 paymentToken = IERC20(_paymentToken);
-        _decrementUserBalance(msg.sender, _paymentToken, _amount);
-
-        SafeERC20.safeTransfer(paymentToken, _receiver, _amount);
-    }
-
-    function chargeGelatoFee(
-        address _user,
-        address _token,
-        uint256 _amount
-    ) external override onlyGelatoRelayer {
-        if (_amount == 0) return;
-        _decrementUserBalance(_user, _token, _amount);
-        _incrementUserBalance(owner(), _token, _amount);
+        for (uint256 i; i < _tokens.length; i++) {
+            LibTransfer.handleTransfer(_tokens[i], _receivers[i], _amounts[i]);
+        }
     }
 
     function paymentTokens()

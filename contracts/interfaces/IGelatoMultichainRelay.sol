@@ -2,13 +2,12 @@
 pragma solidity 0.8.11;
 import {Request} from "../structs/RequestTypes.sol";
 
-interface IGelatoRelayer {
+interface IGelatoMultichainRelay {
     function executeRequest(
-        uint256 _gasCost,
-        uint256 _gelatoFee,
         Request calldata _req,
-        bytes calldata _signature
-    ) external returns (uint256 creditInNativeToken, uint256 expectedCost);
+        bytes calldata _signature,
+        uint256 _gelatoFee
+    ) external returns (uint256 credit);
 
     function withdrawTokens(
         address[] calldata _tokens,

@@ -5,8 +5,8 @@ import {Request} from "../../structs/RequestTypes.sol";
 import {getBalance} from "../../functions/TokenUtils.sol";
 import {GelatoBytes} from "../../libraries/GelatoBytes.sol";
 import {
-    IGelatoRelayerTreasury
-} from "../../interfaces/IGelatoRelayerTreasury.sol";
+    IGelatoMultichainRelayTreasury
+} from "../../interfaces/IGelatoMultichainRelayTreasury.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 library LibExecRequest {
@@ -23,19 +23,19 @@ library LibExecRequest {
         keccak256(
             bytes(
                 // solhint-disable-next-line max-line-length
-                "Request(address from,address[] targets,bytes[] payloads,address feeToken,uint256 feeTokenPriceInNative,uint256 nonce,uint256 chainId,uint256 deadline,bool isSelfPayingTx,bool isFlashbotsTx,bool[] isTargetEIP2771Compliant)"
+                "Request(address from,address[] targets,bytes[] payloads,address feeToken,uint256 maxFee,uint256 nonce,uint256 chainId,uint256 deadline,bool isSelfPayingTx,bool isFlashbotsTx,bool[] isTargetEIP2771Compliant)"
             )
         );
 
     function execSelfPayingTx(
         address _gelato,
         address _gelatoRelayerTreasury,
-        Request calldata _req
+        Request calldata _req,
+        uint256 _minFee
     ) internal returns (uint256 credit) {
         require(
-            IGelatoRelayerTreasury(_gelatoRelayerTreasury).isPaymentToken(
-                _req.feeToken
-            ),
+            IGelatoMultichainRelayTreasury(_gelatoRelayerTreasury)
+                .isPaymentToken(_req.feeToken),
             "Invalid feeToken"
         );
 
@@ -50,6 +50,8 @@ library LibExecRequest {
         uint256 postBalance = getBalance(_req.feeToken, _gelato);
 
         credit = postBalance - preBalance;
+
+        require(credit >= _minFee, "Insufficient user payment");
     }
 
     function execPrepaidTx(
@@ -94,15 +96,6 @@ library LibExecRequest {
         require(_chainId == chainId, "Invalid Chain Id");
     }
 
-    function verifyGasCost(
-        uint256 _gasCost,
-        uint256 _startGas,
-        uint256 _diamondCallOverhead
-    ) internal view {
-        uint256 gasCost = _startGas + _diamondCallOverhead - gasleft();
-        require(_gasCost <= gasCost, "Executor overcharged in Gas Cost");
-    }
-
     function verifySignature(
         bytes32 domainSeparator,
         Request calldata req,
@@ -118,6 +111,13 @@ library LibExecRequest {
 
         address from = ECDSA.recover(message, signature);
         require(from == req.from, "Invalid signature");
+    }
+
+    function verifyGelatoFee(uint256 _maxFee, uint256 _gelatoFee)
+        internal
+        pure
+    {
+        require(_gelatoFee <= _maxFee, "Relayer over-charged user");
     }
 
     function _multiCall(
@@ -150,18 +150,6 @@ library LibExecRequest {
         }
     }
 
-    function _execRequestStorage()
-        private
-        pure
-        returns (ExecRequestStorage storage es)
-    {
-        bytes32 position = _EXEC_REQUEST_STORAGE_POSITION;
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            es.slot := position
-        }
-    }
-
     function _abiEncodeRequest(Request calldata _req)
         private
         pure
@@ -173,7 +161,7 @@ library LibExecRequest {
             keccak256(abi.encode(_req.targets)),
             keccak256(abi.encode(_req.payloads)),
             _req.feeToken,
-            _req.feeTokenPriceInNative,
+            _req.maxFee,
             _req.nonce,
             _req.chainId,
             _req.deadline,
@@ -181,5 +169,17 @@ library LibExecRequest {
             _req.isFlashbotsTx,
             keccak256(abi.encode(_req.isTargetEIP2771Compliant))
         );
+    }
+
+    function _execRequestStorage()
+        private
+        pure
+        returns (ExecRequestStorage storage es)
+    {
+        bytes32 position = _EXEC_REQUEST_STORAGE_POSITION;
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            es.slot := position
+        }
     }
 }

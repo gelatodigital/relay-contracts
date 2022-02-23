@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.11;
 
-interface IGelatoRelayerTreasury {
+interface IGelatoMultichainRelayTreasury {
     function setGelatoRelayer(address _gelatoRelayer) external;
 
     function addPaymentToken(address _paymentToken) external;
@@ -10,24 +10,16 @@ interface IGelatoRelayerTreasury {
 
     function depositEth(address _receiver) external payable;
 
-    function withdrawEth(address _receiver, uint256 _amount) external;
-
     function depositToken(
         address _receiver,
         address _paymentToken,
         uint256 _amount
     ) external;
 
-    function withdrawToken(
-        address _receiver,
-        address _paymentToken,
-        uint256 _amount
-    ) external;
-
-    function chargeGelatoFee(
-        address _user,
-        address _token,
-        uint256 _amount
+    function collectFees(
+        address[] calldata _tokens,
+        address[] calldata _receivers,
+        uint256[] calldata _amounts
     ) external;
 
     function paymentTokens()

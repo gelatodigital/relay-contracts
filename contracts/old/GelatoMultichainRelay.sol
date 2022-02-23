@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.11;
 
-import {Request} from "./structs/RequestTypes.sol";
-import {NATIVE_TOKEN} from "./constants/Tokens.sol";
-import {getBalance} from "./functions/TokenUtils.sol";
-import {GelatoBytes} from "./libraries/GelatoBytes.sol";
-import {GelatoString} from "./libraries/GelatoString.sol";
-import {IGelatoRelayer} from "./interfaces/IGelatoRelayer.sol";
-import {IGelatoRelayerTreasury} from "./interfaces/IGelatoRelayerTreasury.sol";
-import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
+import {Request} from "../structs/RequestTypes.sol";
+import {NATIVE_TOKEN} from "../constants/Tokens.sol";
+import {getBalance} from "../functions/TokenUtils.sol";
+import {GelatoBytes} from "../libraries/GelatoBytes.sol";
+import {GelatoString} from "../libraries/GelatoString.sol";
+import {IGelatoMultichainRelay} from "../interfaces/IGelatoMultichainRelay.sol";
+import {
+    IGelatoMultichainRelayTreasury
+} from "../interfaces/IGelatoMultichainRelayTreasury.sol";
+import {Proxied} from "../vendor/hardhat-deploy/Proxied.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {
     OwnableUpgradeable
@@ -18,10 +20,14 @@ import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-/// @title Gelato Relayer contract
+/// @title Gelato Multichain Relay contract
 /// @notice This contract must NEVER hold funds!
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here.
-contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
+contract GelatoMultichainRelay is
+    Proxied,
+    OwnableUpgradeable,
+    IGelatoMultichainRelay
+{
     using GelatoBytes for bytes;
     using GelatoString for string;
 
@@ -29,29 +35,27 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
         keccak256(
             bytes(
                 // solhint-disable-next-line max-line-length
-                "Request(address from,address[] targets,bytes[] payloads,address feeToken,uint256 feeTokenPriceInNative,uint256 nonce,uint256 chainId,uint256 deadline,bool isSelfPayingTx,bool isFlashbotsTx,bool[] isTargetEIP2771Compliant)"
+                "Request(address from,address[] targets,bytes[] payloads,address feeToken,uint256 maxFee,uint256 nonce,uint256 chainId,uint256 deadline,bool isSelfPayingTx,bool isFlashbotsTx,bool[] isTargetEIP2771Compliant)"
             )
         );
     // solhint-disable-next-line max-line-length
     string public constant EIP712_DOMAIN_TYPE =
         "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
-    uint256 public constant DIAMOND_CALL_OVERHEAD = 33000;
-    // 10 pct
-    uint256 public constant MAX_RELAYER_FEE_BPS = 1000;
 
     address public immutable gelato;
     uint256 public immutable chainId;
     bytes32 public immutable domainSeparator;
-    IGelatoRelayerTreasury public immutable treasury;
+    IGelatoMultichainRelayTreasury public immutable treasury;
 
     mapping(address => uint256) public nonces;
 
     event ExecuteRequestSuccess(
         address indexed relayerAddress,
+        address indexed user,
         bool indexed isSelfPayingTx,
+        address[] targets,
         uint256 credit,
-        uint256 expectedCost,
-        uint256 gasCost
+        uint256 maxFee
     );
 
     modifier onlyGelato() {
@@ -73,45 +77,30 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
         domainSeparator = keccak256(
             abi.encode(
                 keccak256(bytes(EIP712_DOMAIN_TYPE)),
-                keccak256(bytes("GelatoRelayer")),
+                keccak256(bytes("GelatoMultichainRelay")),
                 keccak256(bytes("V1")),
                 bytes32(chainId),
                 address(this)
             )
         );
 
-        treasury = IGelatoRelayerTreasury(_treasury);
+        treasury = IGelatoMultichainRelayTreasury(_treasury);
     }
 
     function initialize() external initializer {
         __Ownable_init();
     }
 
-    /// @param _gasCost Expected gas cost of executing this transaction
-    ///                 ideally accounting for gas refunds.
-    /// @dev            Must not be greater than what is measured by gasleft().
-    /// @dev            Even though relayers can always choose the maximum value allowed,
-    ///                 they are discouraged to do so as the Gelato DAO can easily detect
-    ///                 this mismatch and hold them accountable, possibly affecting monthly payouts.
-    /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _req.feeToken
     /// @param _req Relay request data
     /// @param _signature EIP-712 compliant signature
-    /// @return creditInNativeToken Amount paid by user (_req.from) denominated in Native token
-    /// @return expectedCostInNativeToken Amount that relayer expects to spend in transaction fees
+    /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _req.feeToken
+    /// @return credit Amount paid by user (_req.from) denominated in Native token
     // solhint-disable-next-line function-max-lines
     function executeRequest(
-        uint256 _gasCost,
-        uint256 _gelatoFee,
         Request calldata _req,
-        bytes calldata _signature
-    )
-        external
-        override
-        onlyGelato
-        returns (uint256 creditInNativeToken, uint256 expectedCostInNativeToken)
-    {
-        uint256 startGas = gasleft();
-
+        bytes calldata _signature,
+        uint256 _gelatoFee
+    ) external override onlyGelato returns (uint256 credit) {
         _verifyDeadline(_req.deadline);
 
         _verifyChainId(_req.chainId);
@@ -120,36 +109,26 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
 
         _verifySignature(_req, _signature);
 
-        expectedCostInNativeToken = _req.feeTokenPriceInNative * _gasCost;
+        _verifyGelatoFee(_req.maxFee, _gelatoFee);
 
         if (_req.isSelfPayingTx) {
-            uint256 credit = _execSelfPayingTx(_req);
-            creditInNativeToken = _verifyPaymentSelfPayingTx(
-                credit,
-                _req.feeTokenPriceInNative,
-                _gelatoFee,
-                expectedCostInNativeToken
-            );
+            credit = _execSelfPayingTx(_req, _gelatoFee);
+
+            _transferHandler(_req.feeToken, gelato, credit);
         } else {
             _execPrepaidTx(_req);
-            creditInNativeToken = _verifyPaymentPrepaidTx(
-                _req.feeTokenPriceInNative,
-                _gelatoFee,
-                expectedCostInNativeToken
-            );
-
-            treasury.chargeGelatoFee(_req.from, _req.feeToken, _gelatoFee);
+            // Credit to be accounted off-chain
+            credit = _gelatoFee;
         }
 
         emit ExecuteRequestSuccess(
             tx.origin,
+            _req.from,
             _req.isSelfPayingTx,
-            creditInNativeToken,
-            expectedCostInNativeToken,
-            _gasCost
+            _req.targets,
+            credit,
+            _req.maxFee
         );
-
-        _verifyGasCost(_gasCost, startGas);
     }
 
     function withdrawTokens(
@@ -178,6 +157,8 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
         address _receiver,
         uint256 _amount
     ) private {
+        if (_amount == 0) return;
+
         if (_paymentToken == NATIVE_TOKEN) {
             (bool success, ) = _receiver.call{value: _amount}("");
             require(success, "ETH payment failed");
@@ -187,22 +168,24 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
         }
     }
 
-    function _execSelfPayingTx(Request calldata _req)
+    function _execSelfPayingTx(Request calldata _req, uint256 _minFee)
         private
         returns (uint256 credit)
     {
         require(treasury.isPaymentToken(_req.feeToken), "Invalid feeToken");
 
-        uint256 preBalance = getBalance(_req.feeToken, gelato);
+        uint256 preBalance = getBalance(_req.feeToken, address(this));
         _multiCall(
             _req.from,
             _req.targets,
             _req.isTargetEIP2771Compliant,
             _req.payloads
         );
-        uint256 postBalance = getBalance(_req.feeToken, gelato);
+        uint256 postBalance = getBalance(_req.feeToken, address(this));
 
         credit = postBalance - preBalance;
+
+        require(credit >= _minFee, "Insufficient user payment");
     }
 
     function _execPrepaidTx(Request calldata _req) private {
@@ -271,44 +254,11 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
         require(from == req.from, "Invalid signature");
     }
 
-    function _verifyGasCost(uint256 _gasCost, uint256 _startGas) private view {
-        uint256 gasCost = _startGas + DIAMOND_CALL_OVERHEAD - gasleft();
-        require(_gasCost <= gasCost, "Executor overcharged in Gas Cost");
-    }
-
-    function _verifyPaymentSelfPayingTx(
-        uint256 _credit,
-        uint256 _feeTokenPriceInNative,
-        uint256 _gelatoFee,
-        uint256 _expectedCostInNativeToken
-    ) private pure returns (uint256 creditInNativeToken) {
-        creditInNativeToken = _credit * _feeTokenPriceInNative;
-
-        uint256 gelatoFeeInNativeToken = _gelatoFee * _feeTokenPriceInNative;
-        require(
-            creditInNativeToken >= gelatoFeeInNativeToken,
-            "Insufficient user payment"
-        );
-
-        require(
-            gelatoFeeInNativeToken <=
-                (_expectedCostInNativeToken * MAX_RELAYER_FEE_BPS) / 10000,
-            "Relayer over-charged user"
-        );
-    }
-
-    function _verifyPaymentPrepaidTx(
-        uint256 _feeTokenPriceInNative,
-        uint256 _gelatoFee,
-        uint256 _expectedCostInNativeToken
-    ) private pure returns (uint256 creditInNativeToken) {
-        creditInNativeToken = _gelatoFee * _feeTokenPriceInNative;
-
-        require(
-            creditInNativeToken <=
-                (_expectedCostInNativeToken * MAX_RELAYER_FEE_BPS) / 10000,
-            "Relayer over-charged user"
-        );
+    function _verifyGelatoFee(uint256 _maxFee, uint256 _gelatoFee)
+        private
+        pure
+    {
+        require(_gelatoFee <= _maxFee, "Relayer over-charged user");
     }
 
     function _abiEncodeRequest(Request calldata _req)
@@ -322,7 +272,7 @@ contract GelatoRelayer is Proxied, OwnableUpgradeable, IGelatoRelayer {
             keccak256(abi.encode(_req.targets)),
             keccak256(abi.encode(_req.payloads)),
             _req.feeToken,
-            _req.feeTokenPriceInNative,
+            _req.maxFee,
             _req.nonce,
             _req.chainId,
             _req.deadline,
