@@ -12,6 +12,7 @@ import {
 import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
 // solhint-disable-next-line max-states-count
 contract GelatoMetaBoxTreasury is Proxied, IGelatoMetaBoxTreasury {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -113,7 +114,7 @@ contract GelatoMetaBoxTreasury is Proxied, IGelatoMetaBoxTreasury {
     ) external override onlyGelatoPaymentManager {
         require(
             _sponsors.length == _feeTokens.length &&
-                _feeTokens.length == _amounts.length,
+                _feeTokens.length == _fees.length,
             "Array length mismatch"
         );
 
