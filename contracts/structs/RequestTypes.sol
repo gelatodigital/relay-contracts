@@ -2,15 +2,13 @@
 pragma solidity 0.8.11;
 
 struct Request {
-    address from;
-    address[] targets;
-    bytes[] payloads;
-    address feeToken;
-    uint256 maxFee;
-    uint256 nonce;
     uint256 chainId;
+    address target;
+    bytes data;
+    address feeToken;
+    address user;
+    address sponsor; // could be same as user
+    uint256 nonce;
     uint256 deadline;
-    bool isSelfPayingTx;
-    bool isFlashbotsTx;
-    bool[] isTargetEIP2771Compliant;
+    bool isEIP2771;
 }

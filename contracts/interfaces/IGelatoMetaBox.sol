@@ -2,15 +2,10 @@
 pragma solidity 0.8.11;
 import {Request} from "../structs/RequestTypes.sol";
 
-interface IGelatoMultichainRelay {
+interface IGelatoMetaBox {
     function executeRequest(
         Request calldata _req,
-        bytes calldata _signature,
+        bytes calldata _sponsorSignature,
         uint256 _gelatoFee
-    ) external returns (uint256 credit);
-
-    function withdrawTokens(
-        address[] calldata _tokens,
-        address[] calldata _receivers
     ) external;
 }
