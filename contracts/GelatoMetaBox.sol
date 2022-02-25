@@ -68,15 +68,11 @@ contract GelatoMetaBox is Proxied, IGelatoMetaBox {
     /// @param _req Relay request data
     /// @param _userSignature EIP-712 compliant signature from _req.user
     /// @notice   EOA that originates the tx, but does not necessarily pay the relayer
-    /// @param _sponsorSignature EIP-712 compliant signature from _req.sponsor 
-    /// @notice   EOA that will pay for the tx in _req.feeToken. (can be _req.user)
-    /// @dev      _gelatoFee to be accounted off-chain and deducted later on
     /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _req.feeToken
     // solhint-disable-next-line function-max-lines
     function executeRequest(
         Request calldata _req,
         bytes calldata _userSignature,
-        bytes calldata _sponsorSignature,
         uint256 _gelatoFee
     ) external override onlyGelato {
         require(
@@ -89,12 +85,10 @@ contract GelatoMetaBox is Proxied, IGelatoMetaBox {
 
         require(_req.nonce == nonces[_req.user], "Invalid nonce");
 
-        _verifyUserAndSponsorSignatures(
+        _verifyUserSignature(
             _req,
             _userSignature,
-            _sponsorSignature,
-            _req.user,
-            _req.sponsor
+            _req.user
         );
 
         nonces[_req.user] += 1;
@@ -113,12 +107,10 @@ contract GelatoMetaBox is Proxied, IGelatoMetaBox {
         );
     }
 
-    function _verifyUserAndSponsorSignatures(
+    function _verifyUserSignature(
         Request calldata _req,
         bytes calldata _userSignature,
-        bytes calldata _sponsorSignature,
-        address _user,
-        address _sponsor
+        address _user
     ) private view {
         bytes32 digest = keccak256(
             abi.encodePacked(
@@ -130,11 +122,6 @@ contract GelatoMetaBox is Proxied, IGelatoMetaBox {
 
         address signer = ECDSA.recover(digest, _userSignature);
         require(signer == _user, "Invalid user signature");
-
-        if (_user != _sponsor) {
-            signer = ECDSA.recover(digest, _sponsorSignature);
-            require(signer == _sponsor, "Invalid sponsor signature");
-        }
     }
 
     function _abiEncodeRequest(Request calldata _req)
