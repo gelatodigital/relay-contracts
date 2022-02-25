@@ -4,7 +4,6 @@ pragma solidity 0.8.11;
 import {Request} from "./structs/RequestTypes.sol";
 import {NATIVE_TOKEN} from "./constants/Tokens.sol";
 import {IGelatoMetaBox} from "./interfaces/IGelatoMetaBox.sol";
-import {IGelatoMetaBoxTreasury} from "./interfaces/IGelatoMetaBoxTreasury.sol";
 import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
