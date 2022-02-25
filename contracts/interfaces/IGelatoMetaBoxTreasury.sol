@@ -16,10 +16,10 @@ interface IGelatoMetaBoxTreasury {
         uint256 _amount
     ) external;
 
-    function creditOutstandingFees(
+    function debitSponsorBalance(
         address[] calldata _sponsors,
-        address[][] calldata _paymentTokens,
-        uint256[][] calldata _amounts
+        address[][] calldata _feeTokens,
+        uint256[][] calldata _fees
     ) external;
 
     function paymentTokens()

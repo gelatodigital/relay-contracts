@@ -12,7 +12,7 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 /// @title Gelato Meta Box contract
 /// @notice This contract must NEVER hold funds!
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here.
-contract GelatoMetaBox is Proxied, IGelatoMetaBox {
+contract GelatoMetaBox is IGelatoMetaBox, Proxied {
     bytes32 public constant REQUEST_TYPEHASH =
         keccak256(
             bytes(
@@ -28,7 +28,7 @@ contract GelatoMetaBox is Proxied, IGelatoMetaBox {
     uint256 public immutable chainId;
     bytes32 public immutable domainSeparator;
 
-    mapping(address => uint256) public nonces;
+    mapping(address => uint256) public nonce;
 
     event ExecuteRequestSuccess(
         address indexed sponsor,
@@ -83,15 +83,11 @@ contract GelatoMetaBox is Proxied, IGelatoMetaBox {
 
         require(_req.chainId == chainId, "Wrong chainId");
 
-        require(_req.nonce == nonces[_req.user], "Invalid nonce");
+        require(_req.nonce == nonce[_req.user], "Invalid nonce");
 
-        _verifyUserSignature(
-            _req,
-            _userSignature,
-            _req.user
-        );
+        _verifyUserSignature(_req, _userSignature, _req.user);
 
-        nonces[_req.user] += 1;
+        nonce[_req.user]++;
 
         (bool success, ) = _req.target.call(
             _req.isEIP2771 ? abi.encodePacked(_req.data, _req.user) : _req.data
@@ -120,8 +116,14 @@ contract GelatoMetaBox is Proxied, IGelatoMetaBox {
             )
         );
 
-        address signer = ECDSA.recover(digest, _userSignature);
-        require(signer == _user, "Invalid user signature");
+        (address recovered, ECDSA.RecoverError error) = ECDSA.tryRecover(
+            digest,
+            _userSignature
+        );
+        require(
+            error == ECDSA.RecoverError.NoError && recovered == _user,
+            "Invalid user signature"
+        );
     }
 
     function _abiEncodeRequest(Request calldata _req)

@@ -14,8 +14,9 @@ import {
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 // solhint-disable-next-line max-states-count
-contract GelatoMetaBoxTreasury is Proxied, IGelatoMetaBoxTreasury {
+contract GelatoMetaBoxTreasury is IGelatoMetaBoxTreasury, Proxied {
     using EnumerableSet for EnumerableSet.AddressSet;
+    using Transfer for address;
 
     address public immutable gelato;
 
@@ -24,6 +25,13 @@ contract GelatoMetaBoxTreasury is Proxied, IGelatoMetaBoxTreasury {
     mapping(address => mapping(address => uint256)) public sponsorTokenBalance;
 
     EnumerableSet.AddressSet private _paymentTokens;
+
+    event LogDebitSponsorBalance(
+        address indexed sponsor,
+        address indexed feeToken,
+        uint256 fee,
+        uint256 remainingBalance
+    );
 
     modifier onlyGelatoPaymentManager() {
         require(
@@ -52,11 +60,6 @@ contract GelatoMetaBoxTreasury is Proxied, IGelatoMetaBoxTreasury {
     {
         require(_paymentToken != address(0), "Invalid paymentToken address");
 
-        require(
-            !_paymentTokens.contains(_paymentToken),
-            "paymentToken already whitelisted"
-        );
-
         _paymentTokens.add(_paymentToken);
     }
 
@@ -67,20 +70,14 @@ contract GelatoMetaBoxTreasury is Proxied, IGelatoMetaBoxTreasury {
     {
         require(_paymentToken != address(0), "Invalid paymentToken address");
 
-        require(
-            _paymentTokens.contains(_paymentToken),
-            "paymentToken not whitelisted"
-        );
-
         _paymentTokens.remove(_paymentToken);
     }
 
     function depositNative(address _sponsor) external payable override {
-        require(_sponsor.code.length == 0, "Sponsor must be EOA");
         require(msg.value > 0, "Invalid Native token deposit amount");
 
         sponsorNativeBalance[_sponsor] += msg.value;
-        Transfer.transfer(NATIVE_TOKEN, gelato, msg.value);
+        NATIVE_TOKEN.transfer(gelato, msg.value);
     }
 
     function depositToken(
@@ -88,14 +85,7 @@ contract GelatoMetaBoxTreasury is Proxied, IGelatoMetaBoxTreasury {
         address _paymentToken,
         uint256 _amount
     ) external override {
-        require(_sponsor.code.length == 0, "Sponsor must be EOA");
-
         require(_amount > 0, "Invalid deposit amount");
-
-        require(
-            _paymentTokens.contains(_paymentToken),
-            "paymentToken not whitelisted"
-        );
 
         IERC20 paymentToken = IERC20(_paymentToken);
 
@@ -107,7 +97,7 @@ contract GelatoMetaBoxTreasury is Proxied, IGelatoMetaBoxTreasury {
         sponsorTokenBalance[_sponsor][_paymentToken] += amount;
     }
 
-    function creditOutstandingFees(
+    function debitSponsorBalance(
         address[] calldata _sponsors,
         address[][] calldata _feeTokens,
         uint256[][] calldata _fees
@@ -120,16 +110,27 @@ contract GelatoMetaBoxTreasury is Proxied, IGelatoMetaBoxTreasury {
 
         for (uint256 i; i < _sponsors.length; i++) {
             address sponsor = _sponsors[i];
-            address[] memory tokens = _feeTokens[i];
+            address[] memory feeTokens = _feeTokens[i];
 
-            for (uint256 j; j < tokens.length; j++) {
-                address token = tokens[j];
+            for (uint256 j; j < feeTokens.length; j++) {
+                address feeToken = feeTokens[j];
+                uint256 fee = _fees[i][j];
 
-                if (token == NATIVE_TOKEN) {
-                    sponsorNativeBalance[sponsor] -= _fees[i][j];
+                uint256 remainingBalance;
+                if (feeToken == NATIVE_TOKEN) {
+                    sponsorNativeBalance[sponsor] -= fee;
+                    remainingBalance = sponsorNativeBalance[sponsor];
                 } else {
-                    sponsorTokenBalance[sponsor][token] -= _fees[i][j];
+                    sponsorTokenBalance[sponsor][feeToken] -= fee;
+                    remainingBalance = sponsorTokenBalance[sponsor][feeToken];
                 }
+
+                emit LogDebitSponsorBalance(
+                    sponsor,
+                    feeToken,
+                    fee,
+                    remainingBalance
+                );
             }
         }
     }
