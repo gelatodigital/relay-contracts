@@ -5,7 +5,7 @@ import {Request} from "../structs/RequestTypes.sol";
 interface IGelatoMetaBox {
     function executeRequest(
         Request calldata _req,
-        bytes calldata _sponsorSignature,
+        bytes calldata _userSignature,
         uint256 _gelatoFee
     ) external;
 }
