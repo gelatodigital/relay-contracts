@@ -25,7 +25,6 @@ contract GelatoMetaBox is IGelatoMetaBox, Proxied {
 
     address public immutable gelato;
     uint256 public immutable chainId;
-    bytes32 public immutable domainSeparator;
 
     mapping(address => uint256) public nonce;
 
@@ -52,16 +51,6 @@ contract GelatoMetaBox is IGelatoMetaBox, Proxied {
         }
 
         chainId = _chainId;
-
-        domainSeparator = keccak256(
-            abi.encode(
-                keccak256(bytes(EIP712_DOMAIN_TYPE)),
-                keccak256(bytes("GelatoMetaBox")),
-                keccak256(bytes("V1")),
-                bytes32(chainId),
-                address(this)
-            )
-        );
     }
 
     /// @param _req Relay request data
@@ -107,6 +96,16 @@ contract GelatoMetaBox is IGelatoMetaBox, Proxied {
         bytes calldata _userSignature,
         address _user
     ) private view {
+        bytes32 domainSeparator = keccak256(
+            abi.encode(
+                keccak256(bytes(EIP712_DOMAIN_TYPE)),
+                keccak256(bytes("GelatoMetaBox")),
+                keccak256(bytes("V1")),
+                bytes32(chainId),
+                address(this)
+            )
+        );
+
         bytes32 digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
