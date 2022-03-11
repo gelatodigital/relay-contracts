@@ -47,6 +47,11 @@ const config: HardhatUserConfig = {
       chainId: 1,
       url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
+    mumbai: {
+      accounts: PK ? [PK] : [],
+      chainId: 80001,
+      url: "https://rpc-mumbai.maticvigil.com/",
+    },
   },
 
   etherscan: {

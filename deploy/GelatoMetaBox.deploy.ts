@@ -5,7 +5,11 @@ import { sleep } from "../src/utils";
 import { getAddresses } from "../src/addresses";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
-  if (hre.network.name === "mainnet" || hre.network.name === "goerli") {
+  if (
+    hre.network.name === "mainnet" ||
+    hre.network.name === "goerli" ||
+    hre.network.name === "mumbai"
+  ) {
     console.log(
       `Deploying GelatoMetaBox to ${hre.network.name}. Hit ctrl + c to abort`
     );
@@ -31,7 +35,9 @@ export default func;
 
 /*func.skip = async (hre: HardhatRuntimeEnvironment) => {
   const shouldSkip =
-    hre.network.name === "mainnet" || hre.network.name === "goerli";
+    hre.network.name === "mainnet" ||
+    hre.network.name === "goerli" ||
+    hre.network.name === "mumbai";
   return shouldSkip ? true : false;
 };*/
 func.tags = ["GelatoMetaBox"];
