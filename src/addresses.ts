@@ -36,6 +36,13 @@ export const getAddresses = (network: string): Addresses => {
         WETH: "0x60D4dB9b534EF9260a88b0BED6c486fe13E604Fc",
         DAI: "0x11fE4B6AE13d2a6055C8D9cF65c55bac32B5d844",
       };
+    case "matic":
+      return {
+        Gelato: "0x7598e84B2E114AB62CAB288CE5f7d5f6bad35BbA",
+        OracleAggregator: "",
+        WETH: "",
+        DAI: "",
+      };
     case "mumbai":
       return {
         Gelato: "0x25aD59adbe00C2d80c86d01e2E05e1294DA84823",

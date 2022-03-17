@@ -8,6 +8,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   if (
     hre.network.name === "mainnet" ||
     hre.network.name === "goerli" ||
+    hre.network.name === "matic" ||
     hre.network.name === "mumbai"
   ) {
     console.log(
@@ -37,6 +38,7 @@ func.skip = async (hre: HardhatRuntimeEnvironment) => {
   const shouldSkip =
     hre.network.name === "mainnet" ||
     hre.network.name === "goerli" ||
+    hre.network.name === "matic" ||
     hre.network.name === "mumbai";
   return shouldSkip ? true : false;
 };

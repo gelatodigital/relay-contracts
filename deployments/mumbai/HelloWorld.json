@@ -1,0 +1,142 @@
+{
+  "address": "0x3F9BBfb21E666914a5ab195C1CE02c4365A85aA5",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_gelatoMetaBox",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "feeToken",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "message",
+          "type": "string"
+        }
+      ],
+      "name": "Success",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "forwarder",
+          "type": "address"
+        }
+      ],
+      "name": "isTrustedForwarder",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_feeToken",
+          "type": "address"
+        }
+      ],
+      "name": "sayHi",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xb713df7108bd23b70e9dd2a46c51ddf3e24efdf11d5f30f6bfc01401cd24157c",
+  "receipt": {
+    "to": null,
+    "from": "0x3BEC8d1f7Bcb11F9c5cdF56E0d72a26040B2338F",
+    "contractAddress": "0x3F9BBfb21E666914a5ab195C1CE02c4365A85aA5",
+    "transactionIndex": 4,
+    "gasUsed": "211896",
+    "logsBloom": "0x00000000000000020000000000000000000001020000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000800000000000000000000100000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000200000200000000020000000000000000001000000000000000000000000004000000000000000000001000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000100000",
+    "blockHash": "0x3370068378390456b60f32579fe178927858ae598518bf0738c3875c8da3a447",
+    "transactionHash": "0xb713df7108bd23b70e9dd2a46c51ddf3e24efdf11d5f30f6bfc01401cd24157c",
+    "logs": [
+      {
+        "transactionIndex": 4,
+        "blockNumber": 25523023,
+        "transactionHash": "0xb713df7108bd23b70e9dd2a46c51ddf3e24efdf11d5f30f6bfc01401cd24157c",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x0000000000000000000000003bec8d1f7bcb11f9c5cdf56e0d72a26040b2338f",
+          "0x000000000000000000000000c26880a0af2ea0c7e8130e6ec47af756465452e8"
+        ],
+        "data": "0x000000000000000000000000000000000000000000000000000f028411485408000000000000000000000000000000000000000000000000053b5659cbeffda40000000000000000000000000000000000000000000007dc9ea010fad14c0b20000000000000000000000000000000000000000000000000052c53d5baa7a99c0000000000000000000000000000000000000000000007dc9eaf137ee2945f28",
+        "logIndex": 105,
+        "blockHash": "0x3370068378390456b60f32579fe178927858ae598518bf0738c3875c8da3a447"
+      }
+    ],
+    "blockNumber": 25523023,
+    "cumulativeGasUsed": "3653314",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0xeeea839E2435873adA11d5dD4CAE6032742C0445"
+  ],
+  "solcInputHash": "f14659bd62e80f3835c66fef3dcd9b49",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.11+commit.d7f03943\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_gelatoMetaBox\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"feeToken\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"message\",\"type\":\"string\"}],\"name\":\"Success\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"forwarder\",\"type\":\"address\"}],\"name\":\"isTrustedForwarder\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_feeToken\",\"type\":\"address\"}],\"name\":\"sayHi\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"title\":\"HelloWorld with meta transaction support (EIP-2771)\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/HelloWorld.sol\":\"HelloWorld\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200000},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/metatx/ERC2771Context.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts v4.4.1 (metatx/ERC2771Context.sol)\\n\\npragma solidity ^0.8.0;\\n\\nimport \\\"../utils/Context.sol\\\";\\n\\n/**\\n * @dev Context variant with ERC2771 support.\\n */\\nabstract contract ERC2771Context is Context {\\n    address private _trustedForwarder;\\n\\n    constructor(address trustedForwarder) {\\n        _trustedForwarder = trustedForwarder;\\n    }\\n\\n    function isTrustedForwarder(address forwarder) public view virtual returns (bool) {\\n        return forwarder == _trustedForwarder;\\n    }\\n\\n    function _msgSender() internal view virtual override returns (address sender) {\\n        if (isTrustedForwarder(msg.sender)) {\\n            // The assembly code is more direct than the Solidity version using `abi.decode`.\\n            assembly {\\n                sender := shr(96, calldataload(sub(calldatasize(), 20)))\\n            }\\n        } else {\\n            return super._msgSender();\\n        }\\n    }\\n\\n    function _msgData() internal view virtual override returns (bytes calldata) {\\n        if (isTrustedForwarder(msg.sender)) {\\n            return msg.data[:msg.data.length - 20];\\n        } else {\\n            return super._msgData();\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x0007d8834ec216ca7726e9c32053f8d1f230fba3539ba52a9ce057ec32481cc8\",\"license\":\"MIT\"},\"@openzeppelin/contracts/utils/Context.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts v4.4.1 (utils/Context.sol)\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev Provides information about the current execution context, including the\\n * sender of the transaction and its data. While these are generally available\\n * via msg.sender and msg.data, they should not be accessed in such a direct\\n * manner, since when dealing with meta-transactions the account sending and\\n * paying for execution may not be the actual sender (as far as an application\\n * is concerned).\\n *\\n * This contract is only required for intermediate, library-like contracts.\\n */\\nabstract contract Context {\\n    function _msgSender() internal view virtual returns (address) {\\n        return msg.sender;\\n    }\\n\\n    function _msgData() internal view virtual returns (bytes calldata) {\\n        return msg.data;\\n    }\\n}\\n\",\"keccak256\":\"0xe2e337e6dde9ef6b680e07338c493ebea1b5fd09b43424112868e9cc1706bca7\",\"license\":\"MIT\"},\"contracts/HelloWorld.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.11;\\n\\nimport {ERC2771Context} from \\\"@openzeppelin/contracts/metatx/ERC2771Context.sol\\\";\\n\\n/// @title HelloWorld with meta transaction support (EIP-2771)\\ncontract HelloWorld is ERC2771Context {\\n    event Success(\\n        address indexed user,\\n        address indexed feeToken,\\n        string message\\n    );\\n    // solhint-disable-next-line no-empty-blocks\\n    constructor(address _gelatoMetaBox) ERC2771Context(_gelatoMetaBox) {\\n    }\\n\\n    function sayHi(\\n        address _feeToken\\n    ) external {\\n        string memory message = \\\"Hello World!\\\";\\n\\n        emit Success(\\n            _msgSender(),\\n            _feeToken,\\n            message\\n        );\\n    }\\n\\n}\",\"keccak256\":\"0xc55a6bd8fd001277961b45fefed721d2707a650b196684d67978507641ef04a4\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5060405161030138038061030183398101604081905261002f91610054565b600080546001600160a01b0319166001600160a01b0392909216919091179055610084565b60006020828403121561006657600080fd5b81516001600160a01b038116811461007d57600080fd5b9392505050565b61026e806100936000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80634c6d26271461003b578063572b6c0514610050575b600080fd5b61004e610049366004610188565b610093565b005b61007f61005e366004610188565b60005473ffffffffffffffffffffffffffffffffffffffff91821691161490565b604051901515815260200160405180910390f35b60408051808201909152600c81527f48656c6c6f20576f726c64210000000000000000000000000000000000000000602082015273ffffffffffffffffffffffffffffffffffffffff82166100e6610137565b73ffffffffffffffffffffffffffffffffffffffff167f250bf4b2488bf4c0d40c5698ffbdd9538361bf0c1d6a7ac473e87b55dd8030fd8360405161012b91906101c5565b60405180910390a35050565b6000805473ffffffffffffffffffffffffffffffffffffffff1633141561018357507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffec36013560601c90565b503390565b60006020828403121561019a57600080fd5b813573ffffffffffffffffffffffffffffffffffffffff811681146101be57600080fd5b9392505050565b600060208083528351808285015260005b818110156101f2578581018301518582016040015282016101d6565b81811115610204576000604083870101525b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe01692909201604001939250505056fea264697066735822122037be0cfc0857e6754837297bd91849874ba771c3e773fef53a64810860b1f6f764736f6c634300080b0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c80634c6d26271461003b578063572b6c0514610050575b600080fd5b61004e610049366004610188565b610093565b005b61007f61005e366004610188565b60005473ffffffffffffffffffffffffffffffffffffffff91821691161490565b604051901515815260200160405180910390f35b60408051808201909152600c81527f48656c6c6f20576f726c64210000000000000000000000000000000000000000602082015273ffffffffffffffffffffffffffffffffffffffff82166100e6610137565b73ffffffffffffffffffffffffffffffffffffffff167f250bf4b2488bf4c0d40c5698ffbdd9538361bf0c1d6a7ac473e87b55dd8030fd8360405161012b91906101c5565b60405180910390a35050565b6000805473ffffffffffffffffffffffffffffffffffffffff1633141561018357507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffec36013560601c90565b503390565b60006020828403121561019a57600080fd5b813573ffffffffffffffffffffffffffffffffffffffff811681146101be57600080fd5b9392505050565b600060208083528351808285015260005b818110156101f2578581018301518582016040015282016101d6565b81811115610204576000604083870101525b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe01692909201604001939250505056fea264697066735822122037be0cfc0857e6754837297bd91849874ba771c3e773fef53a64810860b1f6f764736f6c634300080b0033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "title": "HelloWorld with meta transaction support (EIP-2771)",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 7,
+        "contract": "contracts/HelloWorld.sol:HelloWorld",
+        "label": "_trustedForwarder",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      }
+    }
+  }
+}
