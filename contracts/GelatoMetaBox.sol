@@ -27,6 +27,7 @@ contract GelatoMetaBox is IGelatoMetaBox, Proxied {
     uint256 public immutable chainId;
 
     mapping(address => uint256) public nonce;
+    mapping(bytes32 => bool) public isTaskIdProcessed;
 
     event ExecuteRequestSuccess(
         address indexed sponsor,
@@ -71,16 +72,18 @@ contract GelatoMetaBox is IGelatoMetaBox, Proxied {
 
         require(_req.chainId == chainId, "Wrong chainId");
 
-        require(_req.nonce == nonce[_req.user], "Invalid nonce");
-
-        _verifyUserSignature(_req, _userSignature, _req.user);
+        bytes32 taskId = _verifyUserSignature(_req, _userSignature);
+        require(!isTaskIdProcessed[taskId], "Task already processed");
 
         nonce[_req.user]++;
 
+        require(_isContract(_req.target), "Cannot call EOA");
         (bool success, ) = _req.target.call(
             _req.isEIP2771 ? abi.encodePacked(_req.data, _req.user) : _req.data
         );
-        require(success, "Request call failed");
+       require(success, "Request call failed"); 
+
+        isTaskIdProcessed[taskId] = true;
 
         emit ExecuteRequestSuccess(
             _req.sponsor,
@@ -91,11 +94,14 @@ contract GelatoMetaBox is IGelatoMetaBox, Proxied {
         );
     }
 
+    function _isContract(address _account) private view returns (bool) {
+        return _account.code.length > 0;
+    }
+
     function _verifyUserSignature(
         Request calldata _req,
-        bytes calldata _userSignature,
-        address _user
-    ) private view {
+        bytes calldata _userSignature
+    ) private view returns (bytes32) {
         bytes32 domainSeparator = keccak256(
             abi.encode(
                 keccak256(bytes(EIP712_DOMAIN_TYPE)),
@@ -119,9 +125,11 @@ contract GelatoMetaBox is IGelatoMetaBox, Proxied {
             _userSignature
         );
         require(
-            error == ECDSA.RecoverError.NoError && recovered == _user,
+            error == ECDSA.RecoverError.NoError && recovered == _req.user,
             "Invalid user signature"
         );
+
+        return digest;
     }
 
     function _abiEncodeRequest(Request calldata _req)
