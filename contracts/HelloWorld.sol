@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.11;
+pragma solidity 0.8.13;
 
-import {ERC2771Context} from "@openzeppelin/contracts/metatx/ERC2771Context.sol";
+import {
+    ERC2771Context
+} from "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 
 /// @title HelloWorld with meta transaction support (EIP-2771)
 contract HelloWorld is ERC2771Context {
@@ -10,20 +12,13 @@ contract HelloWorld is ERC2771Context {
         address indexed feeToken,
         string message
     );
-    // solhint-disable-next-line no-empty-blocks
-    constructor(address _gelatoMetaBox) ERC2771Context(_gelatoMetaBox) {
-    }
 
-    function sayHi(
-        address _feeToken
-    ) external {
+    // solhint-disable-next-line no-empty-blocks
+    constructor(address _gelatoMetaBox) ERC2771Context(_gelatoMetaBox) {}
+
+    function sayHi(address _feeToken) external {
         string memory message = "Hello World!";
 
-        emit Success(
-            _msgSender(),
-            _feeToken,
-            message
-        );
+        emit Success(_msgSender(), _feeToken, message);
     }
-
 }

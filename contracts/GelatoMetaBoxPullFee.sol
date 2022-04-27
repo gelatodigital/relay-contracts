@@ -1,37 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import {MetaTxRequest, ForwardedRequest} from "./structs/RequestTypes.sol";
-import {NATIVE_TOKEN} from "./constants/Tokens.sol";
 import {GelatoMetaBoxBase} from "./base/GelatoMetaBoxBase.sol";
-import {IGelatoMetaBox} from "./interfaces/IGelatoMetaBox.sol";
-import {GelatoCallUtils} from "./gelato/GelatoCallUtils.sol";
+import {NATIVE_TOKEN} from "./constants/Tokens.sol";
+import {MetaTxRequest} from "./structs/RequestTypes.sol";
 import {GelatoTokenUtils} from "./gelato/GelatoTokenUtils.sol";
-import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-/// @title Gelato Meta Box contract
-/// @notice This contract must NEVER hold funds!
-/// @dev    Maliciously crafted transaction payloads could wipe out any funds left here.
-contract GelatoMetaBox is GelatoMetaBoxBase, Proxied {
+contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
     address public immutable gelato;
     uint256 public immutable chainId;
 
     mapping(address => uint256) public nonce;
+    mapping(address => bool) public whitelistedDest;
 
-    event LogMetaTxRequestAsyncGasTankFee(
-        address indexed sponsor,
-        address indexed user,
-        address indexed target,
-        address feeToken,
-        uint256 fee,
-        bytes32 taskId
-    );
-
-    event LogMetaTxRequestSyncGasTankFee(
+    event LogMetaTxRequestPullFee(
         address indexed sponsor,
         address indexed user,
         address indexed target,
@@ -45,7 +33,7 @@ contract GelatoMetaBox is GelatoMetaBoxBase, Proxied {
         _;
     }
 
-    constructor(address _gelato) {
+    constructor(address _gelato) Ownable() Pausable() {
         gelato = _gelato;
 
         uint256 _chainId;
@@ -57,19 +45,40 @@ contract GelatoMetaBox is GelatoMetaBoxBase, Proxied {
         chainId = _chainId;
     }
 
-    /// @notice Relay request + async Gas Tank payment deductions (off-chain accounting)
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
+    function whitelistDest(address _dest) external onlyOwner {
+        require(
+            !whitelistedDest[_dest],
+            "Destination address already whitelisted"
+        );
+        whitelistedDest[_dest] = true;
+    }
+
+    /// @notice Relay meta tx request + pull fee from (transferFrom) _req.sponsor's address
+    /// @dev    Assumes that _req.sponsor has approved this contract to spend _req.feeToken
     /// @param _req Relay request data
     /// @param _userSignature EIP-712 compliant signature from _req.user
     /// @param _sponsorSignature EIP-712 compliant signature from _req.sponsor
     ///                          (can be same as _userSignature)
     /// @notice   EOA that originates the tx, but does not necessarily pay the relayer
     /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _req.feeToken
+    /// @param _minGelatoFee Minimum fee relayer expects to receive.
+    /// @notice Handles the case of tokens with fee on transfer
+    /// @param _taskId Gelato task id
     // solhint-disable-next-line function-max-lines
-    function metaTxRequestGasTankFee(
+    function metaTxRequestPullFee(
         MetaTxRequest calldata _req,
         bytes calldata _userSignature,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
+        uint256 _minGelatoFee,
         bytes32 _taskId
     ) external onlyGelato {
         require(
@@ -80,9 +89,13 @@ contract GelatoMetaBox is GelatoMetaBoxBase, Proxied {
 
         require(_req.chainId == chainId, "Wrong chainId");
 
+        require(_req.paymentType == 3, "paymentType must be 3");
+
+        require(whitelistedDest[_req.target], "target address not whitelisted");
+
         require(
-            _req.paymentType == 1 || _req.paymentType == 2,
-            "paymentType must be 1 or 2"
+            _req.feeToken != NATIVE_TOKEN,
+            "Native token not supported for paymentType 3"
         );
 
         require(_gelatoFee <= _req.maxFee, "Executor over-charged");
@@ -102,32 +115,39 @@ contract GelatoMetaBox is GelatoMetaBoxBase, Proxied {
             );
         }
 
-        require(_isContract(_req.target), "Cannot call EOA");
-        (bool success, ) = _req.target.call(
-            _req.isEIP2771 ? abi.encodePacked(_req.data, _req.user) : _req.data
-        );
-        require(success, "External call failed");
-
-        if (_req.paymentType == 1) {
-            emit LogMetaTxRequestAsyncGasTankFee(
-                _req.sponsor,
-                _req.user,
-                _req.target,
-                _req.feeToken,
-                _gelatoFee,
-                _taskId
+        {
+            require(_isContract(_req.target), "Cannot call EOA");
+            (bool success, ) = _req.target.call(
+                _req.isEIP2771
+                    ? abi.encodePacked(_req.data, _req.user)
+                    : _req.data
             );
-        } else {
-            // TODO: deduct balance from GasTank
-            emit LogMetaTxRequestSyncGasTankFee(
-                _req.sponsor,
-                _req.user,
-                _req.target,
-                _req.feeToken,
-                _gelatoFee,
-                _taskId
-            );
+            require(success, "External call failed");
         }
+
+        uint256 preBalance = GelatoTokenUtils.getBalance(_req.feeToken, gelato);
+        SafeERC20.safeTransferFrom(
+            IERC20(_req.feeToken),
+            _req.sponsor,
+            gelato,
+            _gelatoFee
+        );
+        uint256 postBalance = GelatoTokenUtils.getBalance(
+            _req.feeToken,
+            gelato
+        );
+
+        uint256 fee = postBalance - preBalance;
+        require(fee >= _minGelatoFee, "Insufficient fee");
+
+        emit LogMetaTxRequestPullFee(
+            _req.sponsor,
+            _req.user,
+            _req.target,
+            _req.feeToken,
+            fee,
+            _taskId
+        );
     }
 
     function getDomainSeparator() public view returns (bytes32) {
