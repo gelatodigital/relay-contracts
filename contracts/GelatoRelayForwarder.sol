@@ -39,6 +39,7 @@ contract GelatoRelayForwarder is
     event LogForwardedRequestAsyncGasTankFee(
         address indexed sponsor,
         address indexed target,
+        uint256 sponsorChainId,
         address feeToken,
         uint256 fee,
         bytes32 taskId
@@ -142,6 +143,7 @@ contract GelatoRelayForwarder is
             emit LogForwardedRequestAsyncGasTankFee(
                 _req.sponsor,
                 _req.target,
+                _req.sponsorChainId == 0 ? chainId : _req.sponsorChainId,
                 _req.feeToken,
                 _gelatoFee,
                 _taskId

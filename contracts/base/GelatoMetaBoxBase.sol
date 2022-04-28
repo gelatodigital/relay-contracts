@@ -9,7 +9,7 @@ abstract contract GelatoMetaBoxBase {
         keccak256(
             bytes(
                 // solhint-disable-next-line max-line-length
-                "MetaTxRequest(uint256 chainId,address target,bytes data,address feeToken,uint256 paymentType,uint256 maxFee,address user,address sponsor,uint256 nonce,uint256 deadline,bool isEIP2771)"
+                "MetaTxRequest(uint256 chainId,address target,bytes data,address feeToken,uint256 paymentType,uint256 maxFee,address user,address sponsor,uint256 sponsorChainId,uint256 nonce,uint256 deadline,bool isEIP2771)"
             )
         );
     // solhint-disable-next-line max-line-length
@@ -77,6 +77,7 @@ abstract contract GelatoMetaBoxBase {
             _req.maxFee,
             _req.user,
             _req.sponsor,
+            _req.sponsorChainId,
             _req.nonce,
             _req.deadline,
             _req.isEIP2771
