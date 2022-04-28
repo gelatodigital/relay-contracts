@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
-import {ForwardedRequest, MetaTxRequest} from "../structs/RequestTypes.sol";
+import {ForwardRequest, MetaTxRequest} from "../structs/RequestTypes.sol";
 
 interface IGelatoMetaBox {
     function forwardedRequestGasTankFee(
-        ForwardedRequest calldata _req,
+        ForwardRequest calldata _req,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
         bytes32 _taskId

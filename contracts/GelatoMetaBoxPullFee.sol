@@ -11,13 +11,18 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {
+    EnumerableSet
+} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
+    using EnumerableSet for EnumerableSet.AddressSet;
+
     address public immutable gelato;
     uint256 public immutable chainId;
 
     mapping(address => uint256) public nonce;
-    mapping(address => bool) public whitelistedDest;
+    EnumerableSet.AddressSet private _whitelistedDest;
 
     event LogMetaTxRequestPullFee(
         address indexed sponsor,
@@ -55,10 +60,20 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
 
     function whitelistDest(address _dest) external onlyOwner {
         require(
-            !whitelistedDest[_dest],
+            !_whitelistedDest.contains(_dest),
             "Destination address already whitelisted"
         );
-        whitelistedDest[_dest] = true;
+
+        _whitelistedDest.add(_dest);
+    }
+
+    function delistDest(address _dest) external onlyOwner {
+        require(
+            _whitelistedDest.contains(_dest),
+            "Destination address not whitelisted"
+        );
+
+        _whitelistedDest.remove(_dest);
     }
 
     /// @notice Relay meta tx request + pull fee from (transferFrom) _req.sponsor's address
@@ -69,7 +84,6 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
     ///                          (can be same as _userSignature)
     /// @notice   EOA that originates the tx, but does not necessarily pay the relayer
     /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _req.feeToken
-    /// @param _minGelatoFee Minimum fee relayer expects to receive.
     /// @notice Handles the case of tokens with fee on transfer
     /// @param _taskId Gelato task id
     // solhint-disable-next-line function-max-lines
@@ -78,7 +92,6 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
         bytes calldata _userSignature,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
-        uint256 _minGelatoFee,
         bytes32 _taskId
     ) external onlyGelato {
         require(
@@ -91,7 +104,10 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
 
         require(_req.paymentType == 3, "paymentType must be 3");
 
-        require(whitelistedDest[_req.target], "target address not whitelisted");
+        require(
+            _whitelistedDest.contains(_req.target),
+            "target address not whitelisted"
+        );
 
         require(
             _req.feeToken != NATIVE_TOKEN,
@@ -125,29 +141,32 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
             require(success, "External call failed");
         }
 
-        uint256 preBalance = GelatoTokenUtils.getBalance(_req.feeToken, gelato);
         SafeERC20.safeTransferFrom(
             IERC20(_req.feeToken),
             _req.sponsor,
             gelato,
             _gelatoFee
         );
-        uint256 postBalance = GelatoTokenUtils.getBalance(
-            _req.feeToken,
-            gelato
-        );
-
-        uint256 fee = postBalance - preBalance;
-        require(fee >= _minGelatoFee, "Insufficient fee");
 
         emit LogMetaTxRequestPullFee(
             _req.sponsor,
             _req.user,
             _req.target,
             _req.feeToken,
-            fee,
+            _gelatoFee,
             _taskId
         );
+    }
+
+    function getWhitelistedDest() external view returns (address[] memory) {
+        uint256 length = _whitelistedDest.length();
+        address[] memory addresses = new address[](length);
+
+        for (uint256 i; i < length; i++) {
+            addresses[i] = _whitelistedDest.at(i);
+        }
+
+        return addresses;
     }
 
     function getDomainSeparator() public view returns (bytes32) {

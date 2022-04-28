@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import {ForwardedRequest} from "./structs/RequestTypes.sol";
+import {ForwardRequest} from "./structs/RequestTypes.sol";
 import {GelatoRelayForwarderBase} from "./base/GelatoRelayForwarderBase.sol";
 import {GelatoCallUtils} from "./gelato/GelatoCallUtils.sol";
 import {GelatoTokenUtils} from "./gelato/GelatoTokenUtils.sol";
@@ -10,16 +10,24 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {
+    OwnableUpgradeable
+} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 /// @title Gelato Relay Forwarder contract
 /// @notice This contract must NEVER hold funds!
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here.
-contract GelatoRelayForwarder is Proxied, GelatoRelayForwarderBase {
+contract GelatoRelayForwarder is
+    Proxied,
+    OwnableUpgradeable,
+    GelatoRelayForwarderBase
+{
     address public immutable gelato;
     uint256 public immutable chainId;
 
     mapping(address => uint256) public nonce;
+    address public gasTank;
 
     event LogForwardedCallSyncFee(
         address indexed target,
@@ -31,7 +39,6 @@ contract GelatoRelayForwarder is Proxied, GelatoRelayForwarderBase {
     event LogForwardedRequestAsyncGasTankFee(
         address indexed sponsor,
         address indexed target,
-        bool indexed hasSponsorSignature,
         address feeToken,
         uint256 fee,
         bytes32 taskId
@@ -40,11 +47,12 @@ contract GelatoRelayForwarder is Proxied, GelatoRelayForwarderBase {
     event LogForwardedRequestSyncGasTankFee(
         address indexed sponsor,
         address indexed target,
-        bool indexed hasSponsorSignature,
         address feeToken,
         uint256 fee,
         bytes32 taskId
     );
+
+    event LogSetGasTank(address oldGasTank, address newGasTank);
 
     modifier onlyGelato() {
         require(msg.sender == gelato, "Only callable by gelato");
@@ -63,6 +71,18 @@ contract GelatoRelayForwarder is Proxied, GelatoRelayForwarderBase {
         chainId = _chainId;
     }
 
+    function init() external {
+        __Ownable_init();
+    }
+
+    function setGasTank(address _gasTank) external onlyOwner {
+        require(_gasTank != address(0), "Invalid gasTank address");
+
+        emit LogSetGasTank(gasTank, _gasTank);
+
+        gasTank = _gasTank;
+    }
+
     function forwardedCallSyncFee(
         address _target,
         bytes calldata _data,
@@ -74,6 +94,7 @@ contract GelatoRelayForwarder is Proxied, GelatoRelayForwarderBase {
             _feeToken,
             address(this)
         );
+        require(_target != gasTank, "target address cannot be gasTank");
         GelatoCallUtils.safeExternalCall(_target, _data);
         uint256 postBalance = GelatoTokenUtils.getBalance(
             _feeToken,
@@ -89,7 +110,7 @@ contract GelatoRelayForwarder is Proxied, GelatoRelayForwarderBase {
 
     // solhint-disable-next-line function-max-lines
     function forwardedRequestGasTankFee(
-        ForwardedRequest calldata _req,
+        ForwardRequest calldata _req,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
         bytes32 _taskId
@@ -102,27 +123,18 @@ contract GelatoRelayForwarder is Proxied, GelatoRelayForwarderBase {
         );
 
         require(_gelatoFee <= _req.maxFee, "Executor over-charged");
-        // When sponsor is also dApp user, it is detrimental UX to require two signatures
-        // Hence we leave it as optional
-        bool hasSponsorSignature = keccak256(_sponsorSignature) !=
-            keccak256(new bytes(0));
 
-        if (hasSponsorSignature) {
-            // Verify and increment sponsor's nonce
-            // We assume that all security is enforced on _req.target address,
-            // hence we allow the sponsor to submit multiple transactions concurrently
-            // In case one reverts, it won't stop the others from being executed
-            uint256 sponsorNonce = nonce[_req.sponsor];
-            require(_req.nonce >= sponsorNonce, "Task already executed");
-            nonce[_req.sponsor] = sponsorNonce + 1;
+        // Verify and increment sponsor's nonce
+        // We assume that all security is enforced on _req.target address,
+        // hence we allow the sponsor to submit multiple transactions concurrently
+        // In case one reverts, it won't stop the following ones from being executed
+        uint256 sponsorNonce = nonce[_req.sponsor];
+        require(_req.nonce >= sponsorNonce, "Task already executed");
+        nonce[_req.sponsor] = sponsorNonce + 1;
 
-            _verifyForwardedRequestSignature(
-                _req,
-                _sponsorSignature,
-                _req.sponsor
-            );
-        }
-        // TODO: Require that _req.target != gas tank
+        _verifyForwardedRequestSignature(_req, _sponsorSignature, _req.sponsor);
+
+        require(_req.target != gasTank, "target address cannot be gasTank");
         GelatoCallUtils.safeExternalCall(_req.target, _req.data);
 
         if (_req.paymentType == 1) {
@@ -130,7 +142,6 @@ contract GelatoRelayForwarder is Proxied, GelatoRelayForwarderBase {
             emit LogForwardedRequestAsyncGasTankFee(
                 _req.sponsor,
                 _req.target,
-                hasSponsorSignature,
                 _req.feeToken,
                 _gelatoFee,
                 _taskId
@@ -141,7 +152,6 @@ contract GelatoRelayForwarder is Proxied, GelatoRelayForwarderBase {
             emit LogForwardedRequestSyncGasTankFee(
                 _req.sponsor,
                 _req.target,
-                hasSponsorSignature,
                 _req.feeToken,
                 _gelatoFee,
                 _taskId

@@ -13,6 +13,7 @@ struct MetaTxRequest {
     uint256 maxFee;
     address user;
     address sponsor; // could be same as user
+    uint256 sponsorChainId;
     uint256 nonce;
     uint256 deadline;
     bool isEIP2771;
@@ -20,7 +21,7 @@ struct MetaTxRequest {
 
 // Similar to MetaTxRequest, but no need to implement user-specific signature verification logic
 // Only sponsor signature is verified in order to ensure integrity of fee payments
-struct ForwardedRequest {
+struct ForwardRequest {
     uint256 chainId;
     address target;
     bytes data;
@@ -28,5 +29,6 @@ struct ForwardedRequest {
     uint256 paymentType;
     uint256 maxFee;
     address sponsor;
+    uint256 sponsorChainId;
     uint256 nonce;
 }

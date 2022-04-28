@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import {MetaTxRequest, ForwardedRequest} from "./structs/RequestTypes.sol";
+import {MetaTxRequest} from "./structs/RequestTypes.sol";
 import {NATIVE_TOKEN} from "./constants/Tokens.sol";
 import {GelatoMetaBoxBase} from "./base/GelatoMetaBoxBase.sol";
-import {IGelatoMetaBox} from "./interfaces/IGelatoMetaBox.sol";
 import {GelatoCallUtils} from "./gelato/GelatoCallUtils.sol";
 import {GelatoTokenUtils} from "./gelato/GelatoTokenUtils.sol";
 import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
@@ -12,20 +11,25 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {
+    OwnableUpgradeable
+} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /// @title Gelato Meta Box contract
 /// @notice This contract must NEVER hold funds!
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here.
-contract GelatoMetaBox is GelatoMetaBoxBase, Proxied {
+contract GelatoMetaBox is GelatoMetaBoxBase, Proxied, OwnableUpgradeable {
     address public immutable gelato;
     uint256 public immutable chainId;
 
     mapping(address => uint256) public nonce;
+    address public gasTank;
 
     event LogMetaTxRequestAsyncGasTankFee(
         address indexed sponsor,
         address indexed user,
         address indexed target,
+        uint256 sponsorChainId,
         address feeToken,
         uint256 fee,
         bytes32 taskId
@@ -39,6 +43,8 @@ contract GelatoMetaBox is GelatoMetaBoxBase, Proxied {
         uint256 fee,
         bytes32 taskId
     );
+
+    event LogSetGasTank(address oldGasTank, address newGasTank);
 
     modifier onlyGelato() {
         require(msg.sender == gelato, "Only callable by gelato");
@@ -55,6 +61,18 @@ contract GelatoMetaBox is GelatoMetaBoxBase, Proxied {
         }
 
         chainId = _chainId;
+    }
+
+    function init() external {
+        __Ownable_init();
+    }
+
+    function setGasTank(address _gasTank) external onlyOwner {
+        require(_gasTank != address(0), "Invalid gasTank address");
+
+        emit LogSetGasTank(gasTank, _gasTank);
+
+        gasTank = _gasTank;
     }
 
     /// @notice Relay request + async Gas Tank payment deductions (off-chain accounting)
@@ -113,6 +131,7 @@ contract GelatoMetaBox is GelatoMetaBoxBase, Proxied {
                 _req.sponsor,
                 _req.user,
                 _req.target,
+                _req.sponsorChainId == 0 ? chainId : _req.sponsorChainId,
                 _req.feeToken,
                 _gelatoFee,
                 _taskId

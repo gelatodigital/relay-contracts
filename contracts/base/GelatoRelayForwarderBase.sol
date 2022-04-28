@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import {ForwardedRequest} from "../structs/RequestTypes.sol";
+import {ForwardRequest} from "../structs/RequestTypes.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 abstract contract GelatoRelayForwarderBase {
@@ -34,7 +34,7 @@ abstract contract GelatoRelayForwarderBase {
     }
 
     function _verifyForwardedRequestSignature(
-        ForwardedRequest calldata _req,
+        ForwardRequest calldata _req,
         bytes calldata _signature,
         address _expectedSigner
     ) internal view {
@@ -58,7 +58,7 @@ abstract contract GelatoRelayForwarderBase {
         );
     }
 
-    function _abiEncodeForwardedRequest(ForwardedRequest calldata _req)
+    function _abiEncodeForwardedRequest(ForwardRequest calldata _req)
         internal
         pure
         returns (bytes memory encodedReq)

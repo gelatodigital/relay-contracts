@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import {ForwardedRequest} from "./structs/RequestTypes.sol";
+import {ForwardRequest} from "./structs/RequestTypes.sol";
 import {NATIVE_TOKEN} from "./constants/Tokens.sol";
 import {GelatoRelayForwarderBase} from "./base/GelatoRelayForwarderBase.sol";
 import {GelatoCallUtils} from "./gelato/GelatoCallUtils.sol";
@@ -14,6 +14,9 @@ import {
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {
+    EnumerableSet
+} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 /// @title Gelato Relay Forwarder Pull Fee contract
 /// @notice Forward calls + fee payment with transferFrom sponsor's address to gelato
@@ -23,16 +26,18 @@ contract GelatoRelayForwarderPullFee is
     Ownable,
     Pausable
 {
+    using EnumerableSet for EnumerableSet.AddressSet;
+
     address public immutable gelato;
     uint256 public immutable chainId;
 
     mapping(address => uint256) public nonce;
-    mapping(address => bool) public whitelistedDest;
+    EnumerableSet.AddressSet private _whitelistedDest;
+    //mapping(address => bool) public whitelistedDest;
 
     event LogForwardedRequestPullFee(
         address indexed sponsor,
         address indexed target,
-        bool indexed hasSponsorSignature,
         address feeToken,
         uint256 fee,
         bytes32 taskId
@@ -65,26 +70,37 @@ contract GelatoRelayForwarderPullFee is
 
     function whitelistDest(address _dest) external onlyOwner {
         require(
-            !whitelistedDest[_dest],
+            !_whitelistedDest.contains(_dest),
             "Destination address already whitelisted"
         );
 
-        whitelistedDest[_dest] = true;
+        _whitelistedDest.add(_dest);
+    }
+
+    function delistDest(address _dest) external onlyOwner {
+        require(
+            _whitelistedDest.contains(_dest),
+            "Destination address not whitelisted"
+        );
+
+        _whitelistedDest.remove(_dest);
     }
 
     // solhint-disable-next-line function-max-lines
     function forwardedRequestPullFee(
-        ForwardedRequest calldata _req,
+        ForwardRequest calldata _req,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
-        uint256 _minGelatoFee,
         bytes32 _taskId
     ) external onlyGelato {
         require(_req.chainId == chainId, "Wrong chainId");
 
         require(_req.paymentType == 3, "paymentType must be 3");
 
-        require(whitelistedDest[_req.target], "target address not whitelisted");
+        require(
+            _whitelistedDest.contains(_req.target),
+            "target address not whitelisted"
+        );
 
         require(
             _req.feeToken != NATIVE_TOKEN,
@@ -92,52 +108,43 @@ contract GelatoRelayForwarderPullFee is
         );
 
         require(_gelatoFee <= _req.maxFee, "Executor over-charged");
-        // When sponsor is also dApp user, it is detrimental UX to require two signatures
-        // Hence we leave it as optional
-        bool hasSponsorSignature = keccak256(_sponsorSignature) !=
-            keccak256(new bytes(0));
+        // Verify and increment sponsor's nonce
+        // We assume that all security is enforced on _req.target address,
+        // hence we allow the sponsor to submit multiple transactions concurrently
+        // In case one reverts, it won't stop the others from being executed
+        uint256 sponsorNonce = nonce[_req.sponsor];
+        require(_req.nonce >= sponsorNonce, "Task already executed");
+        nonce[_req.sponsor] = sponsorNonce + 1;
 
-        if (hasSponsorSignature) {
-            // Verify and increment sponsor's nonce
-            // We assume that all security is enforced on _req.target address,
-            // hence we allow the sponsor to submit multiple transactions concurrently
-            // In case one reverts, it won't stop the others from being executed
-            uint256 sponsorNonce = nonce[_req.sponsor];
-            require(_req.nonce >= sponsorNonce, "Task already executed");
-            nonce[_req.sponsor] = sponsorNonce + 1;
-
-            _verifyForwardedRequestSignature(
-                _req,
-                _sponsorSignature,
-                _req.sponsor
-            );
-        }
+        _verifyForwardedRequestSignature(_req, _sponsorSignature, _req.sponsor);
 
         GelatoCallUtils.safeExternalCall(_req.target, _req.data);
 
-        uint256 preBalance = GelatoTokenUtils.getBalance(_req.feeToken, gelato);
         SafeERC20.safeTransferFrom(
             IERC20(_req.feeToken),
             _req.sponsor,
             gelato,
             _gelatoFee
         );
-        uint256 postBalance = GelatoTokenUtils.getBalance(
-            _req.feeToken,
-            gelato
-        );
-
-        uint256 fee = postBalance - preBalance;
-        require(fee >= _minGelatoFee, "Insufficient fee");
 
         emit LogForwardedRequestPullFee(
             _req.sponsor,
             _req.target,
-            hasSponsorSignature,
             _req.feeToken,
-            fee,
+            _gelatoFee,
             _taskId
         );
+    }
+
+    function getWhitelistedDest() external view returns (address[] memory) {
+        uint256 length = _whitelistedDest.length();
+        address[] memory addresses = new address[](length);
+
+        for (uint256 i; i < length; i++) {
+            addresses[i] = _whitelistedDest.at(i);
+        }
+
+        return addresses;
     }
 
     function getDomainSeparator() public view returns (bytes32) {
