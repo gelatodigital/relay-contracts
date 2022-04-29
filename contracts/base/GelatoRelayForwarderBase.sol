@@ -9,7 +9,7 @@ abstract contract GelatoRelayForwarderBase {
         keccak256(
             bytes(
                 // solhint-disable-next-line max-line-length
-                "ForwardedRequest(uint256 chainId,address target,bytes data,address feeToken,uint256 paymentType,uint256 maxFee,address sponsor,uint256 sponsorChainId,uint256 nonce)"
+                "ForwardedRequest(uint256 chainId,address target,bytes data,address feeToken,uint256 paymentType,uint256 maxFee,address sponsor,uint256 sponsorChainId,uint256 nonce,bool enforceSponsorNonce)"
             )
         );
     // solhint-disable-next-line max-line-length
@@ -73,7 +73,8 @@ abstract contract GelatoRelayForwarderBase {
             _req.maxFee,
             _req.sponsor,
             _req.sponsorChainId,
-            _req.nonce
+            _req.nonce,
+            _req.enforceSponsorNonce
         );
     }
 }

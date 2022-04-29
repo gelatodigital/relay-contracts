@@ -31,4 +31,5 @@ struct ForwardRequest {
     address sponsor;
     uint256 sponsorChainId;
     uint256 nonce;
+    bool enforceSponsorNonce;
 }

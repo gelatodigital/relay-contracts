@@ -123,15 +123,20 @@ contract GelatoRelayForwarder is
             "paymentType must be 1 or 2"
         );
 
-        require(_gelatoFee <= _req.maxFee, "Executor over-charged");
+        require(_gelatoFee <= _req.maxFee, "Gelato executor over-charged");
 
         // Verify and increment sponsor's nonce
         // We assume that all security is enforced on _req.target address,
         // hence we allow the sponsor to submit multiple transactions concurrently
         // In case one reverts, it won't stop the following ones from being executed
-        uint256 sponsorNonce = nonce[_req.sponsor];
-        require(_req.nonce >= sponsorNonce, "Task already executed");
-        nonce[_req.sponsor] = sponsorNonce + 1;
+
+        // Optionally, the dApp may not want to track smart contract nonces
+        // We allow this option, BUT MAKE SURE _req.target implements strong replay protection!
+        if (_req.enforceSponsorNonce) {
+            uint256 sponsorNonce = nonce[_req.sponsor];
+            require(_req.nonce >= sponsorNonce, "Task already executed");
+            nonce[_req.sponsor] = sponsorNonce + 1;
+        }
 
         _verifyForwardedRequestSignature(_req, _sponsorSignature, _req.sponsor);
 

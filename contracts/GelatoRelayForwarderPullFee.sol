@@ -33,7 +33,6 @@ contract GelatoRelayForwarderPullFee is
 
     mapping(address => uint256) public nonce;
     EnumerableSet.AddressSet private _whitelistedDest;
-    //mapping(address => bool) public whitelistedDest;
 
     event LogForwardedRequestPullFee(
         address indexed sponsor,
@@ -112,9 +111,14 @@ contract GelatoRelayForwarderPullFee is
         // We assume that all security is enforced on _req.target address,
         // hence we allow the sponsor to submit multiple transactions concurrently
         // In case one reverts, it won't stop the others from being executed
-        uint256 sponsorNonce = nonce[_req.sponsor];
-        require(_req.nonce >= sponsorNonce, "Task already executed");
-        nonce[_req.sponsor] = sponsorNonce + 1;
+
+        // Optionally, the dApp may not want to track smart contract nonces
+        // We allow this option, BUT MAKE SURE _req.target implements strong replay protection!
+        if (_req.enforceSponsorNonce) {
+            uint256 sponsorNonce = nonce[_req.sponsor];
+            require(_req.nonce >= sponsorNonce, "Task already executed");
+            nonce[_req.sponsor] = sponsorNonce + 1;
+        }
 
         _verifyForwardedRequestSignature(_req, _sponsorSignature, _req.sponsor);
 
