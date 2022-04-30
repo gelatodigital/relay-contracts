@@ -133,10 +133,9 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
 
         {
             require(_isContract(_req.target), "Cannot call EOA");
+            require(_req.isEIP2771, "Target must be compatible with EIP 2771");
             (bool success, ) = _req.target.call(
-                _req.isEIP2771
-                    ? abi.encodePacked(_req.data, _req.user)
-                    : _req.data
+                abi.encodePacked(_req.data, _req.user)
             );
             require(success, "External call failed");
         }
