@@ -34,7 +34,7 @@ contract GelatoRelayForwarderPullFee is
     mapping(address => uint256) public nonce;
     EnumerableSet.AddressSet private _whitelistedDest;
 
-    event LogForwardedRequestPullFee(
+    event LogForwardRequestPullFee(
         address indexed sponsor,
         address indexed target,
         address feeToken,
@@ -86,7 +86,7 @@ contract GelatoRelayForwarderPullFee is
     }
 
     // solhint-disable-next-line function-max-lines
-    function forwardedRequestPullFee(
+    function forwardRequestPullFee(
         ForwardRequest calldata _req,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
@@ -120,7 +120,7 @@ contract GelatoRelayForwarderPullFee is
             nonce[_req.sponsor] = sponsorNonce + 1;
         }
 
-        _verifyForwardedRequestSignature(_req, _sponsorSignature, _req.sponsor);
+        _verifyForwardRequestSignature(_req, _sponsorSignature, _req.sponsor);
 
         GelatoCallUtils.safeExternalCall(_req.target, _req.data);
 
@@ -131,7 +131,7 @@ contract GelatoRelayForwarderPullFee is
             _gelatoFee
         );
 
-        emit LogForwardedRequestPullFee(
+        emit LogForwardRequestPullFee(
             _req.sponsor,
             _req.target,
             _req.feeToken,

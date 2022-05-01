@@ -42,6 +42,12 @@ const config: HardhatUserConfig = {
       url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ID}`,
       gasPrice: parseInt(utils.parseUnits("60", "gwei").toString()),
     },
+    kovan: {
+      accounts: PK ? [PK] : [],
+      chainId: 42,
+      url: `https://eth-kovan.alchemyapi.io/v2/${ALCHEMY_ID}`,
+      gasPrice: parseInt(utils.parseUnits("6", "gwei").toString()),
+    },
     mainnet: {
       accounts: PK_MAINNET ? [PK_MAINNET] : [],
       chainId: 1,
@@ -58,9 +64,10 @@ const config: HardhatUserConfig = {
       url: "https://rpc-mumbai.maticvigil.com/",
     },
   },
-
-  etherscan: {
-    apiKey: ETHERSCAN_API_KEY ? ETHERSCAN_API_KEY : "",
+  verify: {
+    etherscan: {
+      apiKey: ETHERSCAN_API_KEY ? ETHERSCAN_API_KEY : "",
+    },
   },
 
   solidity: {

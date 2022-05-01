@@ -10,17 +10,17 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {
-    OwnableUpgradeable
-} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {
+    Initializable
+} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /// @title Gelato Relay Forwarder contract
 /// @notice This contract must NEVER hold funds!
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here.
 contract GelatoRelayForwarder is
     Proxied,
-    OwnableUpgradeable,
+    Initializable,
     GelatoRelayForwarderBase
 {
     address public immutable gelato;
@@ -28,15 +28,16 @@ contract GelatoRelayForwarder is
 
     mapping(address => uint256) public nonce;
     address public gasTank;
+    address public gasTankAdmin;
 
-    event LogForwardedCallSyncFee(
+    event LogForwardCallSyncFee(
         address indexed target,
         address feeToken,
         uint256 fee,
         bytes32 taskId
     );
 
-    event LogForwardedRequestAsyncGasTankFee(
+    event LogForwardRequestAsyncGasTankFee(
         address indexed sponsor,
         address indexed target,
         uint256 sponsorChainId,
@@ -45,7 +46,7 @@ contract GelatoRelayForwarder is
         bytes32 taskId
     );
 
-    event LogForwardedRequestSyncGasTankFee(
+    event LogForwardRequestSyncGasTankFee(
         address indexed sponsor,
         address indexed target,
         address feeToken,
@@ -55,8 +56,15 @@ contract GelatoRelayForwarder is
 
     event LogSetGasTank(address oldGasTank, address newGasTank);
 
+    event LogSetGasTankAdmin(address oldGasTankAdmin, address newGasTankAdmin);
+
     modifier onlyGelato() {
         require(msg.sender == gelato, "Only callable by gelato");
+        _;
+    }
+
+    modifier onlyGasTankAdmin() {
+        require(msg.sender == gasTankAdmin, "Only callable by gasTankAdmin");
         _;
     }
 
@@ -72,11 +80,13 @@ contract GelatoRelayForwarder is
         chainId = _chainId;
     }
 
-    function init() external {
-        __Ownable_init();
+    function init(address _gasTankAdmin) external initializer {
+        gasTankAdmin = _gasTankAdmin;
+
+        emit LogSetGasTankAdmin(address(0), _gasTankAdmin);
     }
 
-    function setGasTank(address _gasTank) external onlyOwner {
+    function setGasTank(address _gasTank) external onlyGasTankAdmin {
         require(_gasTank != address(0), "Invalid gasTank address");
 
         emit LogSetGasTank(gasTank, _gasTank);
@@ -84,7 +94,15 @@ contract GelatoRelayForwarder is
         gasTank = _gasTank;
     }
 
-    function forwardedCallSyncFee(
+    function setGasTankAdmin(address _gasTankAdmin) external onlyGasTankAdmin {
+        require(_gasTankAdmin != address(0), "Invalid gasTankAdmin address");
+
+        emit LogSetGasTankAdmin(gasTankAdmin, _gasTankAdmin);
+
+        gasTankAdmin = _gasTankAdmin;
+    }
+
+    function forwardCallSyncFee(
         address _target,
         bytes calldata _data,
         address _feeToken,
@@ -106,11 +124,11 @@ contract GelatoRelayForwarder is
         require(amount >= _gelatoFee, "Insufficient fee");
         GelatoTokenUtils.transferToGelato(gelato, _feeToken, amount);
 
-        emit LogForwardedCallSyncFee(_target, _feeToken, amount, _taskId);
+        emit LogForwardCallSyncFee(_target, _feeToken, amount, _taskId);
     }
 
     // solhint-disable-next-line function-max-lines
-    function forwardedRequestGasTankFee(
+    function forwardRequestGasTankFee(
         ForwardRequest calldata _req,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
@@ -138,14 +156,14 @@ contract GelatoRelayForwarder is
             nonce[_req.sponsor] = sponsorNonce + 1;
         }
 
-        _verifyForwardedRequestSignature(_req, _sponsorSignature, _req.sponsor);
+        _verifyForwardRequestSignature(_req, _sponsorSignature, _req.sponsor);
 
         require(_req.target != gasTank, "target address cannot be gasTank");
         GelatoCallUtils.safeExternalCall(_req.target, _req.data);
 
         if (_req.paymentType == 1) {
             // GasTank payment with asynchronous fee crediting
-            emit LogForwardedRequestAsyncGasTankFee(
+            emit LogForwardRequestAsyncGasTankFee(
                 _req.sponsor,
                 _req.target,
                 _req.sponsorChainId == 0 ? chainId : _req.sponsorChainId,
@@ -156,7 +174,7 @@ contract GelatoRelayForwarder is
         } else {
             // TODO: deduct balance from GasTank
             // Credit GasTank fee
-            emit LogForwardedRequestSyncGasTankFee(
+            emit LogForwardRequestSyncGasTankFee(
                 _req.sponsor,
                 _req.target,
                 _req.feeToken,

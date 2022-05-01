@@ -5,11 +5,11 @@ import {ForwardRequest} from "../structs/RequestTypes.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 abstract contract GelatoRelayForwarderBase {
-    bytes32 public constant FORWARDED_REQUEST_TYPEHASH =
+    bytes32 public constant FORWARD_REQUEST_TYPEHASH =
         keccak256(
             bytes(
                 // solhint-disable-next-line max-line-length
-                "ForwardedRequest(uint256 chainId,address target,bytes data,address feeToken,uint256 paymentType,uint256 maxFee,address sponsor,uint256 sponsorChainId,uint256 nonce,bool enforceSponsorNonce)"
+                "ForwardRequest(uint256 chainId,address target,bytes data,address feeToken,uint256 paymentType,uint256 maxFee,address sponsor,uint256 sponsorChainId,uint256 nonce,bool enforceSponsorNonce)"
             )
         );
     // solhint-disable-next-line max-line-length
@@ -33,7 +33,7 @@ abstract contract GelatoRelayForwarderBase {
             );
     }
 
-    function _verifyForwardedRequestSignature(
+    function _verifyForwardRequestSignature(
         ForwardRequest calldata _req,
         bytes calldata _signature,
         address _expectedSigner
@@ -44,7 +44,7 @@ abstract contract GelatoRelayForwarderBase {
             abi.encodePacked(
                 "\x19\x01",
                 domainSeparator,
-                keccak256(_abiEncodeForwardedRequest(_req))
+                keccak256(_abiEncodeForwardRequest(_req))
             )
         );
 
@@ -58,13 +58,13 @@ abstract contract GelatoRelayForwarderBase {
         );
     }
 
-    function _abiEncodeForwardedRequest(ForwardRequest calldata _req)
+    function _abiEncodeForwardRequest(ForwardRequest calldata _req)
         internal
         pure
         returns (bytes memory encodedReq)
     {
         encodedReq = abi.encode(
-            FORWARDED_REQUEST_TYPEHASH,
+            FORWARD_REQUEST_TYPEHASH,
             _req.chainId,
             _req.target,
             keccak256(_req.data),

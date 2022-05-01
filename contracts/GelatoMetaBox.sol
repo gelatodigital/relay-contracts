@@ -12,18 +12,19 @@ import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {
-    OwnableUpgradeable
-} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+    Initializable
+} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /// @title Gelato Meta Box contract
 /// @notice This contract must NEVER hold funds!
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here.
-contract GelatoMetaBox is GelatoMetaBoxBase, Proxied, OwnableUpgradeable {
+contract GelatoMetaBox is Proxied, Initializable, GelatoMetaBoxBase {
     address public immutable gelato;
     uint256 public immutable chainId;
 
     mapping(address => uint256) public nonce;
     address public gasTank;
+    address public gasTankAdmin;
 
     event LogMetaTxRequestAsyncGasTankFee(
         address indexed sponsor,
@@ -46,8 +47,15 @@ contract GelatoMetaBox is GelatoMetaBoxBase, Proxied, OwnableUpgradeable {
 
     event LogSetGasTank(address oldGasTank, address newGasTank);
 
+    event LogSetGasTankAdmin(address oldGasTankAdmin, address newGasTankAdmin);
+
     modifier onlyGelato() {
         require(msg.sender == gelato, "Only callable by gelato");
+        _;
+    }
+
+    modifier onlyGasTankAdmin() {
+        require(msg.sender == gasTankAdmin, "Only callable by gasTankAdmin");
         _;
     }
 
@@ -63,16 +71,26 @@ contract GelatoMetaBox is GelatoMetaBoxBase, Proxied, OwnableUpgradeable {
         chainId = _chainId;
     }
 
-    function init() external {
-        __Ownable_init();
+    function init(address _gasTankAdmin) external initializer {
+        gasTankAdmin = _gasTankAdmin;
+
+        emit LogSetGasTankAdmin(address(0), _gasTankAdmin);
     }
 
-    function setGasTank(address _gasTank) external onlyOwner {
+    function setGasTank(address _gasTank) external onlyGasTankAdmin {
         require(_gasTank != address(0), "Invalid gasTank address");
 
         emit LogSetGasTank(gasTank, _gasTank);
 
         gasTank = _gasTank;
+    }
+
+    function setGasTankAdmin(address _gasTankAdmin) external onlyGasTankAdmin {
+        require(_gasTankAdmin != address(0), "Invalid gasTankAdmin address");
+
+        emit LogSetGasTankAdmin(gasTankAdmin, _gasTankAdmin);
+
+        gasTankAdmin = _gasTankAdmin;
     }
 
     /// @notice Relay request + async Gas Tank payment deductions (off-chain accounting)

@@ -9,7 +9,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     hre.network.name === "mainnet" ||
     hre.network.name === "goerli" ||
     hre.network.name === "matic" ||
-    hre.network.name === "mumbai"
+    hre.network.name === "mumbai" ||
+    hre.network.name === "kovan"
   ) {
     console.log(
       `Deploying GelatoMetaBox to ${hre.network.name}. Hit ctrl + c to abort`
@@ -26,6 +27,10 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     proxy: {
       owner: deployer,
       proxyContract: "EIP173Proxy",
+      execute: {
+        methodName: "init",
+        args: [deployer],
+      },
     },
     args: [addresses.Gelato],
     log: hre.network.name != "hardhat" ? true : false,
@@ -34,12 +39,13 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
 export default func;
 
-func.skip = async (hre: HardhatRuntimeEnvironment) => {
+/*func.skip = async (hre: HardhatRuntimeEnvironment) => {
   const shouldSkip =
     hre.network.name === "mainnet" ||
     hre.network.name === "goerli" ||
     hre.network.name === "matic" ||
-    hre.network.name === "mumbai";
+    hre.network.name === "mumbai" ||
+    hre.network.name === "kovan";
   return shouldSkip ? true : false;
-};
+};*/
 func.tags = ["GelatoMetaBox"];
