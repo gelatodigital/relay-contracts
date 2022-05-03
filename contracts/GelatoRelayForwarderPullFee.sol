@@ -127,7 +127,7 @@ contract GelatoRelayForwarderPullFee is
         SafeERC20.safeTransferFrom(
             IERC20(_req.feeToken),
             _req.sponsor,
-            gelato,
+            gelato, // TODO: change to fee collector
             _gelatoFee
         );
 

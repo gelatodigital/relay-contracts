@@ -16,7 +16,6 @@ struct MetaTxRequest {
     uint256 sponsorChainId;
     uint256 nonce;
     uint256 deadline;
-    bool isEIP2771;
 }
 
 // Similar to MetaTxRequest, but no need to implement user-specific signature verification logic

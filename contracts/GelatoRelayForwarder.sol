@@ -122,6 +122,7 @@ contract GelatoRelayForwarder is
 
         uint256 amount = postBalance - preBalance;
         require(amount >= _gelatoFee, "Insufficient fee");
+        // TODO: change fee collector
         GelatoTokenUtils.transferToGelato(gelato, _feeToken, amount);
 
         emit LogForwardCallSyncFee(_target, _feeToken, amount, _taskId);

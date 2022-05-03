@@ -140,7 +140,6 @@ contract GelatoMetaBox is Proxied, Initializable, GelatoMetaBoxBase {
 
         require(_req.target != gasTank, "target address cannot be gasTank");
         require(_isContract(_req.target), "Cannot call EOA");
-        require(_req.isEIP2771, "target must be compatible with EIP 2771");
         (bool success, ) = _req.target.call(
             abi.encodePacked(_req.data, _req.user)
         );

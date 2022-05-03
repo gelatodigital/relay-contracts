@@ -133,7 +133,6 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
 
         {
             require(_isContract(_req.target), "Cannot call EOA");
-            require(_req.isEIP2771, "Target must be compatible with EIP 2771");
             (bool success, ) = _req.target.call(
                 abi.encodePacked(_req.data, _req.user)
             );
@@ -143,7 +142,7 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
         SafeERC20.safeTransferFrom(
             IERC20(_req.feeToken),
             _req.sponsor,
-            gelato,
+            gelato, // TODO: Not to gelato, but to fee collection contract
             _gelatoFee
         );
 
