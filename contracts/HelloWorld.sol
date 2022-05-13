@@ -16,8 +16,14 @@ contract HelloWorld is ERC2771Context {
     // solhint-disable-next-line no-empty-blocks
     constructor(address _gelatoMetaBox) ERC2771Context(_gelatoMetaBox) {}
 
+    function sayHiVanilla(address _feeToken) external {
+        string memory message = "Hello World";
+
+        emit Success(msg.sender, _feeToken, message);
+    }
+
     function sayHi(address _feeToken) external {
-        string memory message = "Hello World!";
+        string memory message = "Hello World";
 
         emit Success(_msgSender(), _feeToken, message);
     }

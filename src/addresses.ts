@@ -33,6 +33,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         Gelato: "0x25aD59adbe00C2d80c86d01e2E05e1294DA84823",
       };
+    case "rinkeby":
+      return {
+        Gelato: "0x0630d1b8C2df3F0a68Df578D02075027a6397173",
+      };
     default:
       throw new Error(`No addresses for Network: ${network}`);
   }

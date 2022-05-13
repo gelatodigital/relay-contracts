@@ -36,11 +36,17 @@ const config: HardhatUserConfig = {
         accountsBalance: ethers.utils.parseEther("10000").toString(),
       },
     },
+    rinkeby: {
+      accounts: PK ? [PK] : [],
+      chainId: 4,
+      url: `https://eth-rinkeby.alchemyapi.io/v2/${ALCHEMY_ID}`,
+      gasPrice: parseInt(utils.parseUnits("3", "gwei").toString()),
+    },
     goerli: {
       accounts: PK ? [PK] : [],
       chainId: 5,
       url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ID}`,
-      gasPrice: parseInt(utils.parseUnits("60", "gwei").toString()),
+      gasPrice: parseInt(utils.parseUnits("6", "gwei").toString()),
     },
     kovan: {
       accounts: PK ? [PK] : [],
