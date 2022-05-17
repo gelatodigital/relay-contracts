@@ -4,7 +4,7 @@ pragma solidity 0.8.13;
 import {GelatoMetaBoxBase} from "./base/GelatoMetaBoxBase.sol";
 import {NATIVE_TOKEN} from "./constants/Tokens.sol";
 import {MetaTxRequest} from "./structs/RequestTypes.sol";
-import {GelatoTokenUtils} from "./gelato/GelatoTokenUtils.sol";
+import {IGelatoPullFeeRegistry} from "./interfaces/IGelatoPullFeeRegistry.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -21,6 +21,7 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
     address public immutable gelato;
     uint256 public immutable chainId;
 
+    address public pullFeeRegistry;
     mapping(address => uint256) public nonce;
     EnumerableSet.AddressSet private _whitelistedDest;
 
@@ -76,6 +77,15 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
         _whitelistedDest.remove(_dest);
     }
 
+    function initPullFeeRegistry(address _pullFeeRegistry) external onlyOwner {
+        require(
+            pullFeeRegistry == address(0),
+            "pullFeeRegistry already initialized"
+        );
+
+        pullFeeRegistry = _pullFeeRegistry;
+    }
+
     /// @notice Relay meta tx request + pull fee from (transferFrom) _req.sponsor's address
     /// @dev    Assumes that _req.sponsor has approved this contract to spend _req.feeToken
     /// @param _req Relay request data
@@ -93,7 +103,7 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
         bytes32 _taskId
-    ) external onlyGelato {
+    ) external onlyGelato whenNotPaused {
         require(
             // solhint-disable-next-line not-rely-on-time
             _req.deadline == 0 || _req.deadline >= block.timestamp,
@@ -130,8 +140,13 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
                 _req.sponsor
             );
         }
-
+        // Gas optimization
+        address pullFeeRegistryCopy = pullFeeRegistry;
         {
+            require(
+                _req.target != pullFeeRegistryCopy,
+                "Unsafe call to pullFeeRegistry"
+            );
             require(_isContract(_req.target), "Cannot call EOA");
             (bool success, ) = _req.target.call(
                 abi.encodePacked(_req.data, _req.user)
@@ -139,8 +154,8 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
             require(success, "External call failed");
         }
 
-        SafeERC20.safeTransferFrom(
-            IERC20(_req.feeToken),
+        IGelatoPullFeeRegistry(pullFeeRegistryCopy).pullFeeFrom(
+            _req.feeToken,
             _req.sponsor,
             gelato, // TODO: Not to gelato, but to fee collection contract
             _gelatoFee
@@ -157,14 +172,7 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
     }
 
     function getWhitelistedDest() external view returns (address[] memory) {
-        uint256 length = _whitelistedDest.length();
-        address[] memory addresses = new address[](length);
-
-        for (uint256 i; i < length; i++) {
-            addresses[i] = _whitelistedDest.at(i);
-        }
-
-        return addresses;
+        return _whitelistedDest.values();
     }
 
     function getDomainSeparator() public view returns (bytes32) {

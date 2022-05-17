@@ -6,11 +6,6 @@ import {GelatoRelayForwarderBase} from "./base/GelatoRelayForwarderBase.sol";
 import {GelatoCallUtils} from "./gelato/GelatoCallUtils.sol";
 import {GelatoTokenUtils} from "./gelato/GelatoTokenUtils.sol";
 import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {
-    SafeERC20
-} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {
     Initializable
 } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -18,6 +13,7 @@ import {
 /// @title Gelato Relay Forwarder contract
 /// @notice This contract must NEVER hold funds!
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here.
+// solhint-disable-next-line max-states-count
 contract GelatoRelayForwarder is
     Proxied,
     Initializable,
@@ -27,6 +23,7 @@ contract GelatoRelayForwarder is
     uint256 public immutable chainId;
 
     mapping(address => uint256) public nonce;
+    mapping(bytes32 => bool) public messageDelivered;
     address public gasTank;
     address public gasTankAdmin;
 
@@ -150,14 +147,40 @@ contract GelatoRelayForwarder is
         // In case one reverts, it won't stop the following ones from being executed
 
         // Optionally, the dApp may not want to track smart contract nonces
-        // We allow this option, BUT MAKE SURE _req.target implements strong replay protection!
+        // We allow this option, BUT MAKE SURE _req.target IMPLEMENTS STRONG REPLAY PROTECTION!!
         if (_req.enforceSponsorNonce) {
             uint256 sponsorNonce = nonce[_req.sponsor];
-            require(_req.nonce >= sponsorNonce, "Task already executed");
-            nonce[_req.sponsor] = sponsorNonce + 1;
-        }
 
-        _verifyForwardRequestSignature(_req, _sponsorSignature, _req.sponsor);
+            if (_req.enforceSponsorNonceOrdering) {
+                // Enforce ordering on nonces,
+                // If tx with nonce n reverts, so will tx with nonce n+1.
+                require(_req.nonce == sponsorNonce, "Task already executed");
+                nonce[_req.sponsor] = sponsorNonce + 1;
+
+                _verifyForwardRequestSignature(
+                    _req,
+                    _sponsorSignature,
+                    _req.sponsor
+                );
+            } else {
+                // Do not enforce ordering on nonces,
+                // but still enforce replay protection
+                // via uniqueness of message
+                bytes32 message = _verifyForwardRequestSignature(
+                    _req,
+                    _sponsorSignature,
+                    _req.sponsor
+                );
+                require(!messageDelivered[message], "Task already executed");
+                messageDelivered[message] = true;
+            }
+        } else {
+            _verifyForwardRequestSignature(
+                _req,
+                _sponsorSignature,
+                _req.sponsor
+            );
+        }
 
         require(_req.target != gasTank, "target address cannot be gasTank");
         GelatoCallUtils.safeExternalCall(_req.target, _req.data);

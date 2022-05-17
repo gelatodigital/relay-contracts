@@ -2,15 +2,8 @@
 pragma solidity 0.8.13;
 
 import {MetaTxRequest} from "./structs/RequestTypes.sol";
-import {NATIVE_TOKEN} from "./constants/Tokens.sol";
 import {GelatoMetaBoxBase} from "./base/GelatoMetaBoxBase.sol";
-import {GelatoCallUtils} from "./gelato/GelatoCallUtils.sol";
-import {GelatoTokenUtils} from "./gelato/GelatoTokenUtils.sol";
 import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {
-    SafeERC20
-} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {
     Initializable
 } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";

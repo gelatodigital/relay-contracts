@@ -9,7 +9,7 @@ abstract contract GelatoRelayForwarderBase {
         keccak256(
             bytes(
                 // solhint-disable-next-line max-line-length
-                "ForwardRequest(uint256 chainId,address target,bytes data,address feeToken,uint256 paymentType,uint256 maxFee,address sponsor,uint256 sponsorChainId,uint256 nonce,bool enforceSponsorNonce)"
+                "ForwardRequest(uint256 chainId,address target,bytes data,address feeToken,uint256 paymentType,uint256 maxFee,address sponsor,uint256 sponsorChainId,uint256 nonce,bool enforceSponsorNonce,bool enforceSponsorNonceOrdering)"
             )
         );
     // solhint-disable-next-line max-line-length
@@ -37,7 +37,7 @@ abstract contract GelatoRelayForwarderBase {
         ForwardRequest calldata _req,
         bytes calldata _signature,
         address _expectedSigner
-    ) internal view {
+    ) internal view returns (bytes32) {
         bytes32 domainSeparator = _getDomainSeparator(_req.chainId);
 
         bytes32 digest = keccak256(
@@ -56,6 +56,8 @@ abstract contract GelatoRelayForwarderBase {
             error == ECDSA.RecoverError.NoError && recovered == _expectedSigner,
             "Invalid signature"
         );
+
+        return digest;
     }
 
     function _abiEncodeForwardRequest(ForwardRequest calldata _req)
@@ -74,7 +76,8 @@ abstract contract GelatoRelayForwarderBase {
             _req.sponsor,
             _req.sponsorChainId,
             _req.nonce,
-            _req.enforceSponsorNonce
+            _req.enforceSponsorNonce,
+            _req.enforceSponsorNonceOrdering
         );
     }
 }

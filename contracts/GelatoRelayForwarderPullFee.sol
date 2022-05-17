@@ -5,15 +5,13 @@ import {ForwardRequest} from "./structs/RequestTypes.sol";
 import {NATIVE_TOKEN} from "./constants/Tokens.sol";
 import {GelatoRelayForwarderBase} from "./base/GelatoRelayForwarderBase.sol";
 import {GelatoCallUtils} from "./gelato/GelatoCallUtils.sol";
-import {GelatoTokenUtils} from "./gelato/GelatoTokenUtils.sol";
-import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
+import {IGelatoPullFeeRegistry} from "./interfaces/IGelatoPullFeeRegistry.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
-import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {
     EnumerableSet
 } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
@@ -21,6 +19,7 @@ import {
 /// @title Gelato Relay Forwarder Pull Fee contract
 /// @notice Forward calls + fee payment with transferFrom sponsor's address to gelato
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here.
+// solhint-disable-next-line max-states-count
 contract GelatoRelayForwarderPullFee is
     GelatoRelayForwarderBase,
     Ownable,
@@ -32,7 +31,9 @@ contract GelatoRelayForwarderPullFee is
     uint256 public immutable chainId;
 
     mapping(address => uint256) public nonce;
+    mapping(bytes32 => bool) public messageDelivered;
     EnumerableSet.AddressSet private _whitelistedDest;
+    address public pullFeeRegistry;
 
     event LogForwardRequestPullFee(
         address indexed sponsor,
@@ -85,13 +86,22 @@ contract GelatoRelayForwarderPullFee is
         _whitelistedDest.remove(_dest);
     }
 
+    function initPullFeeRegistry(address _pullFeeRegistry) external onlyOwner {
+        require(
+            pullFeeRegistry == address(0),
+            "pullFeeRegistry already initialized"
+        );
+
+        pullFeeRegistry = _pullFeeRegistry;
+    }
+
     // solhint-disable-next-line function-max-lines
     function forwardRequestPullFee(
         ForwardRequest calldata _req,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
         bytes32 _taskId
-    ) external onlyGelato {
+    ) external onlyGelato whenNotPaused {
         require(_req.chainId == chainId, "Wrong chainId");
 
         require(_req.paymentType == 3, "paymentType must be 3");
@@ -116,18 +126,52 @@ contract GelatoRelayForwarderPullFee is
         // We allow this option, BUT MAKE SURE _req.target implements strong replay protection!
         if (_req.enforceSponsorNonce) {
             uint256 sponsorNonce = nonce[_req.sponsor];
-            require(_req.nonce >= sponsorNonce, "Task already executed");
-            nonce[_req.sponsor] = sponsorNonce + 1;
+
+            if (_req.enforceSponsorNonceOrdering) {
+                // Enforce ordering on nonces,
+                // If tx with nonce n reverts, so will tx with nonce n+1.
+                require(_req.nonce == sponsorNonce, "Task already executed");
+                nonce[_req.sponsor] = sponsorNonce + 1;
+
+                _verifyForwardRequestSignature(
+                    _req,
+                    _sponsorSignature,
+                    _req.sponsor
+                );
+            } else {
+                // Do not enforce ordering on nonces,
+                // but still enforce replay protection
+                // via uniqueness of message
+                bytes32 message = _verifyForwardRequestSignature(
+                    _req,
+                    _sponsorSignature,
+                    _req.sponsor
+                );
+                require(!messageDelivered[message], "Task already executed");
+                messageDelivered[message] = true;
+            }
+        } else {
+            _verifyForwardRequestSignature(
+                _req,
+                _sponsorSignature,
+                _req.sponsor
+            );
         }
 
         _verifyForwardRequestSignature(_req, _sponsorSignature, _req.sponsor);
+        // Gas optimization
+        address pullFeeRegistryCopy = pullFeeRegistry;
 
+        require(
+            _req.target != pullFeeRegistryCopy,
+            "Unsafe call to pullFeeRegistry"
+        );
         GelatoCallUtils.safeExternalCall(_req.target, _req.data);
 
-        SafeERC20.safeTransferFrom(
-            IERC20(_req.feeToken),
+        IGelatoPullFeeRegistry(pullFeeRegistryCopy).pullFeeFrom(
+            _req.feeToken,
             _req.sponsor,
-            gelato, // TODO: change to fee collector
+            gelato, // TODO: Not to gelato, but to fee collection contract
             _gelatoFee
         );
 
@@ -141,14 +185,7 @@ contract GelatoRelayForwarderPullFee is
     }
 
     function getWhitelistedDest() external view returns (address[] memory) {
-        uint256 length = _whitelistedDest.length();
-        address[] memory addresses = new address[](length);
-
-        for (uint256 i; i < length; i++) {
-            addresses[i] = _whitelistedDest.at(i);
-        }
-
-        return addresses;
+        return _whitelistedDest.values();
     }
 
     function getDomainSeparator() public view returns (bytes32) {
