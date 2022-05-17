@@ -167,7 +167,7 @@ contract GelatoRelayForwarderPullFee is
             _req.target != pullFeeRegistryCopy,
             "Unsafe call to pullFeeRegistry"
         );
-        GelatoCallUtils.safeExternalCall(_req.target, _req.data);
+        GelatoCallUtils.safeExternalCall(_req.target, _req.data, _req.gas);
 
         IGelatoPullFeeRegistry(pullFeeRegistryCopy).pullFeeFrom(
             _req.feeToken,

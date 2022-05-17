@@ -148,7 +148,7 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
                 "Unsafe call to pullFeeRegistry"
             );
             require(_isContract(_req.target), "Cannot call EOA");
-            (bool success, ) = _req.target.call(
+            (bool success, ) = _req.target.call{gas: _req.gas}(
                 abi.encodePacked(_req.data, _req.user)
             );
             require(success, "External call failed");

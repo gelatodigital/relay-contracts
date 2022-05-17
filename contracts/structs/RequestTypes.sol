@@ -11,6 +11,7 @@ struct MetaTxRequest {
     address feeToken;
     uint256 paymentType;
     uint256 maxFee;
+    uint256 gas;
     address user;
     address sponsor; // could be same as user
     uint256 sponsorChainId;
@@ -27,6 +28,7 @@ struct ForwardRequest {
     address feeToken;
     uint256 paymentType;
     uint256 maxFee;
+    uint256 gas;
     address sponsor;
     uint256 sponsorChainId;
     uint256 nonce;

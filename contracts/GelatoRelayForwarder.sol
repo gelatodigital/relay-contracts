@@ -103,6 +103,7 @@ contract GelatoRelayForwarder is
         address _target,
         bytes calldata _data,
         address _feeToken,
+        uint256 _gas,
         uint256 _gelatoFee,
         bytes32 _taskId
     ) external onlyGelato {
@@ -111,7 +112,7 @@ contract GelatoRelayForwarder is
             address(this)
         );
         require(_target != gasTank, "target address cannot be gasTank");
-        GelatoCallUtils.safeExternalCall(_target, _data);
+        GelatoCallUtils.safeExternalCall(_target, _data, _gas);
         uint256 postBalance = GelatoTokenUtils.getBalance(
             _feeToken,
             address(this)
@@ -185,7 +186,7 @@ contract GelatoRelayForwarder is
         }
 
         require(_req.target != gasTank, "target address cannot be gasTank");
-        GelatoCallUtils.safeExternalCall(_req.target, _req.data);
+        GelatoCallUtils.safeExternalCall(_req.target, _req.data, _req.gas);
 
         if (_req.paymentType == 1) {
             // GasTank payment with asynchronous fee crediting
