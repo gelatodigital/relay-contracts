@@ -125,13 +125,14 @@ contract GelatoRelayForwarderPullFee is
         // Optionally, the dApp may not want to track smart contract nonces
         // We allow this option, BUT MAKE SURE _req.target implements strong replay protection!
         if (_req.enforceSponsorNonce) {
-            uint256 sponsorNonce = nonce[_req.sponsor];
-
             if (_req.enforceSponsorNonceOrdering) {
                 // Enforce ordering on nonces,
                 // If tx with nonce n reverts, so will tx with nonce n+1.
-                require(_req.nonce == sponsorNonce, "Task already executed");
-                nonce[_req.sponsor] = sponsorNonce + 1;
+                require(
+                    _req.nonce == nonce[_req.sponsor],
+                    "Task already executed"
+                );
+                nonce[_req.sponsor] = _req.nonce + 1;
 
                 _verifyForwardRequestSignature(
                     _req,
