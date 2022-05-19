@@ -41,7 +41,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
 export default func;
 
-/*func.skip = async (hre: HardhatRuntimeEnvironment) => {
+func.skip = async (hre: HardhatRuntimeEnvironment) => {
   const shouldSkip =
     hre.network.name === "mainnet" ||
     hre.network.name === "goerli" ||
@@ -49,5 +49,5 @@ export default func;
     hre.network.name === "mumbai" ||
     hre.network.name === "kovan";
   return shouldSkip ? true : false;
-};*/
+};
 func.tags = ["GelatoRelayForwarder"];

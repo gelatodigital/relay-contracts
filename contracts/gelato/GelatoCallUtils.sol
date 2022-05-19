@@ -2,8 +2,6 @@
 pragma solidity 0.8.13;
 
 library GelatoCallUtils {
-    /// @dev Safe generalized external call:
-    ///      Ensures that _dest is not EOA + does not read call's return data
     function safeExternalCall(
         address _dest,
         bytes calldata _data,
