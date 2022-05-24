@@ -42,6 +42,12 @@ const config: HardhatUserConfig = {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${ALCHEMY_ID}`,
       gasPrice: parseInt(utils.parseUnits("3", "gwei").toString()),
     },
+    gnosis: {
+      accounts: PK_MAINNET ? [PK_MAINNET] : [],
+      chainId: 100,
+      url: `https://rpc.gnosischain.com/`,
+      gasPrice: parseInt(utils.parseUnits("13", "gwei").toString()),
+    },
     goerli: {
       accounts: PK ? [PK] : [],
       chainId: 5,
