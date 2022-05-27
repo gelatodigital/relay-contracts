@@ -36,6 +36,11 @@ const config: HardhatUserConfig = {
         accountsBalance: ethers.utils.parseEther("10000").toString(),
       },
     },
+    evmos: {
+      accounts: PK_MAINNET ? [PK_MAINNET] : [],
+      chainId: 9001,
+      url: "https://eth.bd.evmos.org:8545",
+    },
     rinkeby: {
       accounts: PK ? [PK] : [],
       chainId: 4,

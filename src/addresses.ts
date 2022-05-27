@@ -13,6 +13,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         Gelato: "0x4775aF8FEf4809fE10bf05867d2b038a4b5B2146",
       };
+    case "evmos":
+      return {
+        Gelato: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
+      };
     case "mainnet":
       return {
         Gelato: "0x3CACa7b48D0573D793d3b0279b5F0029180E83b6",

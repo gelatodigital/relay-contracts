@@ -11,7 +11,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     hre.network.name === "matic" ||
     hre.network.name === "mumbai" ||
     hre.network.name === "kovan" ||
-    hre.network.name === "gnosis"
+    hre.network.name === "gnosis" ||
+    hre.network.name === "evmos"
   ) {
     console.log(
       `Deploying GelatoRelayForwarder to ${hre.network.name}. Hit ctrl + c to abort`
@@ -42,14 +43,15 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
 export default func;
 
-func.skip = async (hre: HardhatRuntimeEnvironment) => {
+/*func.skip = async (hre: HardhatRuntimeEnvironment) => {
   const shouldSkip =
     hre.network.name === "mainnet" ||
     hre.network.name === "goerli" ||
     hre.network.name === "matic" ||
     hre.network.name === "mumbai" ||
     hre.network.name === "kovan" ||
-    hre.network.name === "gnosis";
+    hre.network.name === "gnosis" ||
+    hre.network.name === "evmos";
   return shouldSkip ? true : false;
-};
+};*/
 func.tags = ["GelatoRelayForwarder"];
