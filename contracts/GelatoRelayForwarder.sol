@@ -153,10 +153,7 @@ contract GelatoRelayForwarder is
             if (_req.enforceSponsorNonceOrdering) {
                 // Enforce ordering on nonces,
                 // If tx with nonce n reverts, so will txs with nonce n+1.
-                require(
-                    _req.nonce == nonce[_req.sponsor],
-                    "Task already executed"
-                );
+                require(_req.nonce == nonce[_req.sponsor], "Invalid nonce");
                 nonce[_req.sponsor] = _req.nonce + 1;
 
                 _verifyForwardRequestSignature(
