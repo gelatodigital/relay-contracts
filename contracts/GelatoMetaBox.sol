@@ -1,44 +1,54 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.11;
+pragma solidity 0.8.13;
 
-import {Request} from "./structs/RequestTypes.sol";
-import {NATIVE_TOKEN} from "./constants/Tokens.sol";
-import {IGelatoMetaBox} from "./interfaces/IGelatoMetaBox.sol";
+import {MetaTxRequest} from "./structs/RequestTypes.sol";
+import {GelatoMetaBoxBase} from "./base/GelatoMetaBoxBase.sol";
 import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {
+    Initializable
+} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /// @title Gelato Meta Box contract
 /// @notice This contract must NEVER hold funds!
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here.
-contract GelatoMetaBox is IGelatoMetaBox, Proxied {
-    bytes32 public constant REQUEST_TYPEHASH =
-        keccak256(
-            bytes(
-                // solhint-disable-next-line max-line-length
-                "Request(uint256 chainId,address target,bytes data,address feeToken,address user,address sponsor,uint256 nonce,uint256 deadline,bool isEIP2771)"
-            )
-        );
-    // solhint-disable-next-line max-line-length
-    string public constant EIP712_DOMAIN_TYPE =
-        "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
-
+contract GelatoMetaBox is Proxied, Initializable, GelatoMetaBoxBase {
     address public immutable gelato;
     uint256 public immutable chainId;
 
     mapping(address => uint256) public nonce;
-    mapping(bytes32 => bool) public isTaskIdProcessed;
+    address public gasTank;
+    address public gasTankAdmin;
 
-    event ExecuteRequestSuccess(
+    event LogMetaTxRequestAsyncGasTankFee(
+        address indexed sponsor,
+        address indexed user,
+        address indexed target,
+        uint256 sponsorChainId,
+        address feeToken,
+        uint256 fee,
+        bytes32 taskId
+    );
+
+    event LogMetaTxRequestSyncGasTankFee(
         address indexed sponsor,
         address indexed user,
         address indexed target,
         address feeToken,
-        uint256 fee
+        uint256 fee,
+        bytes32 taskId
     );
+
+    event LogSetGasTank(address oldGasTank, address newGasTank);
+
+    event LogSetGasTankAdmin(address oldGasTankAdmin, address newGasTankAdmin);
 
     modifier onlyGelato() {
         require(msg.sender == gelato, "Only callable by gelato");
+        _;
+    }
+
+    modifier onlyGasTankAdmin() {
+        require(msg.sender == gasTankAdmin, "Only callable by gasTankAdmin");
         _;
     }
 
@@ -54,16 +64,43 @@ contract GelatoMetaBox is IGelatoMetaBox, Proxied {
         chainId = _chainId;
     }
 
+    function init(address _gasTankAdmin) external initializer {
+        gasTankAdmin = _gasTankAdmin;
+
+        emit LogSetGasTankAdmin(address(0), _gasTankAdmin);
+    }
+
+    function setGasTank(address _gasTank) external onlyGasTankAdmin {
+        require(_gasTank != address(0), "Invalid gasTank address");
+
+        emit LogSetGasTank(gasTank, _gasTank);
+
+        gasTank = _gasTank;
+    }
+
+    function setGasTankAdmin(address _gasTankAdmin) external onlyGasTankAdmin {
+        require(_gasTankAdmin != address(0), "Invalid gasTankAdmin address");
+
+        emit LogSetGasTankAdmin(gasTankAdmin, _gasTankAdmin);
+
+        gasTankAdmin = _gasTankAdmin;
+    }
+
+    /// @notice Relay request + async Gas Tank payment deductions (off-chain accounting)
     /// @param _req Relay request data
     /// @param _userSignature EIP-712 compliant signature from _req.user
+    /// @param _sponsorSignature EIP-712 compliant signature from _req.sponsor
+    ///                          (can be same as _userSignature)
     /// @notice   EOA that originates the tx, but does not necessarily pay the relayer
     /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _req.feeToken
     // solhint-disable-next-line function-max-lines
-    function executeRequest(
-        Request calldata _req,
+    function metaTxRequestGasTankFee(
+        MetaTxRequest calldata _req,
         bytes calldata _userSignature,
-        uint256 _gelatoFee
-    ) external override onlyGelato {
+        bytes calldata _sponsorSignature,
+        uint256 _gelatoFee,
+        bytes32 _taskId
+    ) external onlyGelato {
         require(
             // solhint-disable-next-line not-rely-on-time
             _req.deadline == 0 || _req.deadline >= block.timestamp,
@@ -72,82 +109,59 @@ contract GelatoMetaBox is IGelatoMetaBox, Proxied {
 
         require(_req.chainId == chainId, "Wrong chainId");
 
-        bytes32 taskId = _verifyUserSignature(_req, _userSignature);
-        require(!isTaskIdProcessed[taskId], "Task already processed");
-
-        nonce[_req.user]++;
-
-        require(_isContract(_req.target), "Cannot call EOA");
-        (bool success, ) = _req.target.call(
-            _req.isEIP2771 ? abi.encodePacked(_req.data, _req.user) : _req.data
-        );
-       require(success, "Request call failed"); 
-
-        isTaskIdProcessed[taskId] = true;
-
-        emit ExecuteRequestSuccess(
-            _req.sponsor,
-            _req.user,
-            _req.target,
-            _req.feeToken,
-            _gelatoFee
-        );
-    }
-
-    function _isContract(address _account) private view returns (bool) {
-        return _account.code.length > 0;
-    }
-
-    function _verifyUserSignature(
-        Request calldata _req,
-        bytes calldata _userSignature
-    ) private view returns (bytes32) {
-        bytes32 domainSeparator = keccak256(
-            abi.encode(
-                keccak256(bytes(EIP712_DOMAIN_TYPE)),
-                keccak256(bytes("GelatoMetaBox")),
-                keccak256(bytes("V1")),
-                bytes32(chainId),
-                address(this)
-            )
-        );
-
-        bytes32 digest = keccak256(
-            abi.encodePacked(
-                "\x19\x01",
-                domainSeparator,
-                keccak256(_abiEncodeRequest(_req))
-            )
-        );
-
-        (address recovered, ECDSA.RecoverError error) = ECDSA.tryRecover(
-            digest,
-            _userSignature
-        );
         require(
-            error == ECDSA.RecoverError.NoError && recovered == _req.user,
-            "Invalid user signature"
+            _req.paymentType == 1 || _req.paymentType == 2,
+            "paymentType must be 1 or 2"
         );
 
-        return digest;
+        require(_gelatoFee <= _req.maxFee, "Executor over-charged");
+
+        // Verify and increment user's nonce
+        uint256 userNonce = nonce[_req.user];
+        require(_req.nonce == userNonce, "Invalid nonce");
+        nonce[_req.user] = userNonce + 1;
+
+        _verifyMetaTxRequestSignature(_req, _userSignature, _req.user);
+        // If is sponsored tx, we also verify sponsor's signature
+        if (_req.user != _req.sponsor) {
+            _verifyMetaTxRequestSignature(
+                _req,
+                _sponsorSignature,
+                _req.sponsor
+            );
+        }
+
+        require(_req.target != gasTank, "target address cannot be gasTank");
+        require(_isContract(_req.target), "Cannot call EOA");
+        (bool success, ) = _req.target.call{gas: _req.gas}(
+            abi.encodePacked(_req.data, _req.user)
+        );
+        require(success, "External call failed");
+
+        if (_req.paymentType == 1) {
+            emit LogMetaTxRequestAsyncGasTankFee(
+                _req.sponsor,
+                _req.user,
+                _req.target,
+                _req.sponsorChainId == 0 ? chainId : _req.sponsorChainId,
+                _req.feeToken,
+                _gelatoFee,
+                _taskId
+            );
+        } else {
+            // TODO: deduct balance from GasTank
+            emit LogMetaTxRequestSyncGasTankFee(
+                _req.sponsor,
+                _req.user,
+                _req.target,
+                _req.feeToken,
+                _gelatoFee,
+                _taskId
+            );
+        }
     }
 
-    function _abiEncodeRequest(Request calldata _req)
-        private
-        pure
-        returns (bytes memory encodedReq)
-    {
-        encodedReq = abi.encode(
-            REQUEST_TYPEHASH,
-            _req.chainId,
-            _req.target,
-            keccak256(_req.data),
-            _req.feeToken,
-            _req.user,
-            _req.sponsor,
-            _req.nonce,
-            _req.deadline,
-            _req.isEIP2771
-        );
+    function getDomainSeparator() public view returns (bytes32) {
+        return _getDomainSeparator(chainId);
     }
 }

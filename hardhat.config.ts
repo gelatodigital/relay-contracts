@@ -36,11 +36,34 @@ const config: HardhatUserConfig = {
         accountsBalance: ethers.utils.parseEther("10000").toString(),
       },
     },
+    evmos: {
+      accounts: PK_MAINNET ? [PK_MAINNET] : [],
+      chainId: 9001,
+      url: "https://eth.bd.evmos.org:8545",
+    },
+    rinkeby: {
+      accounts: PK ? [PK] : [],
+      chainId: 4,
+      url: `https://eth-rinkeby.alchemyapi.io/v2/${ALCHEMY_ID}`,
+      gasPrice: parseInt(utils.parseUnits("3", "gwei").toString()),
+    },
+    gnosis: {
+      accounts: PK_MAINNET ? [PK_MAINNET] : [],
+      chainId: 100,
+      url: `https://rpc.gnosischain.com/`,
+      gasPrice: parseInt(utils.parseUnits("13", "gwei").toString()),
+    },
     goerli: {
       accounts: PK ? [PK] : [],
       chainId: 5,
       url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ID}`,
-      gasPrice: parseInt(utils.parseUnits("60", "gwei").toString()),
+      gasPrice: parseInt(utils.parseUnits("6", "gwei").toString()),
+    },
+    kovan: {
+      accounts: PK ? [PK] : [],
+      chainId: 42,
+      url: `https://eth-kovan.alchemyapi.io/v2/${ALCHEMY_ID}`,
+      gasPrice: parseInt(utils.parseUnits("6", "gwei").toString()),
     },
     mainnet: {
       accounts: PK_MAINNET ? [PK_MAINNET] : [],
@@ -55,18 +78,19 @@ const config: HardhatUserConfig = {
     mumbai: {
       accounts: PK ? [PK] : [],
       chainId: 80001,
-      url: "https://rpc-mumbai.maticvigil.com/",
+      url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
   },
-
-  etherscan: {
-    apiKey: ETHERSCAN_API_KEY ? ETHERSCAN_API_KEY : "",
+  verify: {
+    etherscan: {
+      apiKey: ETHERSCAN_API_KEY ? ETHERSCAN_API_KEY : "",
+    },
   },
 
   solidity: {
     compilers: [
       {
-        version: "0.8.11",
+        version: "0.8.13",
         settings: {
           optimizer: { enabled: true, runs: 200000 },
           modelChecker: {

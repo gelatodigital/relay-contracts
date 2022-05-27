@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 export interface Addresses {
   Gelato: string;
-  OracleAggregator: string;
-  WETH: string;
-  DAI: string;
 }
 
 export const getAddresses = (network: string): Addresses => {
@@ -11,44 +8,42 @@ export const getAddresses = (network: string): Addresses => {
     case "hardhat":
       return {
         Gelato: "0x3CACa7b48D0573D793d3b0279b5F0029180E83b6",
-        OracleAggregator: "",
-        WETH: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-        DAI: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
       };
     case "arbitrum":
       return {
         Gelato: "0x4775aF8FEf4809fE10bf05867d2b038a4b5B2146",
-        OracleAggregator: "",
-        WETH: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
-        DAI: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1",
+      };
+    case "evmos":
+      return {
+        Gelato: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
       };
     case "mainnet":
       return {
         Gelato: "0x3CACa7b48D0573D793d3b0279b5F0029180E83b6",
-        OracleAggregator: "",
-        WETH: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-        DAI: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+      };
+    case "kovan":
+      return {
+        Gelato: "0xDf592cB2d32445F8e831d211AB20D3233cA41bD8",
+      };
+    case "gnosis":
+      return {
+        Gelato: "0x29b6603D17B9D8f021EcB8845B6FD06E1Adf89DE",
       };
     case "goerli":
       return {
         Gelato: "0x683913B3A32ada4F8100458A3E1675425BdAa7DF",
-        OracleAggregator: "",
-        WETH: "0x60D4dB9b534EF9260a88b0BED6c486fe13E604Fc",
-        DAI: "0x11fE4B6AE13d2a6055C8D9cF65c55bac32B5d844",
       };
     case "matic":
       return {
         Gelato: "0x7598e84B2E114AB62CAB288CE5f7d5f6bad35BbA",
-        OracleAggregator: "",
-        WETH: "",
-        DAI: "",
       };
     case "mumbai":
       return {
         Gelato: "0x25aD59adbe00C2d80c86d01e2E05e1294DA84823",
-        OracleAggregator: "",
-        WETH: "",
-        DAI: "",
+      };
+    case "rinkeby":
+      return {
+        Gelato: "0x0630d1b8C2df3F0a68Df578D02075027a6397173",
       };
     default:
       throw new Error(`No addresses for Network: ${network}`);
