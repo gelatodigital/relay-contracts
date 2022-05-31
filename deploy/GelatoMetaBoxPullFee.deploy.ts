@@ -12,7 +12,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     hre.network.name === "mumbai" ||
     hre.network.name === "kovan" ||
     hre.network.name === "gnosis" ||
-    hre.network.name === "evmos"
+    hre.network.name === "evmos" ||
+    hre.network.name === "bsc"
   ) {
     console.log(
       `Deploying GelatoMetaBoxPullFee to ${hre.network.name}. Hit ctrl + c to abort`
@@ -41,7 +42,8 @@ func.skip = async (hre: HardhatRuntimeEnvironment) => {
     hre.network.name === "mumbai" ||
     hre.network.name === "kovan" ||
     hre.network.name === "gnosis" ||
-    hre.network.name === "evmos";
+    hre.network.name === "evmos" ||
+    hre.network.name === "bsc";
   return shouldSkip ? true : false;
 };
 func.tags = ["GelatoMetaBoxPullFee"];

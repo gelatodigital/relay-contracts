@@ -36,6 +36,11 @@ const config: HardhatUserConfig = {
         accountsBalance: ethers.utils.parseEther("10000").toString(),
       },
     },
+    bsc: {
+      accounts: PK_MAINNET ? [PK_MAINNET] : [],
+      chainId: 56,
+      url: "https://bsc-dataseed1.ninicoin.io/",
+    },
     evmos: {
       accounts: PK_MAINNET ? [PK_MAINNET] : [],
       chainId: 9001,
