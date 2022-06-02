@@ -36,6 +36,11 @@ const config: HardhatUserConfig = {
         accountsBalance: ethers.utils.parseEther("10000").toString(),
       },
     },
+    alfajores: {
+      accounts: PK_MAINNET ? [PK_MAINNET] : [],
+      chainId: 44787,
+      url: "https://alfajores-forno.celo-testnet.org",
+    },
     bsc: {
       accounts: PK_MAINNET ? [PK_MAINNET] : [],
       chainId: 56,
