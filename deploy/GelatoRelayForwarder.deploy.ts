@@ -25,6 +25,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deployer } = await getNamedAccounts();
   const addresses = getAddresses(hre.network.name);
 
+  console.log(`Deployed address: ${deployer}`);
+
   await deploy("GelatoRelayForwarder", {
     from: deployer,
     proxy: {
