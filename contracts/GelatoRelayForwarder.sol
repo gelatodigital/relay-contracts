@@ -55,6 +55,15 @@ contract GelatoRelayForwarder is
 
     event LogSetGasTankAdmin(address oldGasTankAdmin, address newGasTankAdmin);
 
+    event LogUseGelato1Balance(
+        address indexed sponsor,
+        address indexed service,
+        address indexed feeToken,
+        uint256 sponsorChainId,
+        uint256 nativeToFeeTokenXRateNumerator,
+        uint256 nativeToFeeTokenXRateDenominator
+    );
+
     modifier onlyGelato() {
         require(msg.sender == gelato, "Only callable by gelato");
         _;
@@ -131,6 +140,8 @@ contract GelatoRelayForwarder is
         ForwardRequest calldata _req,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
+        uint256 _nativeToFeeTokenXRateNumerator,
+        uint256 _nativeToFeeTokenXRateDenominator,
         bytes32 _taskId
     ) external onlyGelato {
         require(_req.chainId == chainId, "Wrong chainId");
@@ -194,6 +205,15 @@ contract GelatoRelayForwarder is
                 _req.feeToken,
                 _gelatoFee,
                 _taskId
+            );
+
+            emit LogUseGelato1Balance(
+                _req.sponsor,
+                address(this),
+                _req.feeToken,
+                chainId,
+                _nativeToFeeTokenXRateNumerator,
+                _nativeToFeeTokenXRateDenominator
             );
         } else {
             // TODO: deduct balance from GasTank
