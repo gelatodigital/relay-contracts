@@ -53,6 +53,18 @@ export const getAddresses = (network: string): Addresses => {
       return {
         Gelato: "0x0630d1b8C2df3F0a68Df578D02075027a6397173",
       };
+    case "moonriver":
+      return {
+        Gelato: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
+      };
+    case "moonbeam":
+      return {
+        Gelato: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
+      };
+    case "avalanche":
+      return {
+        Gelato: "0x7C5c4Af1618220C090A6863175de47afb20fa9Df",
+      };
     default:
       throw new Error(`No addresses for Network: ${network}`);
   }
