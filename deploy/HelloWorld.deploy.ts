@@ -54,5 +54,6 @@ func.skip = async (hre: HardhatRuntimeEnvironment) => {
     hre.network.name === "bsc";
   return shouldSkip ? true : false;
 };
+
 func.dependencies = ["GelatoMetaBox"];
 func.tags = ["HelloWorld"];
