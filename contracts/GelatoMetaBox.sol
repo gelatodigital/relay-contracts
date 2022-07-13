@@ -20,22 +20,13 @@ contract GelatoMetaBox is Proxied, Initializable, GelatoMetaBoxBase {
     address public gasTankAdmin;
 
     event LogMetaTxRequestAsyncGasTankFee(
-        address indexed sponsor,
-        address indexed user,
-        address indexed target,
-        uint256 sponsorChainId,
-        address feeToken,
-        uint256 fee,
-        bytes32 taskId
+        bytes32 indexed taskId,
+        address indexed user
     );
 
     event LogMetaTxRequestSyncGasTankFee(
-        address indexed sponsor,
-        address indexed user,
-        address indexed target,
-        address feeToken,
-        uint256 fee,
-        bytes32 taskId
+        bytes32 indexed taskId,
+        address indexed user
     );
 
     event LogSetGasTank(address oldGasTank, address newGasTank);
@@ -150,15 +141,7 @@ contract GelatoMetaBox is Proxied, Initializable, GelatoMetaBoxBase {
         require(success, "External call failed");
 
         if (_req.paymentType == 1) {
-            emit LogMetaTxRequestAsyncGasTankFee(
-                _req.sponsor,
-                _req.user,
-                _req.target,
-                _req.sponsorChainId == 0 ? chainId : _req.sponsorChainId,
-                _req.feeToken,
-                _gelatoFee,
-                _taskId
-            );
+            emit LogMetaTxRequestAsyncGasTankFee(_taskId, _req.user);
 
             emit LogUseGelato1Balance(
                 _req.sponsor,
@@ -168,16 +151,8 @@ contract GelatoMetaBox is Proxied, Initializable, GelatoMetaBoxBase {
                 _nativeToFeeTokenXRateNumerator,
                 _nativeToFeeTokenXRateDenominator
             );
-        } else {
-            // TODO: deduct balance from GasTank
-            emit LogMetaTxRequestSyncGasTankFee(
-                _req.sponsor,
-                _req.user,
-                _req.target,
-                _req.feeToken,
-                _gelatoFee,
-                _taskId
-            );
+        } else if (_req.paymentType == 2) {
+            emit LogMetaTxRequestSyncGasTankFee(_taskId, _req.user);
         }
     }
 
