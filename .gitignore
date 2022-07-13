@@ -28,6 +28,9 @@ typechain
 # typescript
 dist
 
+# yarn
+# yarn-error.log
+
 # VS Code
 .vscode
 
