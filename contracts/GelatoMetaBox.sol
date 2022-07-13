@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
+import {IGelato} from "./interfaces/IGelato.sol";
 import {MetaTxRequest} from "./structs/RequestTypes.sol";
 import {GelatoMetaBoxBase} from "./base/GelatoMetaBoxBase.sol";
 import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";

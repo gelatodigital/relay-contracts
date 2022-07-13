@@ -4,6 +4,7 @@ pragma solidity 0.8.15;
 import {GelatoMetaBoxBase} from "./base/GelatoMetaBoxBase.sol";
 import {NATIVE_TOKEN} from "./constants/Tokens.sol";
 import {MetaTxRequest} from "./structs/RequestTypes.sol";
+import {IGelato} from "./interfaces/IGelato.sol";
 import {IGelatoRelayAllowances} from "./interfaces/IGelatoRelayAllowances.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
@@ -149,7 +150,6 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
         IGelatoRelayAllowances(pullFeeRegistryCopy).pullFeeFrom(
             _req.feeToken,
             _req.sponsor,
-            gelato, // TODO: Not to gelato, but to fee collection contract
             _gelatoFee
         );
 

@@ -5,6 +5,7 @@ import {ForwardRequest} from "./structs/RequestTypes.sol";
 import {NATIVE_TOKEN} from "./constants/Tokens.sol";
 import {GelatoRelayForwarderBase} from "./base/GelatoRelayForwarderBase.sol";
 import {GelatoCallUtils} from "./gelato/GelatoCallUtils.sol";
+import {IGelato} from "./interfaces/IGelato.sol";
 import {IGelatoRelayAllowances} from "./interfaces/IGelatoRelayAllowances.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {
@@ -161,7 +162,6 @@ contract GelatoRelayForwarderPullFee is
         IGelatoRelayAllowances(pullFeeRegistryCopy).pullFeeFrom(
             _req.feeToken,
             _req.sponsor,
-            gelato, // TODO: Not to gelato, but to fee collection contract
             _gelatoFee
         );
 
