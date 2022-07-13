@@ -156,7 +156,7 @@ contract GelatoMetaBox is Proxied, Initializable, GelatoMetaBoxBase {
         }
     }
 
-    function getDomainSeparator() public view returns (bytes32) {
+    function getDomainSeparator() external view returns (bytes32) {
         return _getDomainSeparator(chainId);
     }
 }
