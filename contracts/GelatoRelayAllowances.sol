@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
-import {IGelatoPullFeeRegistry} from "./interfaces/IGelatoPullFeeRegistry.sol";
+import {IGelatoRelayAllowances} from "./interfaces/IGelatoRelayAllowances.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {
     SafeERC20
@@ -12,7 +12,7 @@ import {
 
 /// @notice Intermediate contract for Gelato Relay to pull due fees.
 ///         Sponsors should approve ERC20 allowances to this smart contract
-contract GelatoPullFeeRegistry is IGelatoPullFeeRegistry, ReentrancyGuard {
+contract GelatoRelayAllowances is IGelatoRelayAllowances, ReentrancyGuard {
     address public immutable relayForwarderPullFee;
     address public immutable metaBoxPullFee;
 

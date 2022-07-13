@@ -5,7 +5,7 @@ import {ForwardRequest} from "./structs/RequestTypes.sol";
 import {NATIVE_TOKEN} from "./constants/Tokens.sol";
 import {GelatoRelayForwarderBase} from "./base/GelatoRelayForwarderBase.sol";
 import {GelatoCallUtils} from "./gelato/GelatoCallUtils.sol";
-import {IGelatoPullFeeRegistry} from "./interfaces/IGelatoPullFeeRegistry.sol";
+import {IGelatoRelayAllowances} from "./interfaces/IGelatoRelayAllowances.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {
     SafeERC20
@@ -29,11 +29,11 @@ contract GelatoRelayForwarderPullFee is
 
     address public immutable gelato;
     uint256 public immutable chainId;
+    address public immutable pullFeeRegistry;
 
     mapping(address => uint256) public nonce;
     mapping(bytes32 => bool) public messageDelivered;
     EnumerableSet.AddressSet private _whitelistedDest;
-    address public pullFeeRegistry;
 
     event LogForwardRequestPullFee(
         address indexed sponsor,
@@ -58,6 +58,7 @@ contract GelatoRelayForwarderPullFee is
         }
 
         chainId = _chainId;
+        pullFeeRegistry = address(0);
     }
 
     function pause() external onlyOwner {
@@ -84,15 +85,6 @@ contract GelatoRelayForwarderPullFee is
         );
 
         _whitelistedDest.remove(_dest);
-    }
-
-    function initPullFeeRegistry(address _pullFeeRegistry) external onlyOwner {
-        require(
-            pullFeeRegistry == address(0),
-            "pullFeeRegistry already initialized"
-        );
-
-        pullFeeRegistry = _pullFeeRegistry;
     }
 
     // solhint-disable-next-line function-max-lines
@@ -166,7 +158,7 @@ contract GelatoRelayForwarderPullFee is
         );
         GelatoCallUtils.safeExternalCall(_req.target, _req.data, _req.gas);
 
-        IGelatoPullFeeRegistry(pullFeeRegistryCopy).pullFeeFrom(
+        IGelatoRelayAllowances(pullFeeRegistryCopy).pullFeeFrom(
             _req.feeToken,
             _req.sponsor,
             gelato, // TODO: Not to gelato, but to fee collection contract

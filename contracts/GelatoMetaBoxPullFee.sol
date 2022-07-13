@@ -4,7 +4,7 @@ pragma solidity 0.8.15;
 import {GelatoMetaBoxBase} from "./base/GelatoMetaBoxBase.sol";
 import {NATIVE_TOKEN} from "./constants/Tokens.sol";
 import {MetaTxRequest} from "./structs/RequestTypes.sol";
-import {IGelatoPullFeeRegistry} from "./interfaces/IGelatoPullFeeRegistry.sol";
+import {IGelatoRelayAllowances} from "./interfaces/IGelatoRelayAllowances.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -20,8 +20,8 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
 
     address public immutable gelato;
     uint256 public immutable chainId;
+    address public immutable pullFeeRegistry;
 
-    address public pullFeeRegistry;
     mapping(address => uint256) public nonce;
     EnumerableSet.AddressSet private _whitelistedDest;
 
@@ -49,6 +49,7 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
         }
 
         chainId = _chainId;
+        pullFeeRegistry = address(0);
     }
 
     function pause() external onlyOwner {
@@ -75,15 +76,6 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
         );
 
         _whitelistedDest.remove(_dest);
-    }
-
-    function initPullFeeRegistry(address _pullFeeRegistry) external onlyOwner {
-        require(
-            pullFeeRegistry == address(0),
-            "pullFeeRegistry already initialized"
-        );
-
-        pullFeeRegistry = _pullFeeRegistry;
     }
 
     /// @notice Relay meta tx request + pull fee from (transferFrom) _req.sponsor's address
@@ -154,7 +146,7 @@ contract GelatoMetaBoxPullFee is GelatoMetaBoxBase, Ownable, Pausable {
             require(success, "External call failed");
         }
 
-        IGelatoPullFeeRegistry(pullFeeRegistryCopy).pullFeeFrom(
+        IGelatoRelayAllowances(pullFeeRegistryCopy).pullFeeFrom(
             _req.feeToken,
             _req.sponsor,
             gelato, // TODO: Not to gelato, but to fee collection contract
