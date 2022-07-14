@@ -29,7 +29,7 @@ typechain
 dist
 
 # yarn
-# yarn-error.log
+yarn-error.log
 
 # VS Code
 .vscode
