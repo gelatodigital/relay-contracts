@@ -11,6 +11,7 @@ interface IGelatoRelayAllowances {
     function transfer(
         address _feeToken,
         address _from,
+        address _to,
         uint256 _amount
     ) external;
 }

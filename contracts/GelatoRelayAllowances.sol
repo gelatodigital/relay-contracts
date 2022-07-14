@@ -22,17 +22,11 @@ contract GelatoRelayAllowances is
     ReentrancyGuard
 {
     address public immutable gelato;
-    address public immutable relayForwarderPullFee;
-    address public immutable metaBoxPullFee;
+    address public immutable gelatoRelayPullFee;
 
-    constructor(
-        address _gelato,
-        address _relayForwarderPullFee,
-        address _metaBoxPullFee
-    ) {
+    constructor(address _gelato, address _gelatoRelayPullFee) {
         gelato = _gelato;
-        relayForwarderPullFee = _relayForwarderPullFee;
-        metaBoxPullFee = _metaBoxPullFee;
+        gelatoRelayPullFee = _gelatoRelayPullFee;
     }
 
     function pause() external onlyOwner {
@@ -48,17 +42,12 @@ contract GelatoRelayAllowances is
         address _from,
         uint256 _amount
     ) external override nonReentrant whenNotPaused {
-        require(
-            msg.sender == relayForwarderPullFee || msg.sender == metaBoxPullFee,
-            "Caller not allowed"
-        );
-
-        address feeCollector = IGelato(gelato).getFeeCollector();
+        require(msg.sender == gelatoRelayPullFee, "Caller not allowed");
 
         SafeERC20.safeTransferFrom(
             IERC20(_feeToken),
             _from,
-            feeCollector,
+            IGelato(gelato).getFeeCollector(),
             _amount
         );
     }
@@ -66,13 +55,9 @@ contract GelatoRelayAllowances is
     function transfer(
         address _feeToken,
         address _from,
+        address _to,
         uint256 _amount
     ) external override onlyOwner whenNotPaused {
-        SafeERC20.safeTransferFrom(
-            IERC20(_feeToken),
-            _from,
-            msg.sender,
-            _amount
-        );
+        SafeERC20.safeTransferFrom(IERC20(_feeToken), _from, _to, _amount);
     }
 }

@@ -23,7 +23,7 @@ contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
 
     address public immutable gelato;
     uint256 public immutable chainId;
-    address public immutable pullFeeRegistry;
+    address public immutable gelatoRelayAllowances;
 
     mapping(address => uint256) public nonce;
     mapping(bytes32 => bool) public messageDelivered;
@@ -39,11 +39,11 @@ contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
 
     event LogMetaTxRequestPullFee(
         address indexed sponsor,
-        address indexed user,
+        bytes32 indexed taskId,
         address indexed target,
         address feeToken,
         uint256 fee,
-        bytes32 taskId
+        address user
     );
 
     modifier onlyGelato() {
@@ -61,7 +61,7 @@ contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
         }
 
         chainId = _chainId;
-        pullFeeRegistry = address(0);
+        gelatoRelayAllowances = address(0);
     }
 
     function pause() external onlyOwner {
@@ -161,7 +161,7 @@ contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
 
         _verifyForwardRequestSignature(_req, _sponsorSignature, _req.sponsor);
         // Gas optimization
-        address pullFeeRegistryCopy = pullFeeRegistry;
+        address pullFeeRegistryCopy = gelatoRelayAllowances;
 
         require(
             _req.target != pullFeeRegistryCopy,
@@ -239,7 +239,7 @@ contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
             );
         }
         // Gas optimization
-        address pullFeeRegistryCopy = pullFeeRegistry;
+        address pullFeeRegistryCopy = gelatoRelayAllowances;
         {
             require(
                 _req.target != pullFeeRegistryCopy,
@@ -260,11 +260,11 @@ contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
 
         emit LogMetaTxRequestPullFee(
             _req.sponsor,
-            _req.user,
+            _taskId,
             _req.target,
             _req.feeToken,
             _gelatoFee,
-            _taskId
+            _req.user
         );
     }
 
