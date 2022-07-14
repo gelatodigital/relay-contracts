@@ -1,24 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
-import {ForwardRequest} from "./structs/RequestTypes.sol";
-import {GelatoRelayForwarderBase} from "./base/GelatoRelayForwarderBase.sol";
 import {GelatoCallUtils} from "./gelato/GelatoCallUtils.sol";
+import {GelatoRelayBase} from "./base/GelatoRelayBase.sol";
 import {GelatoTokenUtils} from "./gelato/GelatoTokenUtils.sol";
+import {ForwardRequest} from "./structs/RequestTypes.sol";
+import {IGelato} from "./interfaces/IGelato.sol";
+import {MetaTxRequest} from "./structs/RequestTypes.sol";
 import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
 import {
     Initializable
 } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-/// @title Gelato Relay Forwarder contract
+/// @title Gelato Meta Box contract
 /// @notice This contract must NEVER hold funds!
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here.
 // solhint-disable-next-line max-states-count
-contract GelatoRelayForwarder is
-    Proxied,
-    Initializable,
-    GelatoRelayForwarderBase
-{
+contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
+    // have to merge the base files as well
     address public immutable gelato;
     uint256 public immutable chainId;
 
@@ -49,6 +48,15 @@ contract GelatoRelayForwarder is
         address feeToken,
         uint256 fee,
         bytes32 taskId
+    );
+    event LogMetaTxRequestAsyncGasTankFee(
+        bytes32 indexed taskId,
+        address indexed user
+    );
+
+    event LogMetaTxRequestSyncGasTankFee(
+        bytes32 indexed taskId,
+        address indexed user
     );
 
     event LogSetGasTank(address oldGasTank, address newGasTank);
@@ -108,6 +116,12 @@ contract GelatoRelayForwarder is
         gasTankAdmin = _gasTankAdmin;
     }
 
+    /// @notice Relay request + Sync Payment (target pays Gelato during call forward)
+    /// @param _target Target smart contract
+    /// @param _data Payload for call on _target
+    /// @param _gas Gas limit
+    /// @param _gelatoFee Fee to be charged, denominated in feeToken
+    /// @param _taskId Unique task indentifier
     function forwardCallSyncFee(
         address _target,
         bytes calldata _data,
@@ -135,6 +149,14 @@ contract GelatoRelayForwarder is
         emit LogForwardCallSyncFee(_target, _feeToken, amount, _taskId);
     }
 
+    /// @notice Relay request + async Gas Tank payment deductions (off-chain accounting)
+    /// @param _req Relay request data
+    /// @param _sponsorSignature EIP-712 compliant signature from _req.sponsor
+    /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _req.feeToken
+    /// @notice Oracle value for exchange rate between native tokens and fee token
+    /// @param  _nativeToFeeTokenXRateNumerator Exchange rate numerator
+    /// @param  _nativeToFeeTokenXRateNumerator Exchange rate numerator
+    /// @param _taskId Unique task indentifier
     // solhint-disable-next-line function-max-lines
     function forwardRequestGasTankFee(
         ForwardRequest calldata _req,
@@ -228,7 +250,77 @@ contract GelatoRelayForwarder is
         }
     }
 
-    function getDomainSeparator() public view returns (bytes32) {
+    /// @notice Relay request + async Gas Tank payment deductions (off-chain accounting)
+    /// @param _req Relay request data
+    /// @param _userSignature EIP-712 compliant signature from _req.user
+    /// @param _sponsorSignature EIP-712 compliant signature from _req.sponsor
+    ///                          (can be same as _userSignature)
+    /// @notice   EOA that originates the tx, but does not necessarily pay the relayer
+    /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _req.feeToken
+    // solhint-disable-next-line function-max-lines
+    function metaTxRequestGasTankFee(
+        MetaTxRequest calldata _req,
+        bytes calldata _userSignature,
+        bytes calldata _sponsorSignature,
+        uint256 _gelatoFee,
+        uint256 _nativeToFeeTokenXRateNumerator,
+        uint256 _nativeToFeeTokenXRateDenominator,
+        bytes32 _taskId
+    ) external onlyGelato {
+        require(
+            // solhint-disable-next-line not-rely-on-time
+            _req.deadline == 0 || _req.deadline >= block.timestamp,
+            "Request expired"
+        );
+
+        require(_req.chainId == chainId, "Wrong chainId");
+
+        require(
+            _req.paymentType == 1 || _req.paymentType == 2,
+            "paymentType must be 1 or 2"
+        );
+
+        require(_gelatoFee <= _req.maxFee, "Executor over-charged");
+
+        // Verify and increment user's nonce
+        uint256 userNonce = nonce[_req.user];
+        require(_req.nonce == userNonce, "Invalid nonce");
+        nonce[_req.user] = userNonce + 1;
+
+        _verifyMetaTxRequestSignature(_req, _userSignature, _req.user);
+        // If is sponsored tx, we also verify sponsor's signature
+        if (_req.user != _req.sponsor) {
+            _verifyMetaTxRequestSignature(
+                _req,
+                _sponsorSignature,
+                _req.sponsor
+            );
+        }
+
+        require(_req.target != gasTank, "target address cannot be gasTank");
+        require(_isContract(_req.target), "Cannot call EOA");
+        (bool success, ) = _req.target.call{gas: _req.gas}(
+            abi.encodePacked(_req.data, _req.user)
+        );
+        require(success, "External call failed");
+
+        if (_req.paymentType == 1) {
+            emit LogMetaTxRequestAsyncGasTankFee(_taskId, _req.user);
+
+            emit LogUseGelato1Balance(
+                _req.sponsor,
+                address(this),
+                _req.feeToken,
+                chainId,
+                _nativeToFeeTokenXRateNumerator,
+                _nativeToFeeTokenXRateDenominator
+            );
+        } else if (_req.paymentType == 2) {
+            emit LogMetaTxRequestSyncGasTankFee(_taskId, _req.user);
+        }
+    }
+
+    function getDomainSeparator() external view returns (bytes32) {
         return _getDomainSeparator(chainId);
     }
 }
