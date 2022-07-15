@@ -13,6 +13,9 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     hre.network.name === "kovan" ||
     hre.network.name === "gnosis" ||
     hre.network.name === "evmos" ||
+    hre.network.name === "moonriver" ||
+    hre.network.name === "moonbeam" ||
+    hre.network.name === "avalanche" ||
     hre.network.name === "bsc"
   ) {
     console.log(
@@ -55,7 +58,11 @@ func.skip = async (hre: HardhatRuntimeEnvironment) => {
     hre.network.name === "kovan" ||
     hre.network.name === "gnosis" ||
     hre.network.name === "evmos" ||
+    hre.network.name === "moonriver" ||
+    hre.network.name === "moonbeam" ||
+    hre.network.name === "avalanche" ||
     hre.network.name === "bsc";
   return shouldSkip ? true : false;
 };
+
 func.tags = ["GelatoRelayForwarder"];

@@ -41,6 +41,11 @@ const config: HardhatUserConfig = {
       chainId: 44787,
       url: "https://alfajores-forno.celo-testnet.org",
     },
+    avalanche: {
+      url: "https://api.avax.network/ext/bc/C/rpc",
+      chainId: 43114,
+      accounts: PK ? [PK] : [],
+    },
     bsc: {
       accounts: PK_MAINNET ? [PK_MAINNET] : [],
       chainId: 56,
@@ -89,6 +94,16 @@ const config: HardhatUserConfig = {
       accounts: PK ? [PK] : [],
       chainId: 80001,
       url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_ID}`,
+    },
+    moonbeam: {
+      url: "https://moonbeam.api.onfinality.io/public",
+      chainId: 1284,
+      accounts: PK ? [PK] : [],
+    },
+    moonriver: {
+      url: "https://moonriver-rpc.dwellir.com",
+      chainId: 1285,
+      accounts: PK ? [PK] : [],
     },
   },
   verify: {
