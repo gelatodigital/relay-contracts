@@ -5,12 +5,12 @@ import {ForwardRequest} from "./structs/RequestTypes.sol";
 import {MetaTxRequest} from "./structs/RequestTypes.sol";
 import {NATIVE_TOKEN} from "./constants/Tokens.sol";
 import {GelatoRelayBase} from "./base/GelatoRelayBase.sol";
-import {GelatoCallUtils} from "./gelato/GelatoCallUtils.sol";
 import {IGelato} from "./interfaces/IGelato.sol";
 import {IGelatoRelayAllowances} from "./interfaces/IGelatoRelayAllowances.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -19,6 +19,7 @@ import {
 } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
+    using Address for address;
     using EnumerableSet for EnumerableSet.AddressSet;
 
     address public immutable gelato;
@@ -167,7 +168,9 @@ contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
             _req.target != pullFeeRegistryCopy,
             "Unsafe call to pullFeeRegistry"
         );
-        GelatoCallUtils.safeExternalCall(_req.target, _req.data, _req.gas);
+        require(_isContract(_req.target), "Cannot call EOA");
+
+        _req.target.functionCall(_req.data);
 
         IGelatoRelayAllowances(pullFeeRegistryCopy).pullFeeFrom(
             _req.feeToken,
@@ -246,10 +249,7 @@ contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
                 "Unsafe call to pullFeeRegistry"
             );
             require(_isContract(_req.target), "Cannot call EOA");
-            (bool success, ) = _req.target.call{gas: _req.gas}(
-                abi.encodePacked(_req.data, _req.user)
-            );
-            require(success, "External call failed");
+            _req.target.functionCall(_req.data);
         }
 
         IGelatoRelayAllowances(pullFeeRegistryCopy).pullFeeFrom(

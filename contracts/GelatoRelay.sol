@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
-import {GelatoCallUtils} from "./gelato/GelatoCallUtils.sol";
 import {GelatoRelayBase} from "./base/GelatoRelayBase.sol";
-import {GelatoTokenUtils} from "./gelato/GelatoTokenUtils.sol";
+import {_transfer, _getBalance} from "./utils/Utils.sol";
 import {ForwardRequest} from "./structs/RequestTypes.sol";
 import {IGelato} from "./interfaces/IGelato.sol";
 import {MetaTxRequest} from "./structs/RequestTypes.sol";
 import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
+import {
+    AddressUpgradeable
+} from "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import {
     Initializable
 } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -17,6 +19,8 @@ import {
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here.
 // solhint-disable-next-line max-states-count
 contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
+    using AddressUpgradeable for address;
+
     // have to merge the base files as well
     address public immutable gelato;
     uint256 public immutable chainId;
@@ -119,34 +123,26 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
     /// @notice Relay request + Sync Payment (target pays Gelato during call forward)
     /// @param _target Target smart contract
     /// @param _data Payload for call on _target
-    /// @param _gas Gas limit
     /// @param _gelatoFee Fee to be charged, denominated in feeToken
     /// @param _taskId Unique task indentifier
     function forwardCallSyncFee(
         address _target,
         bytes calldata _data,
         address _feeToken,
-        uint256 _gas,
         uint256 _gelatoFee,
         bytes32 _taskId
     ) external onlyGelato {
-        uint256 preBalance = GelatoTokenUtils.getBalance(
-            _feeToken,
-            address(this)
-        );
+        uint256 preBalance = _getBalance(_feeToken, address(this));
         require(_target != gasTank, "target address cannot be gasTank");
+        require(_isContract(_target), "Cannot call EOA");
 
-        GelatoCallUtils.safeExternalCall(_target, _data, _gas);
-        uint256 postBalance = GelatoTokenUtils.getBalance(
-            _feeToken,
-            address(this)
-        );
+        _target.functionCall(_data);
+        uint256 postBalance = _getBalance(_feeToken, address(this));
 
         uint256 amount = postBalance - preBalance;
         require(amount >= _gelatoFee, "Insufficient fee");
 
-        // TODO: change fee collector
-        GelatoTokenUtils.transferToGelato(gelato, _feeToken, amount);
+        _transfer(_feeToken, gelato, amount);
 
         emit LogForwardCallSyncFee(_target, _feeToken, amount, _taskId);
     }
@@ -219,8 +215,9 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
         }
 
         require(_req.target != gasTank, "target address cannot be gasTank");
+        require(_isContract(_req.target), "Cannot call EOA");
 
-        GelatoCallUtils.safeExternalCall(_req.target, _req.data, _req.gas);
+        _req.target.functionCall(_req.data);
 
         if (_req.paymentType == 1) {
             // GasTank payment with asynchronous fee crediting
@@ -306,11 +303,7 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
         require(_req.target != gasTank, "target address cannot be gasTank");
         require(_isContract(_req.target), "Cannot call EOA");
 
-        (bool success, ) = _req.target.call{gas: _req.gas}(
-            abi.encodePacked(_req.data, _req.user)
-        );
-
-        require(success, "External call failed");
+        _req.target.functionCall(_req.data);
 
         if (_req.paymentType == 1) {
             emit LogMetaTxRequestAsyncGasTankFee(_taskId, _req.user);
