@@ -135,6 +135,7 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
             address(this)
         );
         require(_target != gasTank, "target address cannot be gasTank");
+
         GelatoCallUtils.safeExternalCall(_target, _data, _gas);
         uint256 postBalance = GelatoTokenUtils.getBalance(
             _feeToken,
@@ -143,6 +144,7 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
 
         uint256 amount = postBalance - preBalance;
         require(amount >= _gelatoFee, "Insufficient fee");
+
         // TODO: change fee collector
         GelatoTokenUtils.transferToGelato(gelato, _feeToken, amount);
 
@@ -187,6 +189,7 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
                 // Enforce ordering on nonces,
                 // If tx with nonce n reverts, so will txs with nonce n+1.
                 require(_req.nonce == nonce[_req.sponsor], "Invalid nonce");
+
                 nonce[_req.sponsor] = _req.nonce + 1;
 
                 _verifyForwardRequestSignature(
@@ -216,6 +219,7 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
         }
 
         require(_req.target != gasTank, "target address cannot be gasTank");
+
         GelatoCallUtils.safeExternalCall(_req.target, _req.data, _req.gas);
 
         if (_req.paymentType == 1) {
@@ -284,7 +288,9 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
 
         // Verify and increment user's nonce
         uint256 userNonce = nonce[_req.user];
+
         require(_req.nonce == userNonce, "Invalid nonce");
+
         nonce[_req.user] = userNonce + 1;
 
         _verifyMetaTxRequestSignature(_req, _userSignature, _req.user);
@@ -299,9 +305,11 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
 
         require(_req.target != gasTank, "target address cannot be gasTank");
         require(_isContract(_req.target), "Cannot call EOA");
+
         (bool success, ) = _req.target.call{gas: _req.gas}(
             abi.encodePacked(_req.data, _req.user)
         );
+
         require(success, "External call failed");
 
         if (_req.paymentType == 1) {
