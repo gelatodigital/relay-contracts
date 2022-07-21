@@ -123,6 +123,7 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
     /// @notice Relay request + Sync Payment (target pays Gelato during call forward)
     /// @param _target Target smart contract
     /// @param _data Payload for call on _target
+    /// @param _feeToken payment can be done in any whitelisted token
     /// @param _gelatoFee Fee to be charged, denominated in feeToken
     /// @param _taskId Unique task indentifier
     function forwardCallSyncFee(
@@ -142,7 +143,7 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
         uint256 amount = postBalance - preBalance;
         require(amount >= _gelatoFee, "Insufficient fee");
 
-        _transfer(_feeToken, gelato, amount);
+        _transfer(_feeToken, IGelato(gelato).getFeeCollector(), amount);
 
         emit LogForwardCallSyncFee(_target, _feeToken, amount, _taskId);
     }

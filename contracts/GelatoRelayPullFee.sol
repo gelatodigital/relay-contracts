@@ -28,7 +28,6 @@ contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
 
     mapping(address => uint256) public nonce;
     mapping(bytes32 => bool) public messageDelivered;
-    EnumerableSet.AddressSet private _whitelistedDest;
 
     event LogForwardRequestPullFee(
         address indexed sponsor,
@@ -73,24 +72,6 @@ contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
         _unpause();
     }
 
-    function whitelistDest(address _dest) external onlyOwner {
-        require(
-            !_whitelistedDest.contains(_dest),
-            "Destination address already whitelisted"
-        );
-
-        _whitelistedDest.add(_dest);
-    }
-
-    function delistDest(address _dest) external onlyOwner {
-        require(
-            _whitelistedDest.contains(_dest),
-            "Destination address not whitelisted"
-        );
-
-        _whitelistedDest.remove(_dest);
-    }
-
     /// @notice Relay forward request + pull fee from (transferFrom) _req.sponsor's address
     /// @dev    Assumes that _req.sponsor has approved this contract to spend _req.feeToken
     /// @param _req Relay request data
@@ -109,11 +90,6 @@ contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
         require(_req.chainId == chainId, "Wrong chainId");
 
         require(_req.paymentType == 3, "paymentType must be 3");
-
-        require(
-            _whitelistedDest.contains(_req.target),
-            "target address not whitelisted"
-        );
 
         require(
             _req.feeToken != NATIVE_TOKEN,
@@ -216,11 +192,6 @@ contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
         require(_req.paymentType == 3, "paymentType must be 3");
 
         require(
-            _whitelistedDest.contains(_req.target),
-            "target address not whitelisted"
-        );
-
-        require(
             _req.feeToken != NATIVE_TOKEN,
             "Native token not supported for paymentType 3"
         );
@@ -266,10 +237,6 @@ contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
             _gelatoFee,
             _req.user
         );
-    }
-
-    function getWhitelistedDest() external view returns (address[] memory) {
-        return _whitelistedDest.values();
     }
 
     function getDomainSeparator() public view returns (bytes32) {
