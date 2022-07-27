@@ -53,10 +53,6 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
         uint256 fee,
         bytes32 taskId
     );
-    event LogMetaTxRequestAsyncGasTankFee(
-        bytes32 indexed taskId,
-        address indexed user
-    );
 
     event LogMetaTxRequestSyncGasTankFee(
         bytes32 indexed taskId,
@@ -71,9 +67,11 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
         address indexed sponsor,
         address indexed service,
         address indexed feeToken,
+        address user,
         uint256 sponsorChainId,
         uint256 nativeToFeeTokenXRateNumerator,
-        uint256 nativeToFeeTokenXRateDenominator
+        uint256 nativeToFeeTokenXRateDenominator,
+        bytes32 taskId
     );
 
     modifier onlyGelato() {
@@ -235,9 +233,11 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
                 _req.sponsor,
                 address(this),
                 _req.feeToken,
+                _req.sponsor, // no user param in ForwardRequest
                 chainId,
                 _nativeToFeeTokenXRateNumerator,
-                _nativeToFeeTokenXRateDenominator
+                _nativeToFeeTokenXRateDenominator,
+                _taskId
             );
         } else {
             // TODO: deduct balance from GasTank
@@ -307,15 +307,15 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
         _req.target.functionCall(_req.data);
 
         if (_req.paymentType == 1) {
-            emit LogMetaTxRequestAsyncGasTankFee(_taskId, _req.user);
-
             emit LogUseGelato1Balance(
                 _req.sponsor,
                 address(this),
                 _req.feeToken,
+                _req.user,
                 chainId,
                 _nativeToFeeTokenXRateNumerator,
-                _nativeToFeeTokenXRateDenominator
+                _nativeToFeeTokenXRateDenominator,
+                _taskId
             );
         } else if (_req.paymentType == 2) {
             emit LogMetaTxRequestSyncGasTankFee(_taskId, _req.user);
