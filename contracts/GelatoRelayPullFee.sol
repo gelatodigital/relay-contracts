@@ -1,67 +1,46 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
-import {ForwardRequest} from "./structs/RequestTypes.sol";
-import {MetaTxRequest} from "./structs/RequestTypes.sol";
-import {NATIVE_TOKEN} from "./constants/Tokens.sol";
 import {GelatoRelayBase} from "./base/GelatoRelayBase.sol";
-import {IGelato} from "./interfaces/IGelato.sol";
-import {IGelatoRelayAllowances} from "./interfaces/IGelatoRelayAllowances.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {Address} from "@openzeppelin/contracts/utils/Address.sol";
-import {
-    SafeERC20
-} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {
-    EnumerableSet
-} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
+import {SponsorAuthCall} from "./types/CallTypes.sol";
+import {UserSponsorAuthCall} from "./types/CallTypes.sol";
+import {NATIVE_TOKEN} from "./constants/Tokens.sol";
+import {IGelato} from "./interfaces/IGelato.sol";
+import {IGelatoRelayAllowances} from "./interfaces/IGelatoRelayAllowances.sol";
+import {PaymentType} from "./types/PaymentTypes.sol";
 
 contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
-    using Address for address;
-    using EnumerableSet for EnumerableSet.AddressSet;
+    using GelatoCallUtils for address;
 
-    address public immutable gelato;
-    uint256 public immutable chainId;
     address public immutable gelatoRelayAllowances;
 
     mapping(address => uint256) public nonce;
-    mapping(bytes32 => bool) public messageDelivered;
+    mapping(bytes32 => bool) public isSponsoredCallReplayed;
 
-    event LogForwardRequestPullFee(
+    event LogSponsorAuthCallPullFee(
         address indexed sponsor,
         address indexed target,
-        address feeToken,
+        address indexed feeToken,
         uint256 fee,
         bytes32 taskId
     );
 
-    event LogMetaTxRequestPullFee(
+    event LogUserSponsorAuthCallPullFee(
         address indexed sponsor,
-        bytes32 indexed taskId,
         address indexed target,
-        address feeToken,
+        address indexed feeToken,
         uint256 fee,
-        address user
+        address user,
+        bytes32 taskId
     );
 
-    modifier onlyGelato() {
-        require(msg.sender == gelato, "Only callable by gelato");
-        _;
-    }
-
-    constructor(address _gelato) Ownable() Pausable() {
-        gelato = _gelato;
-
-        uint256 _chainId;
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            _chainId := chainid()
-        }
-
-        chainId = _chainId;
-        gelatoRelayAllowances = address(0);
+    constructor(address _gelato, address _gelatoRelayAllowances)
+        GelatoRelayBase(_gelato)
+    {
+        gelatoRelayAllowances = _gelatoRelayAllowances;
     }
 
     function pause() external onlyOwner {
@@ -72,110 +51,133 @@ contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
         _unpause();
     }
 
-    /// @notice Relay forward request + pull fee from (transferFrom) _req.sponsor's address
-    /// @dev    Assumes that _req.sponsor has approved this contract to spend _req.feeToken
-    /// @param _req Relay request data
-    /// @param _sponsorSignature EIP-712 compliant signature from _req.sponsor
+    /// @notice Relay forward request + pull fee from (transferFrom) _call.sponsor's address
+    /// @dev    Assumes that _call.sponsor has approved this contract to spend _call.feeToken
+    /// @param _call Relay request data
+    /// @param _sponsorSignature EIP-712 compliant signature from _call.sponsor
     ///                          (can be same as _userSignature)
     /// @notice   EOA that originates the tx, but does not necessarily pay the relayer
-    /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _req.feeToken
+    /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _call.feeToken
     /// @param _taskId Gelato task id
     // solhint-disable-next-line function-max-lines
-    function forwardRequestPullFee(
-        ForwardRequest calldata _req,
+    function sponsorAuthCallPullFee(
+        SponsorAuthCall calldata _call,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
         bytes32 _taskId
     ) external onlyGelato whenNotPaused {
-        require(_req.chainId == chainId, "Wrong chainId");
-
-        require(_req.paymentType == 3, "paymentType must be 3");
-
         require(
-            _req.feeToken != NATIVE_TOKEN,
-            "Native token not supported for paymentType 3"
+            _call.chainId == block.chainid,
+            "GelatoRelayPullFee.sponsorAuthCallPullFee: chainId"
         );
 
-        require(_gelatoFee <= _req.maxFee, "Executor over-charged");
+        require(
+            _call.paymentType == PaymentType.PullFee,
+            "GelatoRelayPullFee.sponsorAuthCallPullFee: paymentType"
+        );
+
+        require(
+            _call.feeToken != NATIVE_TOKEN,
+            "GelatoRelayPullFee.sponsorAuthCallPullFee: only ERC-20"
+        );
+
+        require(
+            _gelatoFee <= _call.maxFee,
+            "GelatoRelayPullFee.sponsorAuthCallPullFee: maxFee"
+        );
+
         // Verify and increment sponsor's nonce
-        // We assume that all security is enforced on _req.target address,
+        // We assume that all security is enforced on _call.target address,
         // hence we allow the sponsor to submit multiple transactions concurrently
         // In case one reverts, it won't stop the others from being executed
 
         // Optionally, the dApp may not want to track smart contract nonces
-        // We allow this option, BUT MAKE SURE _req.target implements strong replay protection!
-        if (_req.enforceSponsorNonce) {
-            if (_req.enforceSponsorNonceOrdering) {
+        // We allow this option, BUT MAKE SURE _call.target implements strong replay protection!
+        if (_call.enforceSponsorNonce) {
+            if (_call.enforceSponsorNonceOrdering) {
                 // Enforce ordering on nonces,
                 // If tx with nonce n reverts, so will tx with nonce n+1.
-                require(_req.nonce == nonce[_req.sponsor], "Invalid nonce");
-                nonce[_req.sponsor] = _req.nonce + 1;
+                require(
+                    _call.nonce == nonce[_call.sponsor],
+                    "GelatoRelayPullFee.sponsorAuthCallPullFee: nonce"
+                );
+                nonce[_call.sponsor] = _call.nonce + 1;
 
-                _verifyForwardRequestSignature(
-                    _req,
+                _verifySponsorAuthCallSignature(
+                    _call,
                     _sponsorSignature,
-                    _req.sponsor
+                    _call.sponsor
                 );
             } else {
                 // Do not enforce ordering on nonces,
                 // but still enforce replay protection
                 // via uniqueness of message
-                bytes32 message = _verifyForwardRequestSignature(
-                    _req,
+                bytes32 message = _verifySponsorAuthCallSignature(
+                    _call,
                     _sponsorSignature,
-                    _req.sponsor
+                    _call.sponsor
                 );
-                require(!messageDelivered[message], "Task already executed");
-                messageDelivered[message] = true;
+                require(
+                    !isSponsoredCallReplayed[message],
+                    "GelatoRelayPullFee.sponsorAuthCallPullFee: replay"
+                );
+                isSponsoredCallReplayed[message] = true;
             }
         } else {
-            _verifyForwardRequestSignature(
-                _req,
+            _verifySponsorAuthCallSignature(
+                _call,
                 _sponsorSignature,
-                _req.sponsor
+                _call.sponsor
             );
         }
 
-        _verifyForwardRequestSignature(_req, _sponsorSignature, _req.sponsor);
+        _verifySponsorAuthCallSignature(
+            _call,
+            _sponsorSignature,
+            _call.sponsor
+        );
+
         // Gas optimization
-        address pullFeeRegistryCopy = gelatoRelayAllowances;
+        address gelatoRelayAllowancesCopy = gelatoRelayAllowances;
 
         require(
-            _req.target != pullFeeRegistryCopy,
-            "Unsafe call to pullFeeRegistry"
+            _call.target != gelatoRelayAllowancesCopy,
+            "GelatoRelayPullFee.sponsorAuthCallPullFee: call to pullFeeRegistry"
         );
-        require(_isContract(_req.target), "Cannot call EOA");
 
-        _req.target.functionCall(_req.data);
+        _call.target.revertingContractCall(
+            _call.data,
+            "GelatoRelayPullFee.sponsorAuthCallPullFee:"
+        );
 
-        IGelatoRelayAllowances(pullFeeRegistryCopy).pullFeeFrom(
-            _req.feeToken,
-            _req.sponsor,
+        IGelatoRelayAllowances(gelatoRelayAllowancesCopy).pullFeeFrom(
+            _call.feeToken,
+            _call.sponsor,
             _gelatoFee
         );
 
-        emit LogForwardRequestPullFee(
-            _req.sponsor,
-            _req.target,
-            _req.feeToken,
+        emit LogSponsorAuthCallPullFee(
+            _call.sponsor,
+            _call.target,
+            _call.feeToken,
             _gelatoFee,
             _taskId
         );
     }
 
-    /// @notice Relay meta tx request + pull fee from (transferFrom) _req.sponsor's address
-    /// @dev    Assumes that _req.sponsor has approved this contract to spend _req.feeToken
-    /// @param _req Relay request data
-    /// @param _userSignature EIP-712 compliant signature from _req.user
-    /// @param _sponsorSignature EIP-712 compliant signature from _req.sponsor
+    /// @notice Relay meta tx request + pull fee from (transferFrom) _call.sponsor's address
+    /// @dev    Assumes that _call.sponsor has approved this contract to spend _call.feeToken
+    /// @param _call Relay request data
+    /// @param _userSignature EIP-712 compliant signature from _call.user
+    /// @param _sponsorSignature EIP-712 compliant signature from _call.sponsor
     ///                          (can be same as _userSignature)
     /// @notice   EOA that originates the tx, but does not necessarily pay the relayer
-    /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _req.feeToken
+    /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _call.feeToken
     /// @notice Handles the case of tokens with fee on transfer
     /// @param _taskId Gelato task id
     // solhint-disable-next-line function-max-lines
-    function metaTxRequestPullFee(
-        MetaTxRequest calldata _req,
+    function userSponsorAuthCallPullFee(
+        UserSponsorAuthCall calldata _call,
         bytes calldata _userSignature,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
@@ -183,63 +185,76 @@ contract GelatoRelayPullFee is GelatoRelayBase, Ownable, Pausable {
     ) external onlyGelato whenNotPaused {
         require(
             // solhint-disable-next-line not-rely-on-time
-            _req.deadline == 0 || _req.deadline >= block.timestamp,
-            "Request expired"
+            _call.userDeadline == 0 || _call.userDeadline >= block.timestamp,
+            "GelatoRelayPullFee.userSponsorAuthCallPullFee: Request expired"
         );
-
-        require(_req.chainId == chainId, "Wrong chainId");
-
-        require(_req.paymentType == 3, "paymentType must be 3");
 
         require(
-            _req.feeToken != NATIVE_TOKEN,
-            "Native token not supported for paymentType 3"
+            _call.chainId == block.chainid,
+            "GelatoRelayPullFee.userSponsorAuthCallPullFee: chainId"
         );
 
-        require(_gelatoFee <= _req.maxFee, "Executor over-charged");
+        require(
+            _call.paymentType == PaymentType.PullFee,
+            "GelatoRelayPullFee.userSponsorAuthCallPullFee: paymentType"
+        );
+
+        require(
+            _call.feeToken != NATIVE_TOKEN,
+            "GelatoRelayPullFee.userSponsorAuthCallPullFee: only ERC-20"
+        );
+
+        require(
+            _gelatoFee <= _call.maxFee,
+            "GelatoRelayPullFee.userSponsorAuthCallPullFee: maxFee"
+        );
 
         // Verify and increment user's nonce
-        uint256 userNonce = nonce[_req.user];
-        require(_req.nonce == userNonce, "Invalid nonce");
-        nonce[_req.user] = userNonce + 1;
+        require(
+            _call.nonce == userNonce[_call.user],
+            "GelatoRelayPullFee.userSponsorAuthCallPullFee: nonce"
+        );
+        userNonce[_call.user]++;
 
-        _verifyMetaTxRequestSignature(_req, _userSignature, _req.user);
+        _verifyUserSponsorAuthCallSignature(_call, _userSignature, _call.user);
         // If is sponsored tx, we also verify sponsor's signature
-        if (_req.user != _req.sponsor) {
-            _verifyMetaTxRequestSignature(
-                _req,
+        if (_call.user != _call.sponsor) {
+            _verifyUserSponsorAuthCallSignature(
+                _call,
                 _sponsorSignature,
-                _req.sponsor
+                _call.sponsor
             );
-        }
-        // Gas optimization
-        address pullFeeRegistryCopy = gelatoRelayAllowances;
-        {
-            require(
-                _req.target != pullFeeRegistryCopy,
-                "Unsafe call to pullFeeRegistry"
-            );
-            require(_isContract(_req.target), "Cannot call EOA");
-            _req.target.functionCall(_req.data);
         }
 
-        IGelatoRelayAllowances(pullFeeRegistryCopy).pullFeeFrom(
-            _req.feeToken,
-            _req.sponsor,
+        address gelatoRelayAllowancesCopy = gelatoRelayAllowances;
+
+        require(
+            _call.target != gelatoRelayAllowancesCopy,
+            "GelatoRelayPullFee.userSponsorAuthCallPullFee: call to pullFeeRegistry"
+        );
+
+        _call.target.revertingContractCall(
+            _call.data,
+            "GelatoRelayPullFee.userSponsorAuthCallPullFee:"
+        );
+
+        IGelatoRelayAllowances(gelatoRelayAllowancesCopy).pullFeeFrom(
+            _call.feeToken,
+            _call.sponsor,
             _gelatoFee
         );
 
-        emit LogMetaTxRequestPullFee(
-            _req.sponsor,
-            _taskId,
-            _req.target,
-            _req.feeToken,
+        emit LogUserSponsorAuthCallPullFee(
+            _call.sponsor,
+            _call.target,
+            _call.feeToken,
             _gelatoFee,
-            _req.user
+            _call.user,
+            _taskId
         );
     }
 
-    function getDomainSeparator() public view returns (bytes32) {
-        return _getDomainSeparator(chainId);
+    function getDomainSeparator() public view override returns (bytes32) {
+        return _getDomainSeparator(block.chainid);
     }
 }

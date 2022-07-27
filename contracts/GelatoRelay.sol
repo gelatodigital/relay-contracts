@@ -2,68 +2,35 @@
 pragma solidity 0.8.15;
 
 import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
-import {
-    Initializable
-} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {GelatoRelayBase} from "./base/GelatoRelayBase.sol";
 import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
 import {_transfer, _getBalance} from "./utils/Utils.sol";
-import {ForwardRequest} from "./structs/RequestTypes.sol";
-import {MetaTxRequest} from "./structs/RequestTypes.sol";
+import {SponsorAuthCall} from "./types/CallTypes.sol";
+import {UserSponsorAuthCall} from "./types/CallTypes.sol";
 import {IGelato} from "./interfaces/IGelato.sol";
+import {PaymentType} from "./types/PaymentTypes.sol";
 
 /// @title Gelato Relay contract
 /// @notice This contract must NEVER hold funds!
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here.
 // solhint-disable-next-line max-states-count
-contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
+contract GelatoRelay is Proxied, GelatoRelayBase {
     using GelatoCallUtils for address;
 
-    // have to merge the base files as well
-    address public immutable gelato;
-    uint256 public immutable chainId;
+    mapping(address => uint256) public userNonce;
 
-    mapping(address => uint256) public nonce;
-    mapping(bytes32 => bool) public messageDelivered;
-    address public gasTank;
-    address public gasTankAdmin;
+    mapping(bytes32 => bool) public wasCallSponsoredAlready;
 
-    event LogForwardCallSyncFee(
+    event LogCallWithSyncFee(
         address indexed target,
         address feeToken,
         uint256 fee,
         bytes32 taskId
     );
-
-    event LogForwardRequestAsyncGasTankFee(
-        address indexed sponsor,
-        address indexed target,
-        uint256 sponsorChainId,
-        address feeToken,
-        uint256 fee,
-        bytes32 taskId
-    );
-
-    event LogForwardRequestSyncGasTankFee(
-        address indexed sponsor,
-        address indexed target,
-        address feeToken,
-        uint256 fee,
-        bytes32 taskId
-    );
-
-    event LogMetaTxRequestSyncGasTankFee(
-        bytes32 indexed taskId,
-        address indexed user
-    );
-
-    event LogSetGasTank(address oldGasTank, address newGasTank);
-
-    event LogSetGasTankAdmin(address oldGasTankAdmin, address newGasTankAdmin);
 
     event LogUseGelato1Balance(
         address indexed sponsor,
-        address indexed service,
+        address indexed target,
         address indexed feeToken,
         uint256 sponsorChainId,
         uint256 nativeToFeeTokenXRateNumerator,
@@ -71,49 +38,10 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
         bytes32 taskId
     );
 
-    modifier onlyGelato() {
-        require(msg.sender == gelato, "Only callable by gelato");
-        _;
-    }
+    event LogSponsorNonce(address indexed sponsor, uint256 sponsorNonce);
 
-    modifier onlyGasTankAdmin() {
-        require(msg.sender == gasTankAdmin, "Only callable by gasTankAdmin");
-        _;
-    }
-
-    constructor(address _gelato) {
-        gelato = _gelato;
-
-        uint256 _chainId;
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            _chainId := chainid()
-        }
-
-        chainId = _chainId;
-    }
-
-    function init(address _gasTankAdmin) external initializer {
-        gasTankAdmin = _gasTankAdmin;
-
-        emit LogSetGasTankAdmin(address(0), _gasTankAdmin);
-    }
-
-    function setGasTank(address _gasTank) external onlyGasTankAdmin {
-        require(_gasTank != address(0), "Invalid gasTank address");
-
-        emit LogSetGasTank(gasTank, _gasTank);
-
-        gasTank = _gasTank;
-    }
-
-    function setGasTankAdmin(address _gasTankAdmin) external onlyGasTankAdmin {
-        require(_gasTankAdmin != address(0), "Invalid gasTankAdmin address");
-
-        emit LogSetGasTankAdmin(gasTankAdmin, _gasTankAdmin);
-
-        gasTankAdmin = _gasTankAdmin;
-    }
+    // solhint-disable-next-line no-empty-blocks
+    constructor(address _gelato) GelatoRelayBase(_gelato) {}
 
     /// @notice Relay request + Sync Payment (target pays Gelato during call forward)
     /// @param _target Target smart contract
@@ -121,7 +49,7 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
     /// @param _feeToken payment can be done in any whitelisted token
     /// @param _gelatoFee Fee to be charged, denominated in feeToken
     /// @param _taskId Unique task indentifier
-    function forwardCallSyncFee(
+    function callWithSyncFee(
         address _target,
         bytes calldata _data,
         address _feeToken,
@@ -130,9 +58,7 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
     ) external onlyGelato {
         uint256 preBalance = _getBalance(_feeToken, address(this));
 
-        require(_target != gasTank, "target address cannot be gasTank");
-
-        _target.revertingContractCall(_data, "GelatoRelay.forwardCallSyncFee:");
+        _target.revertingContractCall(_data, "GelatoRelay.callWithSyncFee:");
 
         uint256 postBalance = _getBalance(_feeToken, address(this));
 
@@ -141,126 +67,83 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
 
         _transfer(_feeToken, IGelato(gelato).getFeeCollector(), amount);
 
-        emit LogForwardCallSyncFee(_target, _feeToken, amount, _taskId);
+        emit LogCallWithSyncFee(_target, _feeToken, amount, _taskId);
     }
 
-    /// @notice Relay request + async Gas Tank payment deductions (off-chain accounting)
-    /// @param _req Relay request data
-    /// @param _sponsorSignature EIP-712 compliant signature from _req.sponsor
-    /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _req.feeToken
+    /// @notice Relay request + One Balance
+    /// @param _call Relay request data
+    /// @param _sponsorSignature EIP-712 compliant signature from _call.sponsor
+    /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _call.feeToken
     /// @notice Oracle value for exchange rate between native tokens and fee token
     /// @param  _nativeToFeeTokenXRateNumerator Exchange rate numerator
     /// @param  _nativeToFeeTokenXRateNumerator Exchange rate numerator
     /// @param _taskId Unique task indentifier
     // solhint-disable-next-line function-max-lines
-    function forwardRequestGasTankFee(
-        ForwardRequest calldata _req,
+    function callWithOneBalance(
+        SponsorAuthCall calldata _call,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
         uint256 _nativeToFeeTokenXRateNumerator,
         uint256 _nativeToFeeTokenXRateDenominator,
         bytes32 _taskId
     ) external onlyGelato {
-        require(_req.chainId == chainId, "Wrong chainId");
+        require(
+            _call.chainId == block.chainid,
+            "GelatoRelay.callWithOneBalance: chainId"
+        );
 
         require(
-            _req.paymentType == 1 || _req.paymentType == 2,
-            "paymentType must be 1 or 2"
+            _call.paymentType == PaymentType.OneBalance,
+            "GelatoRelay.callWithOneBalance: paymentType must be OneBalance"
         );
 
-        require(_gelatoFee <= _req.maxFee, "Gelato executor over-charged");
-
-        // Verify and increment sponsor's nonce
-        // We assume that all security is enforced on _req.target address,
-        // hence we allow the sponsor to submit multiple transactions concurrently
-        // In case one reverts, it won't stop the following ones from being executed
-
-        // Optionally, the dApp may not want to track smart contract nonces
-        // We allow this option, BUT MAKE SURE _req.target IMPLEMENTS STRONG REPLAY PROTECTION!!
-        if (_req.enforceSponsorNonce) {
-            if (_req.enforceSponsorNonceOrdering) {
-                // Enforce ordering on nonces,
-                // If tx with nonce n reverts, so will txs with nonce n+1.
-                require(_req.nonce == nonce[_req.sponsor], "Invalid nonce");
-
-                nonce[_req.sponsor] = _req.nonce + 1;
-
-                _verifyForwardRequestSignature(
-                    _req,
-                    _sponsorSignature,
-                    _req.sponsor
-                );
-            } else {
-                // Do not enforce ordering on nonces,
-                // but still enforce replay protection
-                // via uniqueness of message
-                bytes32 message = _verifyForwardRequestSignature(
-                    _req,
-                    _sponsorSignature,
-                    _req.sponsor
-                );
-
-                require(!messageDelivered[message], "Task already executed");
-                messageDelivered[message] = true;
-            }
-        } else {
-            _verifyForwardRequestSignature(
-                _req,
-                _sponsorSignature,
-                _req.sponsor
-            );
-        }
-
-        require(_req.target != gasTank, "target address cannot be gasTank");
-
-        _req.target.revertingContractCall(
-            _req.data,
-            "GelatoRelay.forwardRequestGasTankFee:"
+        require(
+            _gelatoFee <= _call.maxFee,
+            "GelatoRelay.callWithOneBalance: maxFee"
         );
 
-        if (_req.paymentType == 1) {
-            // GasTank payment with asynchronous fee crediting
-            emit LogForwardRequestAsyncGasTankFee(
-                _req.sponsor,
-                _req.target,
-                _req.sponsorChainId == 0 ? chainId : _req.sponsorChainId,
-                _req.feeToken,
-                _gelatoFee,
-                _taskId
-            );
+        // Do not enforce ordering on nonces,
+        // but still enforce replay protection
+        // via uniqueness of message
+        bytes32 digest = _verifySponsorAuthCallSignature(
+            _call,
+            _sponsorSignature,
+            _call.sponsor
+        );
+        require(
+            !wasCallSponsoredAlready[digest],
+            "GelatoRelay.callWithOneBalance: replay"
+        );
+        wasCallSponsoredAlready[digest] = true;
 
-            emit LogUseGelato1Balance(
-                _req.sponsor,
-                address(this),
-                _req.feeToken,
-                chainId,
-                _nativeToFeeTokenXRateNumerator,
-                _nativeToFeeTokenXRateDenominator,
-                _taskId
-            );
-        } else {
-            // TODO: deduct balance from GasTank
-            // Credit GasTank fee
-            emit LogForwardRequestSyncGasTankFee(
-                _req.sponsor,
-                _req.target,
-                _req.feeToken,
-                _gelatoFee,
-                _taskId
-            );
-        }
+        _call.target.revertingContractCall(
+            _call.data,
+            "GelatoRelay.callWithOneBalance:"
+        );
+
+        emit LogUseGelato1Balance(
+            _call.sponsor,
+            _call.target,
+            _call.feeToken,
+            _call.sponsorChainId,
+            _nativeToFeeTokenXRateNumerator,
+            _nativeToFeeTokenXRateDenominator,
+            _taskId
+        );
+
+        emit LogSponsorNonce(_call.sponsor, _call.sponsorNonce);
     }
 
-    /// @notice Relay request + async Gas Tank payment deductions (off-chain accounting)
-    /// @param _req Relay request data
-    /// @param _userSignature EIP-712 compliant signature from _req.user
-    /// @param _sponsorSignature EIP-712 compliant signature from _req.sponsor
+    /// @notice Relay request + One Balance
+    /// @param _call Relay request data
+    /// @param _userSignature EIP-712 compliant signature from _call.user
+    /// @param _sponsorSignature EIP-712 compliant signature from _call.sponsor
     ///                          (can be same as _userSignature)
     /// @notice   EOA that originates the tx, but does not necessarily pay the relayer
-    /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _req.feeToken
+    /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _call.feeToken
     // solhint-disable-next-line function-max-lines
-    function metaTxRequestGasTankFee(
-        MetaTxRequest calldata _req,
+    function userSponsorAuthCallWithOneBalance(
+        UserSponsorAuthCall calldata _call,
         bytes calldata _userSignature,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
@@ -270,59 +153,66 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
     ) external onlyGelato {
         require(
             // solhint-disable-next-line not-rely-on-time
-            _req.deadline == 0 || _req.deadline >= block.timestamp,
+            _call.userDeadline == 0 || _call.userDeadline >= block.timestamp,
             "Request expired"
         );
 
-        require(_req.chainId == chainId, "Wrong chainId");
+        require(
+            _call.chainId == block.chainid,
+            "GelatoRelay.userSponsorAuthCallWithOneBalance: chainId"
+        );
 
         require(
-            _req.paymentType == 1 || _req.paymentType == 2,
-            "paymentType must be 1 or 2"
+            _call.paymentType == PaymentType.OneBalance,
+            "GelatoRelay.userSponsorAuthCallWithOneBalance: paymentType"
         );
 
-        require(_gelatoFee <= _req.maxFee, "Executor over-charged");
+        require(
+            _gelatoFee <= _call.maxFee,
+            "GelatoRelay.userSponsorAuthCallWithOneBalance: maxFee"
+        );
 
         // Verify and increment user's nonce
-        uint256 userNonce = nonce[_req.user];
-
-        require(_req.nonce == userNonce, "Invalid nonce");
-
-        nonce[_req.user] = userNonce + 1;
-
-        _verifyMetaTxRequestSignature(_req, _userSignature, _req.user);
-        // If is sponsored tx, we also verify sponsor's signature
-        if (_req.user != _req.sponsor) {
-            _verifyMetaTxRequestSignature(
-                _req,
-                _sponsorSignature,
-                _req.sponsor
-            );
-        }
-
-        require(_req.target != gasTank, "target address cannot be gasTank");
-
-        _req.target.revertingContractCall(
-            _req.data,
-            "GelatoRelay.metaTxRequestGasTankFee:"
+        require(
+            _call.nonce == userNonce[_call.user],
+            "GelatoRelay.userSponsorAuthCallWithOneBalance: nonce"
         );
 
-        if (_req.paymentType == 1) {
-            emit LogUseGelato1Balance(
-                _req.sponsor,
-                address(this),
-                _req.feeToken,
-                chainId,
-                _nativeToFeeTokenXRateNumerator,
-                _nativeToFeeTokenXRateDenominator,
-                _taskId
-            );
-        } else if (_req.paymentType == 2) {
-            emit LogMetaTxRequestSyncGasTankFee(_taskId, _req.user);
-        }
-    }
+        userNonce[_call.user]++;
 
-    function getDomainSeparator() external view returns (bytes32) {
-        return _getDomainSeparator(chainId);
+        _verifyUserSponsorAuthCallSignature(_call, _userSignature, _call.user);
+
+        // If is sponsored tx, we also verify sponsor's signature
+        if (_call.user != _call.sponsor) {
+            // Do not enforce ordering on nonces,
+            // but still enforce replay protection
+            // via uniqueness of call with nonce
+            bytes32 digest = _verifyUserSponsorAuthCallSignature(
+                _call,
+                _sponsorSignature,
+                _call.sponsor
+            );
+            require(
+                !wasCallSponsoredAlready[digest],
+                "GelatoRelay.callWithOneBalance: replay"
+            );
+            wasCallSponsoredAlready[digest] = true;
+        }
+
+        _call.target.revertingContractCall(
+            _call.data,
+            "GelatoRelay.userSponsorAuthCallOneBalance:"
+        );
+
+        emit LogUseGelato1Balance(
+            _call.sponsor,
+            _call.target,
+            _call.feeToken,
+            _call.sponsorChainId,
+            _nativeToFeeTokenXRateNumerator,
+            _nativeToFeeTokenXRateDenominator,
+            _taskId
+        );
+        emit LogSponsorNonce(_call.sponsor, _call.sponsorNonce);
     }
 }

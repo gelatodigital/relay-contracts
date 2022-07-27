@@ -1,30 +1,45 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
-import {ForwardRequest} from "../structs/RequestTypes.sol";
-import {MetaTxRequest} from "../structs/RequestTypes.sol";
+import {SponsorAuthCall} from "../types/CallTypes.sol";
+import {UserSponsorAuthCall} from "../types/CallTypes.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 abstract contract GelatoRelayBase {
-    bytes32 public constant FORWARD_REQUEST_TYPEHASH =
+    bytes32 public constant SPONSOR_AUTH_CALL_TYPEHASH =
         keccak256(
             bytes(
                 // solhint-disable-next-line max-line-length
-                "ForwardRequest(uint256 chainId,address target,bytes data,address feeToken,uint256 paymentType,uint256 maxFee,uint256 gas,address sponsor,uint256 sponsorChainId,uint256 nonce,bool enforceSponsorNonce,bool enforceSponsorNonceOrdering)"
+                "SponsorAuthCall(uint256 chainId,address target,bytes data,address feeToken,uint256 paymentType,uint256 maxFee,address sponsor,uint256 sponsorChainId,uint256 nonce,bool enforceSponsorNonce,bool enforceSponsorNonceOrdering)"
             )
         );
 
-    bytes32 public constant METATX_REQUEST_TYPEHASH =
+    bytes32 public constant USER_SPONSOR_AUTH_CALL_TYPEHASH =
         keccak256(
             bytes(
                 // solhint-disable-next-line max-line-length
-                "MetaTxRequest(uint256 chainId,address target,bytes data,address feeToken,uint256 paymentType,uint256 maxFee,uint256 gas,address user,address sponsor,uint256 sponsorChainId,uint256 nonce,uint256 deadline)"
+                "UserSponsorAuthCall(uint256 chainId,address target,bytes data,address feeToken,uint256 paymentType,uint256 maxFee,address user,address sponsor,uint256 sponsorChainId,uint256 nonce,uint256 userDeadline)"
             )
         );
 
     // solhint-disable-next-line max-line-length
     string public constant EIP712_DOMAIN_TYPE =
         "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
+
+    address public immutable gelato;
+
+    modifier onlyGelato() {
+        require(msg.sender == gelato, "Only callable by gelato");
+        _;
+    }
+
+    constructor(address _gelato) {
+        gelato = _gelato;
+    }
+
+    function getDomainSeparator() external view returns (bytes32) {
+        return _getDomainSeparator(block.chainid);
+    }
 
     function _getDomainSeparator(uint256 _chainId)
         internal
@@ -35,7 +50,7 @@ abstract contract GelatoRelayBase {
             keccak256(
                 abi.encode(
                     keccak256(bytes(EIP712_DOMAIN_TYPE)),
-                    keccak256(bytes("GelatoMetaBox")),
+                    keccak256(bytes("GelatoRelay")),
                     keccak256(bytes("V1")),
                     bytes32(_chainId),
                     address(this)
@@ -43,18 +58,18 @@ abstract contract GelatoRelayBase {
             );
     }
 
-    function _verifyForwardRequestSignature(
-        ForwardRequest calldata _req,
+    function _verifySponsorAuthCallSignature(
+        SponsorAuthCall calldata _call,
         bytes calldata _signature,
         address _expectedSigner
     ) internal view returns (bytes32) {
-        bytes32 domainSeparator = _getDomainSeparator(_req.chainId);
+        bytes32 domainSeparator = _getDomainSeparator(_call.chainId);
 
         bytes32 digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
                 domainSeparator,
-                keccak256(_abiEncodeForwardRequest(_req))
+                keccak256(_abiEncodeSponsorAuthCall(_call))
             )
         );
 
@@ -70,18 +85,18 @@ abstract contract GelatoRelayBase {
         return digest;
     }
 
-    function _verifyMetaTxRequestSignature(
-        MetaTxRequest calldata _req,
+    function _verifyUserSponsorAuthCallSignature(
+        UserSponsorAuthCall calldata _call,
         bytes calldata _signature,
         address _expectedSigner
     ) internal view {
-        bytes32 domainSeparator = _getDomainSeparator(_req.chainId);
+        bytes32 domainSeparator = _getDomainSeparator(_call.chainId);
 
         bytes32 digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
                 domainSeparator,
-                keccak256(_abiEncodeMetaTxRequest(_req))
+                keccak256(_abiEncodeUserSponsorAuthCall(_call))
             )
         );
 
@@ -95,49 +110,45 @@ abstract contract GelatoRelayBase {
         );
     }
 
-    function _isContract(address _account) internal view returns (bool) {
-        return _account.code.length > 0;
-    }
-
-    function _abiEncodeForwardRequest(ForwardRequest calldata _req)
+    function _abiEncodeSponsorAuthCall(SponsorAuthCall calldata _call)
         internal
         pure
         returns (bytes memory encodedReq)
     {
         encodedReq = abi.encode(
-            FORWARD_REQUEST_TYPEHASH,
-            _req.chainId,
-            _req.target,
-            keccak256(_req.data),
-            _req.feeToken,
-            _req.paymentType,
-            _req.maxFee,
-            _req.sponsor,
-            _req.sponsorChainId,
-            _req.nonce,
-            _req.enforceSponsorNonce,
-            _req.enforceSponsorNonceOrdering
+            SPONSOR_AUTH_CALL_TYPEHASH,
+            _call.chainId,
+            _call.target,
+            keccak256(_call.data),
+            _call.feeToken,
+            _call.paymentType,
+            _call.maxFee,
+            _call.sponsor,
+            _call.sponsorChainId,
+            _call.userNonce,
+            _call.enforceSponsorNonce,
+            _call.enforceSponsorNonceOrdering
         );
     }
 
-    function _abiEncodeMetaTxRequest(MetaTxRequest calldata _req)
+    function _abiEncodeUserSponsorAuthCall(UserSponsorAuthCall calldata _call)
         internal
         pure
         returns (bytes memory encodedReq)
     {
         encodedReq = abi.encode(
-            METATX_REQUEST_TYPEHASH,
-            _req.chainId,
-            _req.target,
-            keccak256(_req.data),
-            _req.feeToken,
-            _req.paymentType,
-            _req.maxFee,
-            _req.user,
-            _req.sponsor,
-            _req.sponsorChainId,
-            _req.nonce,
-            _req.deadline
+            USER_SPONSOR_AUTH_CALL_TYPEHASH,
+            _call.chainId,
+            _call.target,
+            keccak256(_call.data),
+            _call.feeToken,
+            _call.paymentType,
+            _call.maxFee,
+            _call.user,
+            _call.sponsor,
+            _call.sponsorChainId,
+            _call.nonce,
+            _call.userDeadline
         );
     }
 }
