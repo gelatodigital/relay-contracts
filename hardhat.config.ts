@@ -12,6 +12,7 @@ import { ethers, utils } from "ethers";
 dotenv.config({ path: __dirname + "/.env" });
 
 const PK = process.env.PK;
+const DEV_PK = process.env.DEV_PK;
 const PK_MAINNET = process.env.PK_MAINNET;
 const ALCHEMY_ID = process.env.ALCHEMY_ID;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
@@ -86,7 +87,7 @@ const config: HardhatUserConfig = {
       url: `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
     mumbai: {
-      accounts: PK ? [PK] : [],
+      accounts: DEV_PK ? [DEV_PK] : [],
       chainId: 80001,
       url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },

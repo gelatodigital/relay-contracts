@@ -11,6 +11,6 @@
     "outDir": "dist"
   },
   "files": ["hardhat.config.ts"],
-  "include": ["deploy", "test", "typechain", "src", "scripts"],
+  "include": ["deploy", "test", "typechain", "src", "scripts", "old-deploy/GelatoRelayForwarder.deploy.ts", "old-deploy/GelatoMetaBox.deploy.ts"],
   "exclude": ["node_modules"]
 }
