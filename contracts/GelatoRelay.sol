@@ -1,25 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
-import {GelatoRelayBase} from "./base/GelatoRelayBase.sol";
-import {_transfer, _getBalance} from "./utils/Utils.sol";
-import {ForwardRequest} from "./structs/RequestTypes.sol";
-import {IGelato} from "./interfaces/IGelato.sol";
-import {MetaTxRequest} from "./structs/RequestTypes.sol";
 import {Proxied} from "./vendor/hardhat-deploy/Proxied.sol";
-import {
-    AddressUpgradeable
-} from "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import {
     Initializable
 } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {GelatoRelayBase} from "./base/GelatoRelayBase.sol";
+import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
+import {_transfer, _getBalance} from "./utils/Utils.sol";
+import {ForwardRequest} from "./structs/RequestTypes.sol";
+import {MetaTxRequest} from "./structs/RequestTypes.sol";
+import {IGelato} from "./interfaces/IGelato.sol";
 
-/// @title Gelato Meta Box contract
+/// @title Gelato Relay contract
 /// @notice This contract must NEVER hold funds!
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here.
 // solhint-disable-next-line max-states-count
 contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
-    using AddressUpgradeable for address;
+    using GelatoCallUtils for address;
 
     // have to merge the base files as well
     address public immutable gelato;
@@ -67,7 +65,6 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
         address indexed sponsor,
         address indexed service,
         address indexed feeToken,
-        address user,
         uint256 sponsorChainId,
         uint256 nativeToFeeTokenXRateNumerator,
         uint256 nativeToFeeTokenXRateDenominator,
@@ -132,10 +129,11 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
         bytes32 _taskId
     ) external onlyGelato {
         uint256 preBalance = _getBalance(_feeToken, address(this));
-        require(_target != gasTank, "target address cannot be gasTank");
-        require(_isContract(_target), "Cannot call EOA");
 
-        _target.functionCall(_data);
+        require(_target != gasTank, "target address cannot be gasTank");
+
+        _target.revertingContractCall(_data, "GelatoRelay.forwardCallSyncFee:");
+
         uint256 postBalance = _getBalance(_feeToken, address(this));
 
         uint256 amount = postBalance - preBalance;
@@ -214,9 +212,11 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
         }
 
         require(_req.target != gasTank, "target address cannot be gasTank");
-        require(_isContract(_req.target), "Cannot call EOA");
 
-        _req.target.functionCall(_req.data);
+        _req.target.revertingContractCall(
+            _req.data,
+            "GelatoRelay.forwardRequestGasTankFee:"
+        );
 
         if (_req.paymentType == 1) {
             // GasTank payment with asynchronous fee crediting
@@ -233,7 +233,6 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
                 _req.sponsor,
                 address(this),
                 _req.feeToken,
-                _req.sponsor, // no user param in ForwardRequest
                 chainId,
                 _nativeToFeeTokenXRateNumerator,
                 _nativeToFeeTokenXRateDenominator,
@@ -302,16 +301,17 @@ contract GelatoRelay is Proxied, Initializable, GelatoRelayBase {
         }
 
         require(_req.target != gasTank, "target address cannot be gasTank");
-        require(_isContract(_req.target), "Cannot call EOA");
 
-        _req.target.functionCall(_req.data);
+        _req.target.revertingContractCall(
+            _req.data,
+            "GelatoRelay.metaTxRequestGasTankFee:"
+        );
 
         if (_req.paymentType == 1) {
             emit LogUseGelato1Balance(
                 _req.sponsor,
                 address(this),
                 _req.feeToken,
-                _req.user,
                 chainId,
                 _nativeToFeeTokenXRateNumerator,
                 _nativeToFeeTokenXRateDenominator,
