@@ -17,6 +17,10 @@ import {IGelato} from "./interfaces/IGelato.sol";
 import {IGelatoRelayAllowances} from "./interfaces/IGelatoRelayAllowances.sol";
 import {PaymentType} from "./types/PaymentTypes.sol";
 
+/// @title  Gelato Relay with TransferFrom contract
+/// @notice This contract deals with synchronous native/ERC-20 payments via transferFrom
+/// @dev    This contract must NEVER hold funds!
+/// @dev    Maliciously crafted transaction payloads could wipe out any funds left here
 contract GelatoRelayWithTransferFrom is
     IGelatoRelayWithTransferFrom,
     GelatoRelayBase,
@@ -41,12 +45,11 @@ contract GelatoRelayWithTransferFrom is
         _unpause();
     }
 
-    /// @notice Relay forward request + pull fee from (transferFrom) _call.sponsor's address
+    /// @notice Relay call + transferFrom from sponsor
+    /// @notice Sponsor authentication via signature allows for payment with sponsor's feeToken
     /// @dev    Assumes that _call.sponsor has approved this contract to spend _call.feeToken
-    /// @param _call Relay request data
+    /// @param _call Relay call data packed into SponsorAuthCall struct
     /// @param _sponsorSignature EIP-712 compliant signature from _call.sponsor
-    ///                          (can be same as _userSignature)
-    /// @notice   EOA that originates the tx, but does not necessarily pay the relayer
     /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _call.feeToken
     /// @param _taskId Gelato task id
     // solhint-disable-next-line function-max-lines
@@ -109,7 +112,13 @@ contract GelatoRelayWithTransferFrom is
         emit LogSponsorNonce(_call.sponsor, _call.sponsorNonce);
     }
 
-    // TODO: add docstring
+    /// @notice Relay call + transferFrom from user
+    /// @notice User authentication via signature allows for payment with user's feeToken
+    /// @dev    Assumes that _call.user has approved this contract to spend _call.feeToken
+    /// @param _call Relay call data packed into UserAuthCall struct
+    /// @param _userSignature EIP-712 compliant signature from _call.user
+    /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _call.feeToken
+    /// @param _taskId Gelato task id
     // solhint-disable-next-line function-max-lines
     function userAuthCall(
         UserAuthCall calldata _call,
@@ -166,15 +175,13 @@ contract GelatoRelayWithTransferFrom is
         );
     }
 
-    /// @notice Relay meta tx request + pull fee from (transferFrom) _call.sponsor's address
+    /// @notice Relay call + transferFrom from sponsor - with BOTH sponsor and user authentication
+    /// @notice Both sponsor and user signature allows for payment via sponsor's feeToken
     /// @dev    Assumes that _call.sponsor has approved this contract to spend _call.feeToken
-    /// @param _call Relay request data
+    /// @param _call Relay call data packed into userSponsorAuthCall
     /// @param _userSignature EIP-712 compliant signature from _call.user
     /// @param _sponsorSignature EIP-712 compliant signature from _call.sponsor
-    ///                          (can be same as _userSignature)
-    /// @notice   EOA that originates the tx, but does not necessarily pay the relayer
     /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _call.feeToken
-    /// @notice Handles the case of tokens with fee on transfer
     /// @param _taskId Gelato task id
     // solhint-disable-next-line function-max-lines
     function userSponsorAuthCall(

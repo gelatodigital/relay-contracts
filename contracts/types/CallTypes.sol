@@ -17,6 +17,7 @@ struct SponsorAuthCall {
     uint256 maxFee;
 }
 
+// When the user pays for themselves, so only user signature verification required
 struct UserAuthCall {
     uint256 chainId;
     address target;
@@ -30,9 +31,9 @@ struct UserAuthCall {
     uint256 maxFee;
 }
 
-// Relay request with built-in support with signature verification on behalf of user
-// In case a sponsor (other than user) wants to pay for the tx,
-// we will also need to verify sponsor's signature
+// Relay call with built-in support with signature verification on behalf of user and sponsor
+// Both user and sponsor signatures are verified
+// The sponsor pays for the relay call
 struct UserSponsorAuthCall {
     uint256 chainId;
     address target;

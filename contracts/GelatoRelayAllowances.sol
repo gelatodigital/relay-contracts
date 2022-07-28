@@ -13,8 +13,8 @@ import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-/// @notice Intermediate contract for Gelato Relay to pull due fees.
-///         Sponsors should approve ERC20 allowances to this smart contract
+/// @notice Intermediate contract for Gelato Relay to transferFrom
+/// @dev    Sponsors should approve ERC20 allowances to this smart contract
 contract GelatoRelayAllowances is
     IGelatoRelayAllowances,
     Ownable,
