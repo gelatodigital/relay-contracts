@@ -1,81 +1,74 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.15;
 
-import {IGelatoRelay} from "./interfaces/IGelatoRelay.sol";
-import {IGelato1Balance} from "./interfaces/IGelato1Balance.sol";
+import {
+    IGelatoRelayWithTransferFrom
+} from "./interfaces/IGelatoRelayWithTransferFrom.sol";
 import {GelatoRelayBase} from "./GelatoRelayBase.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
 import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
-import {GelatoTokenUtils} from "./lib/GelatoTokenUtils.sol";
 import {
     SponsorAuthCall,
     UserAuthCall,
     UserSponsorAuthCall
 } from "./types/CallTypes.sol";
 import {IGelato} from "./interfaces/IGelato.sol";
+import {IGelatoRelayAllowances} from "./interfaces/IGelatoRelayAllowances.sol";
 import {PaymentType} from "./types/PaymentTypes.sol";
 
-/// @title Gelato Relay contract
-/// @notice This contract must NEVER hold funds!
-/// @dev    Maliciously crafted transaction payloads could wipe out any funds left here.
-// solhint-disable-next-line max-states-count
-contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
+contract GelatoRelayWithTransferFrom is
+    IGelatoRelayWithTransferFrom,
+    GelatoRelayBase,
+    Ownable,
+    Pausable
+{
     using GelatoCallUtils for address;
-    using GelatoTokenUtils for address;
 
-    // solhint-disable-next-line no-empty-blocks
-    constructor(address _gelato) GelatoRelayBase(_gelato) {}
+    address public immutable gelatoRelayAllowances;
 
-    /// @notice Relay request + Sync Payment (target pays Gelato during call forward)
-    /// @param _target Target smart contract
-    /// @param _data Payload for call on _target
-    /// @param _feeToken payment can be done in any whitelisted token
-    /// @param _gelatoFee Fee to be charged, denominated in feeToken
-    /// @param _taskId Unique task indentifier
-    function callWithSyncFee(
-        address _target,
-        bytes calldata _data,
-        address _feeToken,
-        uint256 _gelatoFee,
-        bytes32 _taskId
-    ) external onlyGelato {
-        uint256 preBalance = _feeToken.getBalance(address(this));
-
-        _target.revertingContractCall(_data, "GelatoRelay.callWithSyncFee:");
-
-        uint256 postBalance = _feeToken.getBalance(address(this));
-
-        uint256 amount = postBalance - preBalance;
-        require(amount >= _gelatoFee, "Insufficient fee");
-
-        _feeToken.transfer(IGelato(gelato).getFeeCollector(), amount);
-
-        emit LogCallWithSyncFee(_target, _feeToken, amount, _taskId);
+    constructor(address _gelato, address _gelatoRelayAllowances)
+        GelatoRelayBase(_gelato)
+    {
+        gelatoRelayAllowances = _gelatoRelayAllowances;
     }
 
-    /// @notice Relay call + One Balance
-    /// @param _call Relay call data
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
+    /// @notice Relay forward request + pull fee from (transferFrom) _call.sponsor's address
+    /// @dev    Assumes that _call.sponsor has approved this contract to spend _call.feeToken
+    /// @param _call Relay request data
     /// @param _sponsorSignature EIP-712 compliant signature from _call.sponsor
+    ///                          (can be same as _userSignature)
+    /// @notice   EOA that originates the tx, but does not necessarily pay the relayer
     /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _call.feeToken
-    /// @notice Oracle value for exchange rate between native tokens and fee token
-    /// @param  _nativeToFeeTokenXRateNumerator Exchange rate numerator
-    /// @param  _nativeToFeeTokenXRateNumerator Exchange rate numerator
-    /// @param _taskId Unique task indentifier
+    /// @param _taskId Gelato task id
     // solhint-disable-next-line function-max-lines
-    function sponsorAuthCallWith1Balance(
+    function sponsorAuthCall(
         SponsorAuthCall calldata _call,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
-        uint256 _nativeToFeeTokenXRateNumerator,
-        uint256 _nativeToFeeTokenXRateDenominator,
         bytes32 _taskId
-    ) external onlyGelato {
+    ) external onlyGelato whenNotPaused {
         // CHECKS
         _requireBasics(
             _call.chainId,
             _call.paymentType,
             _gelatoFee,
             _call.maxFee,
-            "GelatoRelay.userSponsorAuthCallWith1Balance:"
+            "GelatoRelayWithTransferFrom.sponsorAuthCall:"
+        );
+
+        address gelatoRelayAllowancesCopy = gelatoRelayAllowances;
+        require(
+            _call.target != gelatoRelayAllowancesCopy,
+            "GelatoRelayWithTransferFrom.sponsorAuthCall: call denied"
         );
 
         // Do not enforce ordering on nonces,
@@ -88,7 +81,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         );
         require(
             !wasCallSponsoredAlready[digest],
-            "GelatoRelay.sponsorAuthCallWith1Balance: replay"
+            "GelatoRelayWithTransferFrom.sponsorAuthCall: replay"
         );
 
         // EFFECTS
@@ -97,28 +90,31 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         // INTERACTIONS
         _call.target.revertingContractCall(
             _call.data,
-            "GelatoRelay.sponsorAuthCallWith1Balance:"
+            "GelatoRelayWithTransferFrom.sponsorAuthCall:"
         );
 
-        emit LogUseGelato1Balance(
+        IGelatoRelayAllowances(gelatoRelayAllowancesCopy).transferFrom(
+            _call.feeToken,
+            _call.sponsor,
+            _gelatoFee
+        );
+
+        emit LogSponsorAuthCallWithTransferFrom(
             _call.sponsor,
             _call.target,
             _call.feeToken,
-            _call.oneBalanceChainId,
-            _nativeToFeeTokenXRateNumerator,
-            _nativeToFeeTokenXRateDenominator,
+            _gelatoFee,
             _taskId
         );
         emit LogSponsorNonce(_call.sponsor, _call.sponsorNonce);
     }
 
+    // TODO: add docstring
     // solhint-disable-next-line function-max-lines
-    function userAuthCallWith1Balance(
+    function userAuthCall(
         UserAuthCall calldata _call,
         bytes calldata _userSignature,
         uint256 _gelatoFee,
-        uint256 _nativeToFeeTokenXRateNumerator,
-        uint256 _nativeToFeeTokenXRateDenominator,
         bytes32 _taskId
     ) external onlyGelato {
         // CHECKS
@@ -127,7 +123,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
             _call.paymentType,
             _gelatoFee,
             _call.maxFee,
-            "GelatoRelay.userAuthCallWith1Balance:"
+            "GelatoRelayWithTransferFrom.userAuthCall:"
         );
 
         // For the user, we enforce nonce ordering
@@ -135,7 +131,13 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
             _call.userNonce,
             userNonce[_call.user],
             _call.userDeadline,
-            "GelatoRelay.userSponsorAuthCallWith1Balance"
+            "GelatoRelayWithTransferFrom.userAuthCall"
+        );
+
+        address gelatoRelayAllowancesCopy = gelatoRelayAllowances;
+        require(
+            _call.target != gelatoRelayAllowancesCopy,
+            "GelatoRelayWithTransferFrom.userAuthCall: call denied"
         );
 
         _verifyUserAuthCallSignature(_call, _userSignature, _call.user);
@@ -146,44 +148,49 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         // INTERACTIONS
         _call.target.revertingContractCall(
             _call.data,
-            "GelatoRelay.sponsorAuthCallWith1Balance:"
+            "GelatoRelayWithTransferFrom.userAuthCall:"
         );
 
-        emit LogUseGelato1Balance(
+        IGelatoRelayAllowances(gelatoRelayAllowancesCopy).transferFrom(
+            _call.feeToken,
+            _call.user,
+            _gelatoFee
+        );
+
+        emit LogUserAuthCallWithTransferFrom(
             _call.user,
             _call.target,
             _call.feeToken,
-            _call.oneBalanceChainId,
-            _nativeToFeeTokenXRateNumerator,
-            _nativeToFeeTokenXRateDenominator,
+            _gelatoFee,
             _taskId
         );
     }
 
-    /// @notice Relay request + One Balance
+    /// @notice Relay meta tx request + pull fee from (transferFrom) _call.sponsor's address
+    /// @dev    Assumes that _call.sponsor has approved this contract to spend _call.feeToken
     /// @param _call Relay request data
     /// @param _userSignature EIP-712 compliant signature from _call.user
     /// @param _sponsorSignature EIP-712 compliant signature from _call.sponsor
     ///                          (can be same as _userSignature)
     /// @notice   EOA that originates the tx, but does not necessarily pay the relayer
     /// @param _gelatoFee Fee to be charged by Gelato relayer, denominated in _call.feeToken
+    /// @notice Handles the case of tokens with fee on transfer
+    /// @param _taskId Gelato task id
     // solhint-disable-next-line function-max-lines
-    function userSponsorAuthCallWith1Balance(
+    function userSponsorAuthCall(
         UserSponsorAuthCall calldata _call,
         bytes calldata _userSignature,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
-        uint256 _nativeToFeeTokenXRateNumerator,
-        uint256 _nativeToFeeTokenXRateDenominator,
         bytes32 _taskId
-    ) external onlyGelato {
+    ) external onlyGelato whenNotPaused {
         // CHECKS
         _requireBasics(
             _call.chainId,
             _call.paymentType,
             _gelatoFee,
             _call.maxFee,
-            "GelatoRelay.userSponsorAuthCallWith1Balance:"
+            "GelatoRelayWithTransferFrom.userSponsorAuthCall:"
         );
 
         // For the user, we enforce nonce ordering
@@ -191,7 +198,13 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
             _call.userNonce,
             userNonce[_call.user],
             _call.userDeadline,
-            "GelatoRelay.userSponsorAuthCallWith1Balance"
+            "GelatoRelayWithTransferFrom.userSponsorAuthCall"
+        );
+
+        address gelatoRelayAllowancesCopy = gelatoRelayAllowances;
+        require(
+            _call.target != gelatoRelayAllowancesCopy,
+            "GelatoRelayWithTransferFrom.userSponsorAuthCall: call denied"
         );
 
         // Verify user's signature
@@ -209,7 +222,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         // Sponsor replay protection
         require(
             !wasCallSponsoredAlready[digest],
-            "GelatoRelay.sponsorAuthCallWith1Balance: replay"
+            "GelatoRelayWithTransferFrom.userSponsorAuthCall: replay"
         );
 
         // EFFECTS
@@ -219,18 +232,22 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         // INTERACTIONS
         _call.target.revertingContractCall(
             _call.data,
-            "GelatoRelay.userSponsorAuthCall1Balance:"
+            "GelatoRelayWithTransferFrom.userSponsorAuthCall:"
         );
 
-        emit LogUseGelato1Balance(
+        IGelatoRelayAllowances(gelatoRelayAllowancesCopy).transferFrom(
+            _call.feeToken,
+            _call.sponsor,
+            _gelatoFee
+        );
+
+        emit LogUserSponsorAuthCallWithTransferFrom(
             _call.sponsor,
             _call.target,
             _call.feeToken,
-            _call.oneBalanceChainId,
-            _nativeToFeeTokenXRateNumerator,
-            _nativeToFeeTokenXRateDenominator,
+            _gelatoFee,
+            _call.user,
             _taskId
         );
-        emit LogSponsorNonce(_call.sponsor, _call.sponsorNonce);
     }
 }

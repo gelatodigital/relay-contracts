@@ -10,10 +10,23 @@ struct SponsorAuthCall {
     address target;
     bytes data;
     address sponsor;
-    uint256 sponsorChainId;
     uint256 sponsorNonce;
-    address feeToken;
     PaymentType paymentType;
+    address feeToken;
+    uint256 oneBalanceChainId;
+    uint256 maxFee;
+}
+
+struct UserAuthCall {
+    uint256 chainId;
+    address target;
+    bytes data;
+    address user;
+    uint256 userNonce;
+    uint256 userDeadline;
+    PaymentType paymentType;
+    address feeToken;
+    uint256 oneBalanceChainId;
     uint256 maxFee;
 }
 
@@ -28,9 +41,9 @@ struct UserSponsorAuthCall {
     uint256 userNonce;
     uint256 userDeadline;
     address sponsor; // could be same as user
-    uint256 sponsorChainId;
     uint256 sponsorNonce;
     PaymentType paymentType;
     address feeToken;
+    uint256 oneBalanceChainId;
     uint256 maxFee;
 }

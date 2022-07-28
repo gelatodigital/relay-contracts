@@ -2,7 +2,7 @@
 pragma solidity 0.8.15;
 
 interface IGelatoRelayAllowances {
-    function pullFeeFrom(
+    function transferFrom(
         address _feeToken,
         address _from,
         uint256 _amount
