@@ -13,7 +13,6 @@ import {
     UserAuthCall,
     UserSponsorAuthCall
 } from "./types/CallTypes.sol";
-import {IGelato} from "./interfaces/IGelato.sol";
 import {IGelatoRelayAllowances} from "./interfaces/IGelatoRelayAllowances.sol";
 import {PaymentType} from "./types/PaymentTypes.sol";
 
@@ -60,12 +59,15 @@ contract GelatoRelayWithTransferFrom is
         bytes32 _taskId
     ) external onlyGelato whenNotPaused {
         // CHECKS
+        require(
+            _call.paymentType == PaymentType.WithTransferFrom,
+            "GelatoRelayWithTransferFrom.sponsorAuthCall: paymentType"
+        );
         _requireBasics(
             _call.chainId,
-            _call.paymentType,
             _gelatoFee,
             _call.maxFee,
-            "GelatoRelayWithTransferFrom.sponsorAuthCall:"
+            "GelatoRelayWithTransferFrom.sponsorAuthCall: "
         );
 
         address gelatoRelayAllowancesCopy = gelatoRelayAllowances;
@@ -93,7 +95,7 @@ contract GelatoRelayWithTransferFrom is
         // INTERACTIONS
         _call.target.revertingContractCall(
             _call.data,
-            "GelatoRelayWithTransferFrom.sponsorAuthCall:"
+            "GelatoRelayWithTransferFrom.sponsorAuthCall: "
         );
 
         IGelatoRelayAllowances(gelatoRelayAllowancesCopy).transferFrom(
@@ -109,7 +111,7 @@ contract GelatoRelayWithTransferFrom is
             _gelatoFee,
             _taskId
         );
-        emit LogSponsorNonce(_call.sponsor, _call.sponsorNonce);
+        emit LogSponsorNonce(_call.sponsor, _call.sponsorSalt);
     }
 
     /// @notice Relay call + transferFrom from user
@@ -127,12 +129,15 @@ contract GelatoRelayWithTransferFrom is
         bytes32 _taskId
     ) external onlyGelato {
         // CHECKS
+        require(
+            _call.paymentType == PaymentType.WithTransferFrom,
+            "GelatoRelayWithTransferFrom.userAuthCall: paymentType"
+        );
         _requireBasics(
             _call.chainId,
-            _call.paymentType,
             _gelatoFee,
             _call.maxFee,
-            "GelatoRelayWithTransferFrom.userAuthCall:"
+            "GelatoRelayWithTransferFrom.userAuthCall: "
         );
 
         // For the user, we enforce nonce ordering
@@ -140,7 +145,7 @@ contract GelatoRelayWithTransferFrom is
             _call.userNonce,
             userNonce[_call.user],
             _call.userDeadline,
-            "GelatoRelayWithTransferFrom.userAuthCall"
+            "GelatoRelayWithTransferFrom.userAuthCall: "
         );
 
         address gelatoRelayAllowancesCopy = gelatoRelayAllowances;
@@ -157,7 +162,7 @@ contract GelatoRelayWithTransferFrom is
         // INTERACTIONS
         _call.target.revertingContractCall(
             _call.data,
-            "GelatoRelayWithTransferFrom.userAuthCall:"
+            "GelatoRelayWithTransferFrom.userAuthCall: "
         );
 
         IGelatoRelayAllowances(gelatoRelayAllowancesCopy).transferFrom(
@@ -192,12 +197,15 @@ contract GelatoRelayWithTransferFrom is
         bytes32 _taskId
     ) external onlyGelato whenNotPaused {
         // CHECKS
+        require(
+            _call.paymentType == PaymentType.WithTransferFrom,
+            "GelatoRelayWithTransferFrom.userSponsorAuthCall: paymentType"
+        );
         _requireBasics(
             _call.chainId,
-            _call.paymentType,
             _gelatoFee,
             _call.maxFee,
-            "GelatoRelayWithTransferFrom.userSponsorAuthCall:"
+            "GelatoRelayWithTransferFrom.userSponsorAuthCall: "
         );
 
         // For the user, we enforce nonce ordering
@@ -205,7 +213,7 @@ contract GelatoRelayWithTransferFrom is
             _call.userNonce,
             userNonce[_call.user],
             _call.userDeadline,
-            "GelatoRelayWithTransferFrom.userSponsorAuthCall"
+            "GelatoRelayWithTransferFrom.userSponsorAuthCall: "
         );
 
         address gelatoRelayAllowancesCopy = gelatoRelayAllowances;
@@ -239,7 +247,7 @@ contract GelatoRelayWithTransferFrom is
         // INTERACTIONS
         _call.target.revertingContractCall(
             _call.data,
-            "GelatoRelayWithTransferFrom.userSponsorAuthCall:"
+            "GelatoRelayWithTransferFrom.userSponsorAuthCall: "
         );
 
         IGelatoRelayAllowances(gelatoRelayAllowancesCopy).transferFrom(

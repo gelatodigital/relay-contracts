@@ -18,7 +18,7 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
         keccak256(
             bytes(
                 // solhint-disable-next-line max-line-length
-                "SponsorAuthCall(uint256 chainId,address target,bytes data,address sponsor,uint256 sponsorNonce,uint8 paymentType,address feeToken,uint256 oneBalanceChainId,uint256 maxFee)"
+                "SponsorAuthCall(uint256 chainId,address target,bytes data,address sponsor,uint256 sponsorSalt,uint8 paymentType,address feeToken,uint256 oneBalanceChainId,uint256 maxFee)"
             )
         );
 
@@ -34,7 +34,7 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
         keccak256(
             bytes(
                 // solhint-disable-next-line max-line-length
-                "UserSponsorAuthCall(uint256 chainId,address target,bytes data,address user,uint256 userNonce,uint256 userDeadline,address sponsor,uint256 sponsorNonce,uint8 paymentType,address feeToken,uint256 oneBalanceChainId,uint256 maxFee)"
+                "UserSponsorAuthCall(uint256 chainId,address target,bytes data,address user,uint256 userNonce,uint256 userDeadline,address sponsor,uint256 sponsorSalt,uint8 paymentType,address feeToken,uint256 oneBalanceChainId,uint256 maxFee)"
             )
         );
 
@@ -43,7 +43,8 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
         "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
 
     address public immutable gelato;
-    bytes32 public immutable domainSeparator;
+    //solhint-disable-next-line var-name-mixedcase
+    bytes32 public immutable DOMAIN_SEPARATOR;
 
     mapping(address => uint256) public userNonce;
     mapping(bytes32 => bool) public wasCallSponsoredAlready;
@@ -55,12 +56,12 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
 
     constructor(address _gelato) {
         gelato = _gelato;
-        domainSeparator = keccak256(
+        DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 keccak256(bytes(EIP712_DOMAIN_TYPE)),
                 keccak256(bytes("GelatoRelay")),
-                keccak256(bytes("V1")),
-                bytes32(block.chainid),
+                keccak256(bytes("1")),
+                block.chainid,
                 address(this)
             )
         );
@@ -68,16 +69,11 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
 
     function _requireBasics(
         uint256 _chainId,
-        PaymentType _paymentType,
         uint256 _gelatoFee,
         uint256 _maxFee,
         string memory _errorTrace
     ) internal view {
         require(_chainId == block.chainid, _errorTrace.suffix("chainid"));
-        require(
-            _paymentType == PaymentType.OneBalance,
-            _errorTrace.suffix("paymentType")
-        );
         require(_gelatoFee <= _maxFee, _errorTrace.suffix("maxFee"));
     }
 
@@ -106,7 +102,7 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
         digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
-                domainSeparator,
+                DOMAIN_SEPARATOR,
                 keccak256(_abiEncodeSponsorAuthCall(_call))
             )
         );
@@ -129,7 +125,7 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
         bytes32 digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
-                domainSeparator,
+                DOMAIN_SEPARATOR,
                 keccak256(_abiEncodeUserAuthCall(_call))
             )
         );
@@ -152,7 +148,7 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
         digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
-                domainSeparator,
+                DOMAIN_SEPARATOR,
                 keccak256(_abiEncodeUserSponsorAuthCall(_call))
             )
         );
@@ -179,7 +175,7 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
                 _call.target,
                 keccak256(_call.data),
                 _call.sponsor,
-                _call.sponsorNonce,
+                _call.sponsorSalt,
                 _call.paymentType,
                 _call.feeToken,
                 _call.oneBalanceChainId,
@@ -223,7 +219,7 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
                 _call.userNonce,
                 _call.userDeadline,
                 _call.sponsor,
-                _call.sponsorNonce,
+                _call.sponsorSalt,
                 _call.paymentType,
                 _call.feeToken,
                 _call.oneBalanceChainId,
