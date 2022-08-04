@@ -4,5 +4,5 @@ pragma solidity 0.8.15;
 enum PaymentType {
     SyncFee,
     OneBalance,
-    WithTransferFrom
+    TransferFrom
 }

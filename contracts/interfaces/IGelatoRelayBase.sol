@@ -3,8 +3,6 @@ pragma solidity 0.8.15;
 
 // solhint-disable func-name-mixedcase
 interface IGelatoRelayBase {
-    event LogSponsorNonce(address indexed sponsor, uint256 sponsorSalt);
-
     function userNonce(address _user) external view returns (uint256);
 
     function wasCallSponsoredAlready(bytes32 _digest)

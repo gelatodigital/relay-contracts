@@ -60,7 +60,7 @@ contract GelatoRelayWithTransferFrom is
     ) external onlyGelato whenNotPaused {
         // CHECKS
         require(
-            _call.paymentType == PaymentType.WithTransferFrom,
+            _call.paymentType == PaymentType.TransferFrom,
             "GelatoRelayWithTransferFrom.sponsorAuthCall: paymentType"
         );
         _requireBasics(
@@ -111,7 +111,6 @@ contract GelatoRelayWithTransferFrom is
             _gelatoFee,
             _taskId
         );
-        emit LogSponsorNonce(_call.sponsor, _call.sponsorSalt);
     }
 
     /// @notice Relay call + transferFrom from user
@@ -130,7 +129,7 @@ contract GelatoRelayWithTransferFrom is
     ) external onlyGelato {
         // CHECKS
         require(
-            _call.paymentType == PaymentType.WithTransferFrom,
+            _call.paymentType == PaymentType.TransferFrom,
             "GelatoRelayWithTransferFrom.userAuthCall: paymentType"
         );
         _requireBasics(
@@ -198,7 +197,7 @@ contract GelatoRelayWithTransferFrom is
     ) external onlyGelato whenNotPaused {
         // CHECKS
         require(
-            _call.paymentType == PaymentType.WithTransferFrom,
+            _call.paymentType == PaymentType.TransferFrom,
             "GelatoRelayWithTransferFrom.userSponsorAuthCall: paymentType"
         );
         _requireBasics(

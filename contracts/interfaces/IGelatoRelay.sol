@@ -19,7 +19,6 @@ interface IGelatoRelay {
         address _target,
         bytes calldata _data,
         address _feeToken,
-        uint256 _gelatoFee,
         bytes32 _taskId
     ) external;
 
