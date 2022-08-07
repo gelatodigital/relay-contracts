@@ -38,13 +38,7 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
             )
         );
 
-    // solhint-disable-next-line max-line-length
-    string public constant EIP712_DOMAIN_TYPE =
-        "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
-
     address public immutable gelato;
-    //solhint-disable-next-line var-name-mixedcase
-    bytes32 public immutable DOMAIN_SEPARATOR;
 
     mapping(address => uint256) public userNonce;
     mapping(bytes32 => bool) public wasCallSponsoredAlready;
@@ -56,15 +50,6 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
 
     constructor(address _gelato) {
         gelato = _gelato;
-        DOMAIN_SEPARATOR = keccak256(
-            abi.encode(
-                keccak256(bytes(EIP712_DOMAIN_TYPE)),
-                keccak256(bytes("GelatoRelay")),
-                keccak256(bytes("1")),
-                block.chainid,
-                address(this)
-            )
-        );
     }
 
     function _requireBasics(
@@ -95,10 +80,12 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
     }
 
     function _verifySponsorAuthCallSignature(
+        //solhint-disable-next-line
+        bytes32 DOMAIN_SEPARATOR,
         SponsorAuthCall calldata _call,
         bytes calldata _signature,
         address _expectedSigner
-    ) internal view returns (bytes32 digest) {
+    ) internal pure returns (bytes32 digest) {
         digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
@@ -118,10 +105,12 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
     }
 
     function _verifyUserAuthCallSignature(
+        //solhint-disable-next-line
+        bytes32 DOMAIN_SEPARATOR,
         UserAuthCall calldata _call,
         bytes calldata _signature,
         address _expectedSigner
-    ) internal view {
+    ) internal pure {
         bytes32 digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
@@ -141,10 +130,12 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
     }
 
     function _verifyUserSponsorAuthCallSignature(
+        //solhint-disable-next-line
+        bytes32 DOMAIN_SEPARATOR,
         UserSponsorAuthCall calldata _call,
         bytes calldata _signature,
         address _expectedSigner
-    ) internal view returns (bytes32 digest) {
+    ) internal pure returns (bytes32 digest) {
         digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",

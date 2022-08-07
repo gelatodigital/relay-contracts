@@ -92,6 +92,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         // but still enforce replay protection
         // via uniqueness of message
         bytes32 digest = _verifySponsorAuthCallSignature(
+            _getDomainSeparator(),
             _call,
             _sponsorSignature,
             _call.sponsor
@@ -164,14 +165,19 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
             "GelatoRelay.userAuthCallWith1Balance: "
         );
 
-        _verifyUserAuthCallSignature(_call, _userSignature, _call.user);
+        _verifyUserAuthCallSignature(
+            _getDomainSeparator(),
+            _call,
+            _userSignature,
+            _call.user
+        );
 
         // EFFECTS
         userNonce[_call.user]++;
 
         // INTERACTIONS
         _call.target.revertingContractCall(
-            _call.data,
+            abi.encodePacked(_call.data, _call.user),
             "GelatoRelay.userAuthCallWith1Balance: "
         );
 
@@ -230,12 +236,18 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         );
 
         // Verify user's signature
-        _verifyUserSponsorAuthCallSignature(_call, _userSignature, _call.user);
+        _verifyUserSponsorAuthCallSignature(
+            _getDomainSeparator(),
+            _call,
+            _userSignature,
+            _call.user
+        );
 
         // Verify sponsor's signature
         // Do not enforce ordering on nonces but still enforce replay protection
         // via uniqueness of call with nonce
         bytes32 digest = _verifyUserSponsorAuthCallSignature(
+            _getDomainSeparator(),
             _call,
             _sponsorSignature,
             _call.sponsor
@@ -253,7 +265,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
 
         // INTERACTIONS
         _call.target.revertingContractCall(
-            _call.data,
+            abi.encodePacked(_call.data, _call.user),
             "GelatoRelay.userSponsorAuthCallWith1Balance: "
         );
 
@@ -268,11 +280,26 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         );
     }
 
-    function name() external pure returns (string memory) {
-        return "GelatoRelay";
+    /* solhint-disable */
+    function _getDomainSeparator()
+        internal
+        view
+        returns (bytes32 DOMAIN_SEPARATOR)
+    {
+        return
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        bytes(
+                            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+                        )
+                    ),
+                    keccak256(bytes(NAME)),
+                    keccak256(bytes(VERSION)),
+                    block.chainid,
+                    address(this)
+                )
+            );
     }
-
-    function version() external pure returns (string memory) {
-        return "1";
-    }
+    /* solhint-enable */
 }

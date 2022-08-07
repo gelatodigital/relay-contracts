@@ -8,7 +8,7 @@ library GelatoCallUtils {
 
     function revertingContractCall(
         address _contract,
-        bytes calldata _data,
+        bytes memory _data,
         string memory _errorMsg
     ) internal returns (bytes memory returndata) {
         bool success;

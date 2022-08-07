@@ -10,8 +10,6 @@ interface IGelatoRelayBase {
         view
         returns (bool);
 
-    function EIP712_DOMAIN_TYPE() external pure returns (string memory);
-
     function SPONSOR_AUTH_CALL_TYPEHASH() external pure returns (bytes32);
 
     function USER_AUTH_CALL_TYPEHASH() external pure returns (bytes32);

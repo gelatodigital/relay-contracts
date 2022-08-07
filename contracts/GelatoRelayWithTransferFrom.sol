@@ -30,6 +30,11 @@ contract GelatoRelayWithTransferFrom is
 
     address public immutable gelatoRelayAllowances;
 
+    //solhint-disable-next-line var-name-mixedcase
+    string public NAME = "GelatoRelayWithTransferFrom";
+    //solhint-disable-next-line var-name-mixedcase
+    string public VERSION = "1";
+
     constructor(address _gelato, address _gelatoRelayAllowances)
         GelatoRelayBase(_gelato)
     {
@@ -80,6 +85,7 @@ contract GelatoRelayWithTransferFrom is
         // but still enforce replay protection
         // via uniqueness of message
         bytes32 digest = _verifySponsorAuthCallSignature(
+            _getDomainSeparator(),
             _call,
             _sponsorSignature,
             _call.sponsor
@@ -153,7 +159,12 @@ contract GelatoRelayWithTransferFrom is
             "GelatoRelayWithTransferFrom.userAuthCall: call denied"
         );
 
-        _verifyUserAuthCallSignature(_call, _userSignature, _call.user);
+        _verifyUserAuthCallSignature(
+            _getDomainSeparator(),
+            _call,
+            _userSignature,
+            _call.user
+        );
 
         // EFFECTS
         userNonce[_call.user]++;
@@ -222,12 +233,18 @@ contract GelatoRelayWithTransferFrom is
         );
 
         // Verify user's signature
-        _verifyUserSponsorAuthCallSignature(_call, _userSignature, _call.user);
+        _verifyUserSponsorAuthCallSignature(
+            _getDomainSeparator(),
+            _call,
+            _userSignature,
+            _call.user
+        );
 
         // Verify sponsor's signature
         // Do not enforce ordering on nonces but still enforce replay protection
         // via uniqueness of call with nonce
         bytes32 digest = _verifyUserSponsorAuthCallSignature(
+            _getDomainSeparator(),
             _call,
             _sponsorSignature,
             _call.sponsor
@@ -264,4 +281,27 @@ contract GelatoRelayWithTransferFrom is
             _taskId
         );
     }
+
+    /* solhint-disable */
+    function _getDomainSeparator()
+        internal
+        view
+        returns (bytes32 DOMAIN_SEPARATOR)
+    {
+        return
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        bytes(
+                            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+                        )
+                    ),
+                    keccak256(bytes(NAME)),
+                    keccak256(bytes(VERSION)),
+                    block.chainid,
+                    address(this)
+                )
+            );
+    }
+    /* solhint-enable */
 }
