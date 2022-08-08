@@ -6,6 +6,7 @@ import {IGelato1Balance} from "./interfaces/IGelato1Balance.sol";
 import {GelatoRelayBase} from "./GelatoRelayBase.sol";
 import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
 import {GelatoTokenUtils} from "./lib/GelatoTokenUtils.sol";
+import {_eip2771Context} from "./functions/ContextUtils.sol";
 import {
     SponsorAuthCall,
     UserAuthCall,
@@ -23,10 +24,10 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
     using GelatoCallUtils for address;
     using GelatoTokenUtils for address;
 
-    //solhint-disable-next-line var-name-mixedcase
-    string public NAME = "GelatoRelay";
-    //solhint-disable-next-line var-name-mixedcase
-    string public VERSION = "1";
+    //solhint-disable-next-line const-name-snakecase
+    string public constant name = "GelatoRelay";
+    //solhint-disable-next-line const-name-snakecase
+    string public constant version = "1";
 
     // solhint-disable-next-line no-empty-blocks
     constructor(address _gelato) GelatoRelayBase(_gelato) {}
@@ -50,11 +51,11 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
 
         uint256 postBalance = _feeToken.getBalance(address(this));
 
-        uint256 gelatoFee = postBalance - preBalance;
+        uint256 fee = postBalance - preBalance;
 
-        _feeToken.transfer(IGelato(gelato).getFeeCollector(), gelatoFee);
+        _feeToken.transfer(IGelato(gelato).getFeeCollector(), fee);
 
-        emit LogCallWithSyncFee(_target, _feeToken, gelatoFee, _taskId);
+        emit LogCallWithSyncFee(_target, _feeToken, fee, _taskId);
     }
 
     /// @notice Relay call + One Balance payment - with sponsor authentication
@@ -85,7 +86,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
             _call.chainId,
             _gelatoFee,
             _call.maxFee,
-            "GelatoRelay.sponsorAuthCallWith1Balance: "
+            "GelatoRelay.sponsorAuthCallWith1Balance:"
         );
 
         // Do not enforce ordering on nonces,
@@ -108,7 +109,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         // INTERACTIONS
         _call.target.revertingContractCall(
             _call.data,
-            "GelatoRelay.sponsorAuthCallWith1Balance: "
+            "GelatoRelay.sponsorAuthCallWith1Balance:"
         );
 
         emit LogUseGelato1Balance(
@@ -154,7 +155,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
             _call.chainId,
             _gelatoFee,
             _call.maxFee,
-            "GelatoRelay.userAuthCallWith1Balance: "
+            "GelatoRelay.userAuthCallWith1Balance:"
         );
 
         // For the user, we enforce nonce ordering
@@ -162,7 +163,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
             _call.userNonce,
             userNonce[_call.user],
             _call.userDeadline,
-            "GelatoRelay.userAuthCallWith1Balance: "
+            "GelatoRelay.userAuthCallWith1Balance:"
         );
 
         _verifyUserAuthCallSignature(
@@ -177,8 +178,8 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
 
         // INTERACTIONS
         _call.target.revertingContractCall(
-            abi.encodePacked(_call.data, _call.user),
-            "GelatoRelay.userAuthCallWith1Balance: "
+            _eip2771Context(_call.data, _call.user),
+            "GelatoRelay.userAuthCallWith1Balance:"
         );
 
         emit LogUseGelato1Balance(
@@ -224,7 +225,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
             _call.chainId,
             _gelatoFee,
             _call.maxFee,
-            "GelatoRelay.userSponsorAuthCallWith1Balance: "
+            "GelatoRelay.userSponsorAuthCallWith1Balance:"
         );
 
         // For the user, we enforce nonce ordering
@@ -232,7 +233,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
             _call.userNonce,
             userNonce[_call.user],
             _call.userDeadline,
-            "GelatoRelay.userSponsorAuthCallWith1Balance: "
+            "GelatoRelay.userSponsorAuthCallWith1Balance:"
         );
 
         // Verify user's signature
@@ -265,8 +266,8 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
 
         // INTERACTIONS
         _call.target.revertingContractCall(
-            abi.encodePacked(_call.data, _call.user),
-            "GelatoRelay.userSponsorAuthCallWith1Balance: "
+            _eip2771Context(_call.data, _call.user),
+            "GelatoRelay.userSponsorAuthCallWith1Balance:"
         );
 
         emit LogUseGelato1Balance(
@@ -280,26 +281,26 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         );
     }
 
-    /* solhint-disable */
-    function _getDomainSeparator()
-        internal
-        view
-        returns (bytes32 DOMAIN_SEPARATOR)
-    {
+    //solhint-disable-next-line func-name-mixedcase
+    function DOMAIN_SEPARATOR() external view returns (bytes32) {
+        return _getDomainSeparator();
+    }
+
+    function _getDomainSeparator() internal view returns (bytes32) {
         return
             keccak256(
                 abi.encode(
                     keccak256(
                         bytes(
+                            //solhint-disable-next-line max-line-length
                             "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
                         )
                     ),
-                    keccak256(bytes(NAME)),
-                    keccak256(bytes(VERSION)),
+                    keccak256(bytes(name)),
+                    keccak256(bytes(version)),
                     block.chainid,
                     address(this)
                 )
             );
     }
-    /* solhint-enable */
 }

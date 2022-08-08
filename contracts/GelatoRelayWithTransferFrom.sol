@@ -30,10 +30,10 @@ contract GelatoRelayWithTransferFrom is
 
     address public immutable gelatoRelayAllowances;
 
-    //solhint-disable-next-line var-name-mixedcase
-    string public NAME = "GelatoRelayWithTransferFrom";
-    //solhint-disable-next-line var-name-mixedcase
-    string public VERSION = "1";
+    //solhint-disable-next-line const-name-snakecase
+    string public constant name = "GelatoRelayWithTransferFrom";
+    //solhint-disable-next-line const-name-snakecase
+    string public constant version = "1";
 
     constructor(address _gelato, address _gelatoRelayAllowances)
         GelatoRelayBase(_gelato)
@@ -72,7 +72,7 @@ contract GelatoRelayWithTransferFrom is
             _call.chainId,
             _gelatoFee,
             _call.maxFee,
-            "GelatoRelayWithTransferFrom.sponsorAuthCall: "
+            "GelatoRelayWithTransferFrom.sponsorAuthCall:"
         );
 
         address gelatoRelayAllowancesCopy = gelatoRelayAllowances;
@@ -101,7 +101,7 @@ contract GelatoRelayWithTransferFrom is
         // INTERACTIONS
         _call.target.revertingContractCall(
             _call.data,
-            "GelatoRelayWithTransferFrom.sponsorAuthCall: "
+            "GelatoRelayWithTransferFrom.sponsorAuthCall:"
         );
 
         IGelatoRelayAllowances(gelatoRelayAllowancesCopy).transferFrom(
@@ -142,7 +142,7 @@ contract GelatoRelayWithTransferFrom is
             _call.chainId,
             _gelatoFee,
             _call.maxFee,
-            "GelatoRelayWithTransferFrom.userAuthCall: "
+            "GelatoRelayWithTransferFrom.userAuthCall:"
         );
 
         // For the user, we enforce nonce ordering
@@ -150,7 +150,7 @@ contract GelatoRelayWithTransferFrom is
             _call.userNonce,
             userNonce[_call.user],
             _call.userDeadline,
-            "GelatoRelayWithTransferFrom.userAuthCall: "
+            "GelatoRelayWithTransferFrom.userAuthCall:"
         );
 
         address gelatoRelayAllowancesCopy = gelatoRelayAllowances;
@@ -172,7 +172,7 @@ contract GelatoRelayWithTransferFrom is
         // INTERACTIONS
         _call.target.revertingContractCall(
             _call.data,
-            "GelatoRelayWithTransferFrom.userAuthCall: "
+            "GelatoRelayWithTransferFrom.userAuthCall:"
         );
 
         IGelatoRelayAllowances(gelatoRelayAllowancesCopy).transferFrom(
@@ -215,7 +215,7 @@ contract GelatoRelayWithTransferFrom is
             _call.chainId,
             _gelatoFee,
             _call.maxFee,
-            "GelatoRelayWithTransferFrom.userSponsorAuthCall: "
+            "GelatoRelayWithTransferFrom.userSponsorAuthCall:"
         );
 
         // For the user, we enforce nonce ordering
@@ -223,7 +223,7 @@ contract GelatoRelayWithTransferFrom is
             _call.userNonce,
             userNonce[_call.user],
             _call.userDeadline,
-            "GelatoRelayWithTransferFrom.userSponsorAuthCall: "
+            "GelatoRelayWithTransferFrom.userSponsorAuthCall:"
         );
 
         address gelatoRelayAllowancesCopy = gelatoRelayAllowances;
@@ -263,7 +263,7 @@ contract GelatoRelayWithTransferFrom is
         // INTERACTIONS
         _call.target.revertingContractCall(
             _call.data,
-            "GelatoRelayWithTransferFrom.userSponsorAuthCall: "
+            "GelatoRelayWithTransferFrom.userSponsorAuthCall:"
         );
 
         IGelatoRelayAllowances(gelatoRelayAllowancesCopy).transferFrom(
@@ -282,26 +282,26 @@ contract GelatoRelayWithTransferFrom is
         );
     }
 
-    /* solhint-disable */
-    function _getDomainSeparator()
-        internal
-        view
-        returns (bytes32 DOMAIN_SEPARATOR)
-    {
+    //solhint-disable-next-line func-name-mixedcase
+    function DOMAIN_SEPARATOR() external view returns (bytes32) {
+        return _getDomainSeparator();
+    }
+
+    function _getDomainSeparator() internal view returns (bytes32) {
         return
             keccak256(
                 abi.encode(
                     keccak256(
                         bytes(
+                            //solhint-disable-next-line max-line-length
                             "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
                         )
                     ),
-                    keccak256(bytes(NAME)),
-                    keccak256(bytes(VERSION)),
+                    keccak256(bytes(name)),
+                    keccak256(bytes(version)),
                     block.chainid,
                     address(this)
                 )
             );
     }
-    /* solhint-enable */
 }

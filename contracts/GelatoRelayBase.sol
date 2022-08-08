@@ -80,8 +80,7 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
     }
 
     function _verifySponsorAuthCallSignature(
-        //solhint-disable-next-line
-        bytes32 DOMAIN_SEPARATOR,
+        bytes32 _domainSeparator,
         SponsorAuthCall calldata _call,
         bytes calldata _signature,
         address _expectedSigner
@@ -89,7 +88,7 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
         digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
-                DOMAIN_SEPARATOR,
+                _domainSeparator,
                 keccak256(_abiEncodeSponsorAuthCall(_call))
             )
         );
@@ -106,7 +105,7 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
 
     function _verifyUserAuthCallSignature(
         //solhint-disable-next-line
-        bytes32 DOMAIN_SEPARATOR,
+        bytes32 _domainSeparator,
         UserAuthCall calldata _call,
         bytes calldata _signature,
         address _expectedSigner
@@ -114,7 +113,7 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
         bytes32 digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
-                DOMAIN_SEPARATOR,
+                _domainSeparator,
                 keccak256(_abiEncodeUserAuthCall(_call))
             )
         );
@@ -130,8 +129,7 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
     }
 
     function _verifyUserSponsorAuthCallSignature(
-        //solhint-disable-next-line
-        bytes32 DOMAIN_SEPARATOR,
+        bytes32 _domainSeparator,
         UserSponsorAuthCall calldata _call,
         bytes calldata _signature,
         address _expectedSigner
@@ -139,7 +137,7 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
         digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
-                DOMAIN_SEPARATOR,
+                _domainSeparator,
                 keccak256(_abiEncodeUserSponsorAuthCall(_call))
             )
         );
