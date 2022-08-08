@@ -236,9 +236,11 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
             "GelatoRelay.userSponsorAuthCallWith1Balance:"
         );
 
+        bytes32 domainSeparator = _getDomainSeparator();
+
         // Verify user's signature
         _verifyUserSponsorAuthCallSignature(
-            _getDomainSeparator(),
+            domainSeparator,
             _call,
             _userSignature,
             _call.user
@@ -248,7 +250,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         // Do not enforce ordering on nonces but still enforce replay protection
         // via uniqueness of call with nonce
         bytes32 digest = _verifyUserSponsorAuthCallSignature(
-            _getDomainSeparator(),
+            domainSeparator,
             _call,
             _sponsorSignature,
             _call.sponsor

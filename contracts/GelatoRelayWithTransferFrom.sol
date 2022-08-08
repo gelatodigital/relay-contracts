@@ -232,9 +232,11 @@ contract GelatoRelayWithTransferFrom is
             "GelatoRelayWithTransferFrom.userSponsorAuthCall: call denied"
         );
 
+        bytes32 domainSeparator = _getDomainSeparator();
+
         // Verify user's signature
         _verifyUserSponsorAuthCallSignature(
-            _getDomainSeparator(),
+            domainSeparator,
             _call,
             _userSignature,
             _call.user
@@ -244,7 +246,7 @@ contract GelatoRelayWithTransferFrom is
         // Do not enforce ordering on nonces but still enforce replay protection
         // via uniqueness of call with nonce
         bytes32 digest = _verifyUserSponsorAuthCallSignature(
-            _getDomainSeparator(),
+            domainSeparator,
             _call,
             _sponsorSignature,
             _call.sponsor
