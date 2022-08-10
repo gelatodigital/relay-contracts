@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.15;
+pragma solidity 0.8.16;
 
 // solhint-disable func-name-mixedcase
 interface IGelatoRelayBase {
@@ -9,10 +9,4 @@ interface IGelatoRelayBase {
         external
         view
         returns (bool);
-
-    function SPONSOR_AUTH_CALL_TYPEHASH() external pure returns (bytes32);
-
-    function USER_AUTH_CALL_TYPEHASH() external pure returns (bytes32);
-
-    function USER_SPONSOR_AUTH_CALL_TYPEHASH() external pure returns (bytes32);
 }
