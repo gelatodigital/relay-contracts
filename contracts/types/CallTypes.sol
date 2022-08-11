@@ -81,7 +81,7 @@ struct UserSponsorAuthCallWithTransferFrom {
     address user;
     uint256 userNonce;
     uint256 userDeadline;
-    address sponsor; // could be same as user
+    address sponsor;
     uint256 sponsorSalt;
     PaymentType paymentType;
     address feeToken;

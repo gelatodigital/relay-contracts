@@ -63,7 +63,7 @@ abstract contract GelatoRelayBase1Balance is
         );
         require(
             error == ECDSA.RecoverError.NoError && recovered == _expectedSigner,
-            "GelatoRelayBase._requireSponsorAuthCallSignature1Balance"
+            "GelatoRelayBase1Balance._requireSponsorAuthCallSignature1Balance"
         );
     }
 
@@ -87,7 +87,7 @@ abstract contract GelatoRelayBase1Balance is
         );
         require(
             error == ECDSA.RecoverError.NoError && recovered == _expectedSigner,
-            "GelatoRelayBase._requireUserAuthCallSignature1Balance"
+            "GelatoRelayBase1Balance._requireUserAuthCallSignature1Balance"
         );
     }
 
@@ -111,7 +111,7 @@ abstract contract GelatoRelayBase1Balance is
         );
         require(
             error == ECDSA.RecoverError.NoError && recovered == _expectedSigner,
-            "GelatoRelayBase._requireUserSponsorAuthCallSignature1Balance"
+            "GelatoRelayBase1Balance._requireUserSponsorAuthCallSignature1Balance"
         );
     }
 
