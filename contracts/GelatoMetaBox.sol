@@ -48,7 +48,8 @@ contract GelatoMetaBox is Proxied, Initializable, GelatoMetaBoxBase {
         address indexed feeToken,
         uint256 sponsorChainId,
         uint256 nativeToFeeTokenXRateNumerator,
-        uint256 nativeToFeeTokenXRateDenominator
+        uint256 nativeToFeeTokenXRateDenominator,
+        bytes32 taskId
     );
 
     modifier onlyGelato() {
@@ -166,7 +167,8 @@ contract GelatoMetaBox is Proxied, Initializable, GelatoMetaBoxBase {
                 _req.feeToken,
                 chainId,
                 _nativeToFeeTokenXRateNumerator,
-                _nativeToFeeTokenXRateDenominator
+                _nativeToFeeTokenXRateDenominator,
+                _taskId
             );
         } else {
             // TODO: deduct balance from GasTank
