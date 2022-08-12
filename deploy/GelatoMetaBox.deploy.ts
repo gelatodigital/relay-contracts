@@ -9,7 +9,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.log(
       `Deploying GelatoMetaBox to ${hre.network.name}. Hit ctrl + c to abort`
     );
-    await sleep(2000);
+    await sleep(10000);
   }
 
   const { deploy } = deployments;
