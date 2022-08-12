@@ -33,7 +33,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
 export default func;
 
-// func.skip = async (hre: HardhatRuntimeEnvironment) => {
-//   return hre.network.name !== "hardhat";
-// };
+func.skip = async (hre: HardhatRuntimeEnvironment) => {
+  return hre.network.name !== "hardhat";
+};
 func.tags = ["GelatoMetaBox"];
