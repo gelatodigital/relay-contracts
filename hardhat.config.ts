@@ -11,9 +11,7 @@ import * as dotenv from "dotenv";
 import { ethers, utils } from "ethers";
 dotenv.config({ path: __dirname + "/.env" });
 
-const PK = process.env.PK;
-const DEV_PK = process.env.DEV_PK;
-const PK_MAINNET = process.env.PK_MAINNET;
+const RELAY_DEPLOYER_PK = process.env.RELAY_DEPLOYER_PK;
 const ALCHEMY_ID = process.env.ALCHEMY_ID;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
@@ -24,6 +22,9 @@ const config: HardhatUserConfig = {
   namedAccounts: {
     deployer: {
       default: 0,
+    },
+    relayDeployer: {
+      default: "0xd1Ac051Dc0E1366502eF3Fe4D754fbeC6986a177",
     },
   },
 
@@ -38,56 +39,56 @@ const config: HardhatUserConfig = {
       },
     },
     alfajores: {
-      accounts: PK_MAINNET ? [PK_MAINNET] : [],
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 44787,
       url: "https://alfajores-forno.celo-testnet.org",
     },
     bsc: {
-      accounts: PK_MAINNET ? [PK_MAINNET] : [],
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 56,
       url: "https://bsc-dataseed1.ninicoin.io/",
     },
     evmos: {
-      accounts: PK_MAINNET ? [PK_MAINNET] : [],
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 9001,
       url: "https://eth.bd.evmos.org:8545",
     },
     rinkeby: {
-      accounts: PK ? [PK] : [],
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 4,
       url: `https://eth-rinkeby.alchemyapi.io/v2/${ALCHEMY_ID}`,
       gasPrice: parseInt(utils.parseUnits("3", "gwei").toString()),
     },
     gnosis: {
-      accounts: PK_MAINNET ? [PK_MAINNET] : [],
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 100,
       url: `https://rpc.gnosischain.com/`,
       gasPrice: parseInt(utils.parseUnits("13", "gwei").toString()),
     },
     goerli: {
-      accounts: PK ? [PK] : [],
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 5,
       url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ID}`,
       gasPrice: parseInt(utils.parseUnits("6", "gwei").toString()),
     },
     kovan: {
-      accounts: PK ? [PK] : [],
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 42,
       url: `https://eth-kovan.alchemyapi.io/v2/${ALCHEMY_ID}`,
       gasPrice: parseInt(utils.parseUnits("6", "gwei").toString()),
     },
     mainnet: {
-      accounts: PK_MAINNET ? [PK_MAINNET] : [],
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 1,
       url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
     matic: {
-      accounts: PK_MAINNET ? [PK_MAINNET] : [],
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 137,
       url: `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
     mumbai: {
-      accounts: DEV_PK ? [DEV_PK] : [],
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 80001,
       url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
