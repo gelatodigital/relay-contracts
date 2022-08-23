@@ -1,19 +1,21 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.15;
+pragma solidity 0.8.16;
 
 import {
     IGelatoRelayWithTransferFrom
 } from "./interfaces/IGelatoRelayWithTransferFrom.sol";
-import {GelatoRelayBase} from "./GelatoRelayBase.sol";
+import {
+    GelatoRelayBaseTransferFrom
+} from "./abstract/GelatoRelayBaseTransferFrom.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
 import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
+import {_eip2771Context} from "./functions/ContextUtils.sol";
 import {
-    SponsorAuthCall,
-    UserAuthCall,
-    UserSponsorAuthCall
+    SponsorAuthCallWithTransferFrom,
+    UserAuthCallWithTransferFrom,
+    UserSponsorAuthCallWithTransferFrom
 } from "./types/CallTypes.sol";
-import {IGelato} from "./interfaces/IGelato.sol";
 import {IGelatoRelayAllowances} from "./interfaces/IGelatoRelayAllowances.sol";
 import {PaymentType} from "./types/PaymentTypes.sol";
 
@@ -23,7 +25,7 @@ import {PaymentType} from "./types/PaymentTypes.sol";
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here
 contract GelatoRelayWithTransferFrom is
     IGelatoRelayWithTransferFrom,
-    GelatoRelayBase,
+    GelatoRelayBaseTransferFrom,
     Ownable,
     Pausable
 {
@@ -31,8 +33,13 @@ contract GelatoRelayWithTransferFrom is
 
     address public immutable gelatoRelayAllowances;
 
+    //solhint-disable-next-line const-name-snakecase
+    string public constant name = "GelatoRelayWithTransferFrom";
+    //solhint-disable-next-line const-name-snakecase
+    string public constant version = "1";
+
     constructor(address _gelato, address _gelatoRelayAllowances)
-        GelatoRelayBase(_gelato)
+        GelatoRelayBaseTransferFrom(_gelato)
     {
         gelatoRelayAllowances = _gelatoRelayAllowances;
     }
@@ -54,30 +61,38 @@ contract GelatoRelayWithTransferFrom is
     /// @param _taskId Gelato task id
     // solhint-disable-next-line function-max-lines
     function sponsorAuthCall(
-        SponsorAuthCall calldata _call,
+        SponsorAuthCallWithTransferFrom calldata _call,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
         bytes32 _taskId
     ) external onlyGelato whenNotPaused {
         // CHECKS
-        _requireBasics(
+        require(
+            _call.paymentType == PaymentType.TransferFrom,
+            "GelatoRelayWithTransferFrom.sponsorAuthCall: paymentType"
+        );
+
+        _requireChainId(
             _call.chainId,
-            _call.paymentType,
+            "GelatoRelayWithTransferFrom.sponsorAuthCall:"
+        );
+
+        _requireMaxFee(
             _gelatoFee,
             _call.maxFee,
             "GelatoRelayWithTransferFrom.sponsorAuthCall:"
         );
 
-        address gelatoRelayAllowancesCopy = gelatoRelayAllowances;
         require(
-            _call.target != gelatoRelayAllowancesCopy,
+            _call.target != gelatoRelayAllowances,
             "GelatoRelayWithTransferFrom.sponsorAuthCall: call denied"
         );
 
         // Do not enforce ordering on nonces,
         // but still enforce replay protection
         // via uniqueness of message
-        bytes32 digest = _verifySponsorAuthCallSignature(
+        bytes32 digest = _requireSponsorAuthCallSignatureTransferFrom(
+            _getDomainSeparator(),
             _call,
             _sponsorSignature,
             _call.sponsor
@@ -96,7 +111,7 @@ contract GelatoRelayWithTransferFrom is
             "GelatoRelayWithTransferFrom.sponsorAuthCall:"
         );
 
-        IGelatoRelayAllowances(gelatoRelayAllowancesCopy).transferFrom(
+        IGelatoRelayAllowances(gelatoRelayAllowances).transferFrom(
             _call.feeToken,
             _call.sponsor,
             _gelatoFee
@@ -109,7 +124,6 @@ contract GelatoRelayWithTransferFrom is
             _gelatoFee,
             _taskId
         );
-        emit LogSponsorNonce(_call.sponsor, _call.sponsorNonce);
     }
 
     /// @notice Relay call + transferFrom from user
@@ -121,46 +135,60 @@ contract GelatoRelayWithTransferFrom is
     /// @param _taskId Gelato task id
     // solhint-disable-next-line function-max-lines
     function userAuthCall(
-        UserAuthCall calldata _call,
+        UserAuthCallWithTransferFrom calldata _call,
         bytes calldata _userSignature,
         uint256 _gelatoFee,
         bytes32 _taskId
-    ) external onlyGelato {
+    ) external onlyGelato whenNotPaused {
         // CHECKS
-        _requireBasics(
+        require(
+            _call.paymentType == PaymentType.TransferFrom,
+            "GelatoRelayWithTransferFrom.userAuthCall: paymentType"
+        );
+
+        _requireChainId(
             _call.chainId,
-            _call.paymentType,
+            "GelatoRelayWithTransferFrom.userAuthCall:"
+        );
+
+        _requireMaxFee(
             _gelatoFee,
             _call.maxFee,
             "GelatoRelayWithTransferFrom.userAuthCall:"
         );
 
+        uint256 storedUserNonce = userNonce[_call.user];
+
         // For the user, we enforce nonce ordering
         _requireUserBasics(
             _call.userNonce,
-            userNonce[_call.user],
+            storedUserNonce,
             _call.userDeadline,
-            "GelatoRelayWithTransferFrom.userAuthCall"
-        );
-
-        address gelatoRelayAllowancesCopy = gelatoRelayAllowances;
-        require(
-            _call.target != gelatoRelayAllowancesCopy,
-            "GelatoRelayWithTransferFrom.userAuthCall: call denied"
-        );
-
-        _verifyUserAuthCallSignature(_call, _userSignature, _call.user);
-
-        // EFFECTS
-        userNonce[_call.user]++;
-
-        // INTERACTIONS
-        _call.target.revertingContractCall(
-            _call.data,
             "GelatoRelayWithTransferFrom.userAuthCall:"
         );
 
-        IGelatoRelayAllowances(gelatoRelayAllowancesCopy).transferFrom(
+        require(
+            _call.target != gelatoRelayAllowances,
+            "GelatoRelayWithTransferFrom.userAuthCall: call denied"
+        );
+
+        _requireUserAuthCallSignatureTransferFrom(
+            _getDomainSeparator(),
+            _call,
+            _userSignature,
+            _call.user
+        );
+
+        // EFFECTS
+        userNonce[_call.user] = storedUserNonce + 1;
+
+        // INTERACTIONS
+        _call.target.revertingContractCall(
+            _eip2771Context(_call.data, _call.user),
+            "GelatoRelayWithTransferFrom.userAuthCall:"
+        );
+
+        IGelatoRelayAllowances(gelatoRelayAllowances).transferFrom(
             _call.feeToken,
             _call.user,
             _gelatoFee
@@ -185,42 +213,59 @@ contract GelatoRelayWithTransferFrom is
     /// @param _taskId Gelato task id
     // solhint-disable-next-line function-max-lines
     function userSponsorAuthCall(
-        UserSponsorAuthCall calldata _call,
+        UserSponsorAuthCallWithTransferFrom calldata _call,
         bytes calldata _userSignature,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
         bytes32 _taskId
     ) external onlyGelato whenNotPaused {
         // CHECKS
-        _requireBasics(
+        require(
+            _call.paymentType == PaymentType.TransferFrom,
+            "GelatoRelayWithTransferFrom.userSponsorAuthCall: paymentType"
+        );
+
+        _requireChainId(
             _call.chainId,
-            _call.paymentType,
+            "GelatoRelayWithTransferFrom.userSponsorAuthCall:"
+        );
+
+        _requireMaxFee(
             _gelatoFee,
             _call.maxFee,
             "GelatoRelayWithTransferFrom.userSponsorAuthCall:"
         );
 
+        uint256 storedUserNonce = userNonce[_call.user];
+
         // For the user, we enforce nonce ordering
         _requireUserBasics(
             _call.userNonce,
-            userNonce[_call.user],
+            storedUserNonce,
             _call.userDeadline,
-            "GelatoRelayWithTransferFrom.userSponsorAuthCall"
+            "GelatoRelayWithTransferFrom.userSponsorAuthCall:"
         );
 
-        address gelatoRelayAllowancesCopy = gelatoRelayAllowances;
         require(
-            _call.target != gelatoRelayAllowancesCopy,
+            _call.target != gelatoRelayAllowances,
             "GelatoRelayWithTransferFrom.userSponsorAuthCall: call denied"
         );
 
+        bytes32 domainSeparator = _getDomainSeparator();
+
         // Verify user's signature
-        _verifyUserSponsorAuthCallSignature(_call, _userSignature, _call.user);
+        _requireUserSponsorAuthCallSignatureTransferFrom(
+            domainSeparator,
+            _call,
+            _userSignature,
+            _call.user
+        );
 
         // Verify sponsor's signature
         // Do not enforce ordering on nonces but still enforce replay protection
         // via uniqueness of call with nonce
-        bytes32 digest = _verifyUserSponsorAuthCallSignature(
+        bytes32 digest = _requireUserSponsorAuthCallSignatureTransferFrom(
+            domainSeparator,
             _call,
             _sponsorSignature,
             _call.sponsor
@@ -233,16 +278,16 @@ contract GelatoRelayWithTransferFrom is
         );
 
         // EFFECTS
-        userNonce[_call.user]++;
+        userNonce[_call.user] = storedUserNonce + 1;
         wasCallSponsoredAlready[digest] = true;
 
         // INTERACTIONS
         _call.target.revertingContractCall(
-            _call.data,
+            _eip2771Context(_call.data, _call.user),
             "GelatoRelayWithTransferFrom.userSponsorAuthCall:"
         );
 
-        IGelatoRelayAllowances(gelatoRelayAllowancesCopy).transferFrom(
+        IGelatoRelayAllowances(gelatoRelayAllowances).transferFrom(
             _call.feeToken,
             _call.sponsor,
             _gelatoFee
@@ -256,5 +301,28 @@ contract GelatoRelayWithTransferFrom is
             _call.user,
             _taskId
         );
+    }
+
+    //solhint-disable-next-line func-name-mixedcase
+    function DOMAIN_SEPARATOR() external view returns (bytes32) {
+        return _getDomainSeparator();
+    }
+
+    function _getDomainSeparator() internal view returns (bytes32) {
+        return
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        bytes(
+                            //solhint-disable-next-line max-line-length
+                            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+                        )
+                    ),
+                    keccak256(bytes(name)),
+                    keccak256(bytes(version)),
+                    block.chainid,
+                    address(this)
+                )
+            );
     }
 }

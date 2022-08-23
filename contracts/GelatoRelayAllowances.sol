@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.15;
+pragma solidity 0.8.16;
 
 import {IGelato} from "./interfaces/IGelato.sol";
 import {IGelatoRelayAllowances} from "./interfaces/IGelatoRelayAllowances.sol";
@@ -21,6 +21,8 @@ contract GelatoRelayAllowances is
     Pausable,
     ReentrancyGuard
 {
+    using SafeERC20 for IERC20;
+
     address public immutable gelato;
     address public immutable gelatoRelayWithTransferFrom;
 
@@ -64,12 +66,11 @@ contract GelatoRelayAllowances is
         );
     }
 
-    function transfer(
-        address _feeToken,
-        address _from,
+    function transferStuckTokens(
+        IERC20 _token,
         address _to,
         uint256 _amount
-    ) external override onlyOwner whenNotPaused {
-        SafeERC20.safeTransferFrom(IERC20(_feeToken), _from, _to, _amount);
+    ) external override onlyOwner {
+        _token.safeTransfer(_to, _amount);
     }
 }

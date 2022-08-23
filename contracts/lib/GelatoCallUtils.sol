@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.15;
+pragma solidity 0.8.16;
 
 import {GelatoBytes} from "./GelatoBytes.sol";
 
@@ -8,7 +8,7 @@ library GelatoCallUtils {
 
     function revertingContractCall(
         address _contract,
-        bytes calldata _data,
+        bytes memory _data,
         string memory _errorMsg
     ) internal returns (bytes memory returndata) {
         bool success;

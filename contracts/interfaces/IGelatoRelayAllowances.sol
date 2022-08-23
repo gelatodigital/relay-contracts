@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.15;
+pragma solidity 0.8.16;
+
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IGelatoRelayAllowances {
     function transferFrom(
@@ -8,9 +10,8 @@ interface IGelatoRelayAllowances {
         uint256 _amount
     ) external;
 
-    function transfer(
-        address _feeToken,
-        address _from,
+    function transferStuckTokens(
+        IERC20 _token,
         address _to,
         uint256 _amount
     ) external;
