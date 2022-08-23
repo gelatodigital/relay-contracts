@@ -31,7 +31,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ID}`,
-        blockNumber: 13476568, // ether price $4,168.96
+        blockNumber: 13476568,
       },
       accounts: {
         accountsBalance: ethers.utils.parseEther("10000").toString(),
@@ -101,27 +101,9 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: "0.8.15",
+        version: "0.8.16",
         settings: {
-          optimizer: { enabled: true, runs: 200000 },
-          modelChecker: {
-            targets: [
-              "balance",
-              "outOfBounds",
-              "popEmptyArray",
-              "constantCondition",
-              "divByZero",
-              "assert",
-              "underflow",
-              "overflow",
-            ],
-            showUnproved: true,
-            engine: "none",
-            // contracts: {
-            //   "contracts/GelatoRelayer.sol": ["GelatoRelayer"],
-            // },
-            // invariants: ["contract", "reentrancy"],
-          },
+          optimizer: { enabled: true, runs: 999999 },
         },
       },
     ],

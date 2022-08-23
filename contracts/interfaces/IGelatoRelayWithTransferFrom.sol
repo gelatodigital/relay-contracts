@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.15;
+pragma solidity 0.8.16;
 
 import {
-    SponsorAuthCall,
-    UserAuthCall,
-    UserSponsorAuthCall
+    SponsorAuthCallWithTransferFrom,
+    UserAuthCallWithTransferFrom,
+    UserSponsorAuthCallWithTransferFrom
 } from "../types/CallTypes.sol";
 
 interface IGelatoRelayWithTransferFrom {
@@ -36,21 +36,21 @@ interface IGelatoRelayWithTransferFrom {
     function unpause() external;
 
     function sponsorAuthCall(
-        SponsorAuthCall calldata _call,
+        SponsorAuthCallWithTransferFrom calldata _call,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
         bytes32 _taskId
     ) external;
 
     function userAuthCall(
-        UserAuthCall calldata _call,
+        UserAuthCallWithTransferFrom calldata _call,
         bytes calldata _userSignature,
         uint256 _gelatoFee,
         bytes32 _taskId
     ) external;
 
     function userSponsorAuthCall(
-        UserSponsorAuthCall calldata _call,
+        UserSponsorAuthCallWithTransferFrom calldata _call,
         bytes calldata _userSignature,
         bytes calldata _sponsorSignature,
         uint256 _gelatoFee,
