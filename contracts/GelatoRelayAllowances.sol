@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.15;
+pragma solidity 0.8.16;
 
 import {IGelato} from "./interfaces/IGelato.sol";
 import {IGelatoRelayAllowances} from "./interfaces/IGelatoRelayAllowances.sol";
@@ -13,20 +13,30 @@ import {
     SafeERC20
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-/// @notice Intermediate contract for Gelato Relay to pull due fees.
-///         Sponsors should approve ERC20 allowances to this smart contract
+/// @notice Intermediate contract for Gelato Relay to transferFrom
+/// @dev    Sponsors should approve ERC20 allowances to this smart contract
 contract GelatoRelayAllowances is
     IGelatoRelayAllowances,
     Ownable,
     Pausable,
     ReentrancyGuard
 {
-    address public immutable gelato;
-    address public immutable gelatoRelayPullFee;
+    using SafeERC20 for IERC20;
 
-    constructor(address _gelato, address _gelatoRelayPullFee) {
+    address public immutable gelato;
+    address public immutable gelatoRelayWithTransferFrom;
+
+    modifier onlyGelatoRelayWithTransferFrom() {
+        require(
+            msg.sender == gelatoRelayWithTransferFrom,
+            "GelatoRelayAllowances.onlyGelatoRelayWithTransferFrom"
+        );
+        _;
+    }
+
+    constructor(address _gelato, address _gelatoRelayWithTransferFrom) {
         gelato = _gelato;
-        gelatoRelayPullFee = _gelatoRelayPullFee;
+        gelatoRelayWithTransferFrom = _gelatoRelayWithTransferFrom;
     }
 
     function pause() external onlyOwner {
@@ -37,13 +47,17 @@ contract GelatoRelayAllowances is
         _unpause();
     }
 
-    function pullFeeFrom(
+    function transferFrom(
         address _feeToken,
         address _from,
         uint256 _amount
-    ) external override nonReentrant whenNotPaused {
-        require(msg.sender == gelatoRelayPullFee, "Caller not allowed");
-
+    )
+        external
+        override
+        nonReentrant
+        onlyGelatoRelayWithTransferFrom
+        whenNotPaused
+    {
         SafeERC20.safeTransferFrom(
             IERC20(_feeToken),
             _from,
@@ -52,12 +66,11 @@ contract GelatoRelayAllowances is
         );
     }
 
-    function transfer(
-        address _feeToken,
-        address _from,
+    function transferStuckTokens(
+        IERC20 _token,
         address _to,
         uint256 _amount
-    ) external override onlyOwner whenNotPaused {
-        SafeERC20.safeTransferFrom(IERC20(_feeToken), _from, _to, _amount);
+    ) external override onlyOwner {
+        _token.safeTransfer(_to, _amount);
     }
 }
