@@ -20,6 +20,7 @@ interface IGelatoRelay is IGelatoRelayBase1Balance {
         address _target,
         bytes calldata _data,
         address _feeToken,
+        uint256 _fee,
         bytes32 _taskId
     ) external;
 

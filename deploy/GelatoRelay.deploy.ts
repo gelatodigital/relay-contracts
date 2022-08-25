@@ -19,12 +19,12 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     await sleep(5000);
   }
 
-  const addresses = getAddresses(hre.network.name);
+  const { GELATO } = getAddresses(hre.network.name);
 
   await deploy("GelatoRelay", {
     from: deployer,
     proxy: true,
-    args: [addresses.Gelato],
+    args: [GELATO],
     log: true,
   });
 };

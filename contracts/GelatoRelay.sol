@@ -6,6 +6,9 @@ import {IGelato1Balance} from "./interfaces/IGelato1Balance.sol";
 import {GelatoRelayBase1Balance} from "./abstract/GelatoRelayBase1Balance.sol";
 import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
 import {GelatoTokenUtils} from "./lib/GelatoTokenUtils.sol";
+import {
+    _encodeRelayerContext
+} from "@gelatonetwork/relayer-context/contracts/functions/RelayerUtils.sol";
 import {_eip2771Context} from "./functions/ContextUtils.sol";
 import {
     SponsorAuthCallWith1Balance,
@@ -32,6 +35,8 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase1Balance {
     // solhint-disable-next-line no-empty-blocks
     constructor(address _gelato) GelatoRelayBase1Balance(_gelato) {}
 
+    // TO DO: after RelayerContext is properly implemented on Gelato
+    // remove _feeToken and _fee and expect _data to be Context encoded.
     /// @notice Relay call with Synchronous Payment
     /// @notice The target contract pays Gelato during the call forward
     /// @dev    This is the most straightforward use case, and `transfer` handles token payments.
@@ -43,17 +48,21 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase1Balance {
         address _target,
         bytes calldata _data,
         address _feeToken,
+        uint256 _fee,
         bytes32 _taskId
     ) external onlyGelato {
-        uint256 preBalance = _feeToken.getBalance(address(this));
+        uint256 preBalance = _feeToken.getBalance(msg.sender);
 
-        _target.revertingContractCall(_data, "GelatoRelay.callWithSyncFee:");
+        // TO DO: remove hacky way and replace with
+        // implementation that _encodes RelayerContext on Gelato
+        _target.revertingContractCall(
+            _encodeRelayerContext(_data, msg.sender, _feeToken, _fee),
+            "GelatoRelay.callWithSyncFee:"
+        );
 
-        uint256 postBalance = _feeToken.getBalance(address(this));
+        uint256 postBalance = _feeToken.getBalance(msg.sender);
 
         uint256 fee = postBalance - preBalance;
-
-        _feeToken.transfer(IGelato(gelato).getFeeCollector(), fee);
 
         emit LogCallWithSyncFee(_target, _feeToken, fee, _taskId);
     }

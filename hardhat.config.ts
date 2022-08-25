@@ -8,7 +8,6 @@ import "hardhat-deploy";
 
 // Process Env Variables
 import * as dotenv from "dotenv";
-import { ethers } from "ethers";
 dotenv.config({ path: __dirname + "/.env" });
 
 const RELAY_DEPLOYER_PK = process.env.RELAY_DEPLOYER_PK;
@@ -33,9 +32,6 @@ const config: HardhatUserConfig = {
       forking: {
         url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ID}`,
         blockNumber: 13476568,
-      },
-      accounts: {
-        accountsBalance: ethers.utils.parseEther("10000").toString(),
       },
     },
     alfajores: {

@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Gelato Relayer contracts and tests",
   "scripts": {
-    "build": "yarn clean && yarn compile && npx tsc",
+    "build": "yarn install && yarn compile && npx tsc",
     "clean": "yarn hardhat clean && rm -rf dist",
     "compile": "npx hardhat compile --force",
     "deploy": "npx hardhat deploy",
@@ -22,6 +22,8 @@
   },
   "license": "ISC",
   "devDependencies": {
+    "@gelatonetwork/relayer-context": "0.1.7",
+    "@nomicfoundation/hardhat-network-helpers": "1.0.4",
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
     "@nomiclabs/hardhat-waffle": "2.0.3",
     "@openzeppelin/contracts": "4.7.2",
@@ -40,7 +42,7 @@
     "eslint-plugin-prettier": "4.2.1",
     "ethereum-waffle": "3.4.4",
     "ethers": "5.6.9",
-    "hardhat": "2.10.1",
+    "hardhat": "2.10.2",
     "hardhat-deploy": "0.11.12",
     "husky": "8.0.1",
     "lint-staged": "13.0.3",
