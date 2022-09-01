@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.16;
 
-import {IGelatoRelayBase1Balance} from "./IGelatoRelayBase1Balance.sol";
 import {
-    SponsorAuthCallWith1Balance,
-    UserAuthCallWith1Balance,
-    UserSponsorAuthCallWith1Balance
+    SponsoredCall,
+    UserAuthCall,
+    SponsoredUserAuthCall
 } from "../types/CallTypes.sol";
 
-interface IGelatoRelay is IGelatoRelayBase1Balance {
+interface IGelatoRelay {
     event LogCallWithSyncFee(
         address indexed target,
         address feeToken,
@@ -24,26 +23,24 @@ interface IGelatoRelay is IGelatoRelayBase1Balance {
         bytes32 _taskId
     ) external;
 
-    function sponsorAuthCallWith1Balance(
-        SponsorAuthCallWith1Balance calldata _call,
-        bytes calldata _sponsorSignature,
+    function sponsoredCall(
+        SponsoredCall calldata _call,
         uint256 _nativeToFeeTokenXRateNumerator,
         uint256 _nativeToFeeTokenXRateDenominator,
         bytes32 _taskId
     ) external;
 
-    function userAuthCallWith1Balance(
-        UserAuthCallWith1Balance calldata _call,
+    function userAuthCall(
+        UserAuthCall calldata _call,
         bytes calldata _userSignature,
         uint256 _nativeToFeeTokenXRateNumerator,
         uint256 _nativeToFeeTokenXRateDenominator,
         bytes32 _taskId
     ) external;
 
-    function userSponsorAuthCallWith1Balance(
-        UserSponsorAuthCallWith1Balance calldata _call,
+    function sponsoredUserAuthCall(
+        SponsoredUserAuthCall calldata _call,
         bytes calldata _userSignature,
-        bytes calldata _sponsorSignature,
         uint256 _nativeToFeeTokenXRateNumerator,
         uint256 _nativeToFeeTokenXRateDenominator,
         bytes32 _taskId
