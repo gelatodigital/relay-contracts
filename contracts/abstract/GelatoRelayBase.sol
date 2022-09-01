@@ -37,7 +37,7 @@ abstract contract GelatoRelayBase is IGelatoRelayBase {
         keccak256(
             bytes(
                 // solhint-disable-next-line max-line-length
-                "SponsoredUserAuthCall(uint256 chainId,address target,bytes data,address user,uint256 userNonce,uint256 userDeadline,address sponsor,uint8 paymentType,address feeToken,uint256 oneBalanceChainId)"
+                "SponsoredUserAuthCall(uint256 chainId,address target,bytes data,address user,uint256 userNonce,uint256 userDeadline,address sponsor,address feeToken,uint256 oneBalanceChainId)"
             )
         );
 
