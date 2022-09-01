@@ -17,6 +17,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x4775aF8FEf4809fE10bf05867d2b038a4b5B2146",
       };
+    case "avalanche":
+      return {
+        GELATO: "0x7C5c4Af1618220C090A6863175de47afb20fa9Df",
+      };
     case "bsc":
       return {
         GELATO: "0x7C5c4Af1618220C090A6863175de47afb20fa9Df",
@@ -41,6 +45,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x683913B3A32ada4F8100458A3E1675425BdAa7DF",
       };
+    case "arbitrumGoerli":
+      return {
+        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
+      };
     case "matic":
       return {
         GELATO: "0x7598e84B2E114AB62CAB288CE5f7d5f6bad35BbA",
@@ -61,9 +69,9 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
       };
-    case "avalanche":
+    case "optimisticGoerli":
       return {
-        GELATO: "0x7C5c4Af1618220C090A6863175de47afb20fa9Df",
+        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
       };
     default:
       throw new Error(`No addresses for Network: ${network}`);

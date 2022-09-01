@@ -69,6 +69,11 @@ const config: HardhatUserConfig = {
       chainId: 5,
       url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
+    arbitrumGoerli: {
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
+      chainId: 421613,
+      url: `https://arb-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
+    },
     kovan: {
       accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 42,
@@ -97,6 +102,11 @@ const config: HardhatUserConfig = {
     moonriver: {
       url: "https://moonriver-rpc.dwellir.com",
       chainId: 1285,
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
+    },
+    optimisticGoerli: {
+      url: `https://opt-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
+      chainId: 420,
       accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
     },
   },
