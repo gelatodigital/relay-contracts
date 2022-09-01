@@ -104,6 +104,11 @@ const config: HardhatUserConfig = {
       chainId: 1285,
       accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
     },
+    optimisticGoerli: {
+      url: `https://opt-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
+      chainId: 420,
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
+    },
   },
   verify: {
     etherscan: {
