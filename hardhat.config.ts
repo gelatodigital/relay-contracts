@@ -84,7 +84,7 @@ const config: HardhatUserConfig = {
       chainId: 1,
       url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
-    matic: {
+    polygon: {
       accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 137,
       url: `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,

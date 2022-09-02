@@ -6,7 +6,7 @@ interface IGelato1Balance {
         address indexed sponsor,
         address indexed target,
         address indexed feeToken,
-        uint256 sponsorChainId,
+        uint256 oneBalanceChainId,
         uint256 nativeToFeeTokenXRateNumerator,
         uint256 nativeToFeeTokenXRateDenominator,
         bytes32 taskId
