@@ -25,6 +25,7 @@ interface IGelatoRelay {
 
     function sponsoredCall(
         SponsoredCall calldata _call,
+        address _sponsor,
         uint256 _nativeToFeeTokenXRateNumerator,
         uint256 _nativeToFeeTokenXRateDenominator,
         bytes32 _taskId
@@ -40,6 +41,7 @@ interface IGelatoRelay {
 
     function sponsoredUserAuthCall(
         SponsoredUserAuthCall calldata _call,
+        address _sponsor,
         bytes calldata _userSignature,
         uint256 _nativeToFeeTokenXRateNumerator,
         uint256 _nativeToFeeTokenXRateDenominator,

@@ -80,6 +80,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
     // solhint-disable-next-line function-max-lines
     function sponsoredCall(
         SponsoredCall calldata _call,
+        address _sponsor,
         uint256 _nativeToFeeTokenXRateNumerator,
         uint256 _nativeToFeeTokenXRateDenominator,
         bytes32 _taskId
@@ -94,10 +95,8 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         );
 
         emit LogUseGelato1Balance(
-            _call.sponsor,
+            _sponsor,
             _call.target,
-            _call.feeToken,
-            _call.oneBalanceChainId,
             _nativeToFeeTokenXRateNumerator,
             _nativeToFeeTokenXRateDenominator,
             _taskId
@@ -157,8 +156,6 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         emit LogUseGelato1Balance(
             _call.user,
             _call.target,
-            _call.feeToken,
-            _call.oneBalanceChainId,
             _nativeToFeeTokenXRateNumerator,
             _nativeToFeeTokenXRateDenominator,
             _taskId
@@ -179,6 +176,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
     // solhint-disable-next-line function-max-lines
     function sponsoredUserAuthCall(
         SponsoredUserAuthCall calldata _call,
+        address _sponsor,
         bytes calldata _userSignature,
         uint256 _nativeToFeeTokenXRateNumerator,
         uint256 _nativeToFeeTokenXRateDenominator,
@@ -217,10 +215,8 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         );
 
         emit LogUseGelato1Balance(
-            _call.sponsor,
+            _sponsor,
             _call.target,
-            _call.feeToken,
-            _call.oneBalanceChainId,
             _nativeToFeeTokenXRateNumerator,
             _nativeToFeeTokenXRateDenominator,
             _taskId
