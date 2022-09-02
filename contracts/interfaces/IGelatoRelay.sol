@@ -1,11 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.16;
 
-import {
-    SponsoredCall,
-    UserAuthCall,
-    SponsoredUserAuthCall
-} from "../types/CallTypes.sol";
+import {SponsoredCall, SponsoredUserAuthCall} from "../types/CallTypes.sol";
 
 interface IGelatoRelay {
     event LogCallWithSyncFee(
@@ -26,14 +22,8 @@ interface IGelatoRelay {
     function sponsoredCall(
         SponsoredCall calldata _call,
         address _sponsor,
-        uint256 _nativeToFeeTokenXRateNumerator,
-        uint256 _nativeToFeeTokenXRateDenominator,
-        bytes32 _taskId
-    ) external;
-
-    function userAuthCall(
-        UserAuthCall calldata _call,
-        bytes calldata _userSignature,
+        address _feeToken,
+        uint256 _oneBalanceChainId,
         uint256 _nativeToFeeTokenXRateNumerator,
         uint256 _nativeToFeeTokenXRateDenominator,
         bytes32 _taskId
@@ -42,6 +32,8 @@ interface IGelatoRelay {
     function sponsoredUserAuthCall(
         SponsoredUserAuthCall calldata _call,
         address _sponsor,
+        address _feeToken,
+        uint256 _oneBalanceChainId,
         bytes calldata _userSignature,
         uint256 _nativeToFeeTokenXRateNumerator,
         uint256 _nativeToFeeTokenXRateDenominator,

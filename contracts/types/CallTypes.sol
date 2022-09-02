@@ -9,16 +9,6 @@ struct SponsoredCall {
     bytes data;
 }
 
-// When the user pays for themselves, so only user signature verification required
-struct UserAuthCall {
-    uint256 chainId;
-    address target;
-    bytes data;
-    address user;
-    uint256 userNonce;
-    uint256 userDeadline;
-}
-
 // Relay call with built-in support with signature verification on behalf of user and sponsor
 // Both user and sponsor signatures are verified
 // The sponsor pays for the relay call
