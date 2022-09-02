@@ -9,8 +9,6 @@ interface IGelatoRelayBase {
 
     function SPONSORED_CALL_TYPEHASH() external pure returns (bytes32);
 
-    function USER_AUTH_CALL_TYPEHASH() external pure returns (bytes32);
-
     function SPONSORED_USER_AUTH_CALL_TYPEHASH()
         external
         pure
