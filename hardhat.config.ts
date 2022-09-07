@@ -44,10 +44,15 @@ const config: HardhatUserConfig = {
       chainId: 43114,
       accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
     },
-    bsc: {
+    bnb: {
       accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 56,
       url: "https://bsc-dataseed1.ninicoin.io/",
+    },
+    ethereum: {
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
+      chainId: 1,
+      url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
     evmos: {
       accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
@@ -79,11 +84,7 @@ const config: HardhatUserConfig = {
       chainId: 42,
       url: `https://eth-kovan.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
-    mainnet: {
-      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
-      chainId: 1,
-      url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ID}`,
-    },
+
     polygon: {
       accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 137,

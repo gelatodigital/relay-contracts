@@ -1,15 +1,15 @@
 import hre = require("hardhat");
 import { impersonateAccount } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
+import { getGelatoAddress } from "@gelatonetwork/relay-context";
 import { GelatoRelay, MockGelatoRelayContext, MockERC20 } from "../typechain";
-import { INIT_TOKEN_BALANCE as FEE } from "./constants";
+import { FORKED_NETWORK, INIT_TOKEN_BALANCE as FEE } from "./constants";
 import { ethers } from "hardhat";
-import { getAddresses } from "../src/addresses";
 import { Signer } from "ethers";
 
 const TASK_ID = ethers.utils.keccak256("0xdeadbeef");
-const { GELATO } = getAddresses(hre.network.name);
-const FEE_COLLECTOR = GELATO;
+const gelato = getGelatoAddress(FORKED_NETWORK);
+const feeCollector = gelato;
 
 describe("Test GelatoRelayContext on GelatoRelay", function () {
   let gelatoSigner: Signer;
@@ -29,8 +29,8 @@ describe("Test GelatoRelayContext on GelatoRelay", function () {
 
     await hre.deployments.fixture();
 
-    await impersonateAccount(GELATO);
-    gelatoSigner = await ethers.getSigner(GELATO);
+    await impersonateAccount(gelato);
+    gelatoSigner = await ethers.getSigner(gelato);
 
     gelatoRelay = await hre.ethers.getContract("GelatoRelay");
     mockGelatoRelayContext = await hre.ethers.getContract(
@@ -49,7 +49,7 @@ describe("Test GelatoRelayContext on GelatoRelay", function () {
     // Mimic GelatoRelayUtils _encodeGelatoRelayContext used on-chain by GelatoRelay
     const encodedContextData = new ethers.utils.AbiCoder().encode(
       ["address", "address", "uint256"],
-      [FEE_COLLECTOR, feeToken, FEE]
+      [feeCollector, feeToken, FEE]
     );
     const encodedData = ethers.utils.solidityPack(
       ["bytes", "bytes"],
@@ -66,7 +66,7 @@ describe("Test GelatoRelayContext on GelatoRelay", function () {
       .and.to.emit(mockGelatoRelayContext, "LogFnArgs")
       .withArgs(data)
       .and.to.emit(mockGelatoRelayContext, "LogContext")
-      .withArgs(FEE_COLLECTOR, feeToken, FEE);
+      .withArgs(feeCollector, feeToken, FEE);
   });
 
   it("#2: testTransferRelayFee", async () => {
@@ -80,7 +80,7 @@ describe("Test GelatoRelayContext on GelatoRelay", function () {
       .connect(gelatoSigner)
       .callWithSyncFee(target, data, feeToken, FEE, TASK_ID);
 
-    expect(await mockERC20.balanceOf(FEE_COLLECTOR)).to.be.eq(FEE);
+    expect(await mockERC20.balanceOf(feeCollector)).to.be.eq(FEE);
   });
 
   it("#3: testTransferRelayFeeCapped: works if at maxFee", async () => {
@@ -97,7 +97,7 @@ describe("Test GelatoRelayContext on GelatoRelay", function () {
       .connect(gelatoSigner)
       .callWithSyncFee(target, data, feeToken, FEE, TASK_ID);
 
-    expect(await mockERC20.balanceOf(FEE_COLLECTOR)).to.be.eq(FEE);
+    expect(await mockERC20.balanceOf(feeCollector)).to.be.eq(FEE);
   });
 
   it("#4: testTransferRelayFeeCapped: works if below maxFee", async () => {
@@ -114,7 +114,7 @@ describe("Test GelatoRelayContext on GelatoRelay", function () {
       .connect(gelatoSigner)
       .callWithSyncFee(target, data, feeToken, FEE, TASK_ID);
 
-    expect(await mockERC20.balanceOf(FEE_COLLECTOR)).to.be.eq(FEE);
+    expect(await mockERC20.balanceOf(feeCollector)).to.be.eq(FEE);
   });
 
   it("#5: testTransferRelayFeeCapped: reverts if above maxFee", async () => {
