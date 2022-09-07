@@ -1,7 +1,7 @@
 import { deployments, getNamedAccounts } from "hardhat";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { INIT_TOKEN_BALANCE } from "../test/constants";
+import { INIT_TOKEN_BALANCE } from "../../test/constants";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;

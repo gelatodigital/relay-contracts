@@ -904,10 +904,10 @@
     "@ethersproject/properties" "^5.6.0"
     "@ethersproject/strings" "^5.6.1"
 
-"@gelatonetwork/relayer-context@0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@gelatonetwork/relayer-context/-/relayer-context-0.1.7.tgz#58db447678bed98e339aaee29f3ff389f3f54a61"
-  integrity sha512-570sMOt+Ky/8qCQOMVGICcIGfLz2Xnp1i37rzxJSxxvF658mI+Hcw/gN4rzwcOshPgpUy02N7z+bhcOJdf+XHg==
+"@gelatonetwork/relayer-context@1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@gelatonetwork/relayer-context/-/relayer-context-1.0.3.tgz#95268cbf76be1780c5f177f0f30574ad1cc1ab2c"
+  integrity sha512-+BD/N5fD6qzc0EoPkfFcBSCRgRsan+A37nT+78zO2LBfEhzs5GOA9GZOw1XonOwbqsZJUPu1E74SyA3cmxQ5fg==
   dependencies:
     "@openzeppelin/contracts" "4.7.3"
 
