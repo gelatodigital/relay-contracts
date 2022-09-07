@@ -7,8 +7,8 @@ import {GelatoRelayBase} from "./abstract/GelatoRelayBase.sol";
 import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
 import {GelatoTokenUtils} from "./lib/GelatoTokenUtils.sol";
 import {
-    _encodeRelayerContext
-} from "@gelatonetwork/relayer-context/contracts/functions/RelayerUtils.sol";
+    _encodeGelatoRelayContext
+} from "@gelatonetwork/relay-context/contracts/functions/GelatoRelayUtils.sol";
 import {_eip2771Context} from "./functions/ContextUtils.sol";
 import {SponsoredCall, SponsoredUserAuthCall} from "./types/CallTypes.sol";
 import {IGelato} from "./interfaces/IGelato.sol";
@@ -30,7 +30,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
     // solhint-disable-next-line no-empty-blocks
     constructor(address _gelato) GelatoRelayBase(_gelato) {}
 
-    // TO DO: after RelayerContext is properly implemented on Gelato
+    // TO DO: after GelatoRelayContext is properly implemented on Gelato
     // remove _feeToken and _fee and expect _data to be Context encoded.
     /// @notice Relay call with Synchronous Payment
     /// @notice The target contract pays Gelato during the call forward
@@ -49,9 +49,9 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         uint256 preBalance = _feeToken.getBalance(msg.sender);
 
         // TO DO: remove hacky way and replace with
-        // implementation that _encodes RelayerContext on Gelato
+        // implementation that _encodes GelatoRelayContext on Gelato
         _target.revertingContractCall(
-            _encodeRelayerContext(_data, msg.sender, _feeToken, _fee),
+            _encodeGelatoRelayContext(_data, msg.sender, _feeToken, _fee),
             "GelatoRelay.callWithSyncFee:"
         );
 

@@ -3,7 +3,7 @@ pragma solidity ^0.8.1;
 
 import {
     GelatoRelayContext
-} from "@gelatonetwork/relayer-context/contracts/GelatoRelayContext.sol";
+} from "@gelatonetwork/relay-context/contracts/GelatoRelayContext.sol";
 
 contract MockGelatoRelayContext is GelatoRelayContext {
     event LogMsgData(bytes msgData);
@@ -25,5 +25,5 @@ contract MockGelatoRelayContext is GelatoRelayContext {
     }
 
     // solhint-disable-next-line no-empty-blocks
-    function testOnlyRelayer() external onlyRelayer {}
+    function testOnlyGelatoRelay() external onlyGelatoRelay {}
 }

@@ -46,7 +46,7 @@ describe("Test GelatoRelayContext on GelatoRelay", function () {
     const data =
       mockGelatoRelayContext.interface.encodeFunctionData("emitContext");
 
-    // Mimic RelayerUtils _encodeRelayerContext used on-chain by GelatoRelay
+    // Mimic GelatoRelayUtils _encodeGelatoRelayContext used on-chain by GelatoRelay
     const encodedContextData = new ethers.utils.AbiCoder().encode(
       ["address", "address", "uint256"],
       [FEE_COLLECTOR, feeToken, FEE]
@@ -136,9 +136,9 @@ describe("Test GelatoRelayContext on GelatoRelay", function () {
     );
   });
 
-  it("#6: testOnlyRelayer reverts if not relayer", async () => {
-    await expect(mockGelatoRelayContext.testOnlyRelayer()).to.be.revertedWith(
-      "GelatoRelayContext.onlyRelayer"
-    );
+  it("#6: testOnlyGelatoRelay reverts if not GelatoRelay", async () => {
+    await expect(
+      mockGelatoRelayContext.testOnlyGelatoRelay()
+    ).to.be.revertedWith("GelatoRelayContext.onlyGelatoRelay");
   });
 });

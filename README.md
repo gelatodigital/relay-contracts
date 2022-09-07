@@ -1,3 +1,3 @@
-# Gelato Relayer
+# Gelato Relay
 
 Solidity Contracts + Tests.
