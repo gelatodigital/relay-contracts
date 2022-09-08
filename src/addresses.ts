@@ -29,7 +29,7 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
       };
-    case "mainnet":
+    case "ethereum":
       return {
         GELATO: "0x3CACa7b48D0573D793d3b0279b5F0029180E83b6",
       };
