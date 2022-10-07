@@ -30,8 +30,8 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ID}`,
-        blockNumber: 13476568,
+        url: `https://eth-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
+        blockNumber: 7728253,
       },
     },
     alfajores: {
@@ -129,7 +129,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: "0.8.16",
+        version: "0.8.17",
         settings: {
           optimizer: { enabled: true, runs: 999999 },
         },

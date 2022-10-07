@@ -7,7 +7,7 @@ export const getAddresses = (network: string): Addresses => {
   switch (network) {
     case "hardhat":
       return {
-        GELATO: "0x3CACa7b48D0573D793d3b0279b5F0029180E83b6",
+        GELATO: "0x683913B3A32ada4F8100458A3E1675425BdAa7DF",
       };
     case "alfajores":
       return {

@@ -1,0 +1,196 @@
+{
+  "address": "0xE299f07Ee7ac5C477E340B4D24B86A235026aAd3",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_feeCollector",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "correlationId",
+              "type": "bytes32"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "service",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "data",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "salt",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "deadline",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address",
+                  "name": "feeToken",
+                  "type": "address"
+                }
+              ],
+              "internalType": "struct MessageFeeCollector",
+              "name": "msg",
+              "type": "tuple"
+            },
+            {
+              "internalType": "bytes",
+              "name": "executorSignerSig",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "checkerSignerSig",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct ExecWithSigsFeeCollector",
+          "name": "_call",
+          "type": "tuple"
+        }
+      ],
+      "name": "execWithSigsFeeCollector",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "correlationId",
+              "type": "bytes32"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "service",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "data",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "salt",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "deadline",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address",
+                  "name": "feeToken",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "fee",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct MessageRelayContext",
+              "name": "msg",
+              "type": "tuple"
+            },
+            {
+              "internalType": "bytes",
+              "name": "executorSignerSig",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "checkerSignerSig",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct ExecWithSigsRelayContext",
+          "name": "_call",
+          "type": "tuple"
+        }
+      ],
+      "name": "execWithSigsRelayContext",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "feeCollector",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xbc39813c54bf0d85a1b94bbbdf6a8f2189cfde8667ec89e0b5a02d66a1111d28",
+  "receipt": {
+    "to": null,
+    "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "contractAddress": "0xE299f07Ee7ac5C477E340B4D24B86A235026aAd3",
+    "transactionIndex": 0,
+    "gasUsed": "566839",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x1ef31c97b7aae5a1fbac6e59097f098351ad41147c89de21d9f005a61ef89062",
+    "transactionHash": "0xbc39813c54bf0d85a1b94bbbdf6a8f2189cfde8667ec89e0b5a02d66a1111d28",
+    "logs": [],
+    "blockNumber": 7722046,
+    "cumulativeGasUsed": "566839",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x3AC05161b76a35c1c28dC99Aa01BEd7B24cEA3bf"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "f8059d44774625c9d4ebce231577277a",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.17+commit.8df45f5f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_feeCollector\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"correlationId\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"service\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"feeToken\",\"type\":\"address\"}],\"internalType\":\"struct MessageFeeCollector\",\"name\":\"msg\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"executorSignerSig\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"checkerSignerSig\",\"type\":\"bytes\"}],\"internalType\":\"struct ExecWithSigsFeeCollector\",\"name\":\"_call\",\"type\":\"tuple\"}],\"name\":\"execWithSigsFeeCollector\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"correlationId\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"service\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"salt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"deadline\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"feeToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"internalType\":\"struct MessageRelayContext\",\"name\":\"msg\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"executorSignerSig\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"checkerSignerSig\",\"type\":\"bytes\"}],\"internalType\":\"struct ExecWithSigsRelayContext\",\"name\":\"_call\",\"type\":\"tuple\"}],\"name\":\"execWithSigsRelayContext\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"feeCollector\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/__mocks__/MockGelato.sol\":\"MockGelato\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":999999},\"remappings\":[]},\"sources\":{\"contracts/__mocks__/MockGelato.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.17;\\n\\nimport {\\n    ExecWithSigsFeeCollector,\\n    ExecWithSigsRelayContext\\n} from \\\"../types/DiamondCallTypes.sol\\\";\\nimport {GelatoBytes} from \\\"../lib/GelatoBytes.sol\\\";\\nimport {GelatoCallUtils} from \\\"../lib/GelatoCallUtils.sol\\\";\\nimport {\\n    _encodeFeeCollector,\\n    _encodeGelatoRelayContext\\n} from \\\"../functions/ContextUtils.sol\\\";\\n\\ncontract MockGelato {\\n    using GelatoCallUtils for address;\\n\\n    address public immutable feeCollector;\\n\\n    constructor(address _feeCollector) {\\n        feeCollector = _feeCollector;\\n    }\\n\\n    function execWithSigsFeeCollector(ExecWithSigsFeeCollector calldata _call)\\n        external\\n    {\\n        // call forward + append fee collector\\n        (bool success, bytes memory returndata) = _call.msg.service.call(\\n            _encodeFeeCollector(_call.msg.data, feeCollector)\\n        );\\n\\n        if (!success)\\n            GelatoBytes.revertWithError(\\n                returndata,\\n                \\\"ExecWithSigsFacet.ExecWithSigsFeeCollector:\\\"\\n            );\\n    }\\n\\n    function execWithSigsRelayContext(ExecWithSigsRelayContext calldata _call)\\n        external\\n    {\\n        // call forward + append fee collector, feeToken, fee\\n        _call.msg.service.revertingContractCall(\\n            _encodeGelatoRelayContext(\\n                _call.msg.data,\\n                feeCollector,\\n                _call.msg.feeToken,\\n                _call.msg.fee\\n            ),\\n            \\\"ExecWithSigsFacet.execWithSigsRelayContext:\\\"\\n        );\\n    }\\n}\\n\",\"keccak256\":\"0xf7236278e41a38e28ee6de9ad9b32ea3d037d4f63a5cda442d03eb1b78589ce0\",\"license\":\"MIT\"},\"contracts/functions/ContextUtils.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.17;\\n\\n// solhint-disable-next-line private-vars-leading-underscore, func-visibility\\nfunction _eip2771Context(bytes calldata _data, address _msgSender)\\n    pure\\n    returns (bytes memory)\\n{\\n    return abi.encodePacked(_data, _msgSender);\\n}\\n\\nfunction _encodeGelatoRelayContext(\\n    bytes calldata _data,\\n    address _feeCollector,\\n    address _feeToken,\\n    uint256 _fee\\n) pure returns (bytes memory) {\\n    return abi.encodePacked(_data, abi.encode(_feeCollector, _feeToken, _fee));\\n}\\n\\nfunction _encodeFeeCollector(bytes calldata _data, address _feeCollector)\\n    pure\\n    returns (bytes memory)\\n{\\n    return abi.encodePacked(_data, abi.encode(_feeCollector));\\n}\\n\",\"keccak256\":\"0x37af704f686eeb5cfe9f5335e55fdb893c78e503e3730c0fc285dbcb9df783a7\",\"license\":\"MIT\"},\"contracts/lib/GelatoBytes.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.17;\\n\\nlibrary GelatoBytes {\\n    function calldataSliceSelector(bytes calldata _bytes)\\n        internal\\n        pure\\n        returns (bytes4 selector)\\n    {\\n        selector =\\n            _bytes[0] |\\n            (bytes4(_bytes[1]) >> 8) |\\n            (bytes4(_bytes[2]) >> 16) |\\n            (bytes4(_bytes[3]) >> 24);\\n    }\\n\\n    function memorySliceSelector(bytes memory _bytes)\\n        internal\\n        pure\\n        returns (bytes4 selector)\\n    {\\n        selector =\\n            _bytes[0] |\\n            (bytes4(_bytes[1]) >> 8) |\\n            (bytes4(_bytes[2]) >> 16) |\\n            (bytes4(_bytes[3]) >> 24);\\n    }\\n\\n    function revertWithError(bytes memory _bytes, string memory _tracingInfo)\\n        internal\\n        pure\\n    {\\n        // 68: 32-location, 32-length, 4-ErrorSelector, UTF-8 err\\n        if (_bytes.length % 32 == 4) {\\n            bytes4 selector;\\n            assembly {\\n                selector := mload(add(0x20, _bytes))\\n            }\\n            if (selector == 0x08c379a0) {\\n                // Function selector for Error(string)\\n                assembly {\\n                    _bytes := add(_bytes, 68)\\n                }\\n                revert(string(abi.encodePacked(_tracingInfo, string(_bytes))));\\n            } else {\\n                revert(\\n                    string(abi.encodePacked(_tracingInfo, \\\"NoErrorSelector\\\"))\\n                );\\n            }\\n        } else {\\n            revert(\\n                string(abi.encodePacked(_tracingInfo, \\\"UnexpectedReturndata\\\"))\\n            );\\n        }\\n    }\\n\\n    function returnError(bytes memory _bytes, string memory _tracingInfo)\\n        internal\\n        pure\\n        returns (string memory)\\n    {\\n        // 68: 32-location, 32-length, 4-ErrorSelector, UTF-8 err\\n        if (_bytes.length % 32 == 4) {\\n            bytes4 selector;\\n            assembly {\\n                selector := mload(add(0x20, _bytes))\\n            }\\n            if (selector == 0x08c379a0) {\\n                // Function selector for Error(string)\\n                assembly {\\n                    _bytes := add(_bytes, 68)\\n                }\\n                return string(abi.encodePacked(_tracingInfo, string(_bytes)));\\n            } else {\\n                return\\n                    string(abi.encodePacked(_tracingInfo, \\\"NoErrorSelector\\\"));\\n            }\\n        } else {\\n            return\\n                string(abi.encodePacked(_tracingInfo, \\\"UnexpectedReturndata\\\"));\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x40fbb9371b1d93610af7eecec5fe51840e4fea3a9abfac4ff6bab9ce526a872d\",\"license\":\"MIT\"},\"contracts/lib/GelatoCallUtils.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.17;\\n\\nimport {GelatoBytes} from \\\"./GelatoBytes.sol\\\";\\n\\nlibrary GelatoCallUtils {\\n    using GelatoBytes for bytes;\\n\\n    function revertingContractCall(\\n        address _contract,\\n        bytes memory _data,\\n        string memory _errorMsg\\n    ) internal returns (bytes memory returndata) {\\n        bool success;\\n        (success, returndata) = _contract.call(_data);\\n\\n        // solhint-disable-next-line max-line-length\\n        // https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/f9b6fc3fdab7aca33a9cfa8837c5cd7f67e176be/contracts/utils/AddressUpgradeable.sol#L177\\n        if (success) {\\n            if (returndata.length == 0) {\\n                // only check isContract if the call was successful and the return data is empty\\n                // otherwise we already know that it was a contract\\n                require(\\n                    isContract(_contract),\\n                    string(abi.encodePacked(_errorMsg, \\\"Call to non contract\\\"))\\n                );\\n            }\\n        } else {\\n            returndata.revertWithError(_errorMsg);\\n        }\\n    }\\n\\n    // solhint-disable-next-line max-line-length\\n    // https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/f9b6fc3fdab7aca33a9cfa8837c5cd7f67e176be/contracts/utils/AddressUpgradeable.sol#L36\\n    function isContract(address account) internal view returns (bool) {\\n        // This method relies on extcodesize/address.code.length, which returns 0\\n        // for contracts in construction, since the code is only stored at the end\\n        // of the constructor execution.\\n\\n        return account.code.length > 0;\\n    }\\n}\\n\",\"keccak256\":\"0x4fc4be222111f881ad257bdacc76c7136581dbaa5409639c67e6d0b696931d78\",\"license\":\"MIT\"},\"contracts/types/DiamondCallTypes.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.17;\\n\\nstruct Message {\\n    address service;\\n    bytes data;\\n    uint256 salt;\\n    uint256 deadline;\\n}\\n\\nstruct MessageFeeCollector {\\n    address service;\\n    bytes data;\\n    uint256 salt;\\n    uint256 deadline;\\n    address feeToken;\\n}\\n\\nstruct MessageRelayContext {\\n    address service;\\n    bytes data;\\n    uint256 salt;\\n    uint256 deadline;\\n    address feeToken;\\n    uint256 fee;\\n}\\n\\nstruct ExecWithSigs {\\n    bytes32 correlationId;\\n    Message msg;\\n    bytes executorSignerSig;\\n    bytes checkerSignerSig;\\n}\\n\\nstruct ExecWithSigsFeeCollector {\\n    bytes32 correlationId;\\n    MessageFeeCollector msg;\\n    bytes executorSignerSig;\\n    bytes checkerSignerSig;\\n}\\n\\nstruct ExecWithSigsRelayContext {\\n    bytes32 correlationId;\\n    MessageRelayContext msg;\\n    bytes executorSignerSig;\\n    bytes checkerSignerSig;\\n}\",\"keccak256\":\"0x7cfeb4e6cc55552dd30350af121c1b803f2daa1a42466c5ca427e7b2130cd752\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60a060405234801561001057600080fd5b506040516109e63803806109e683398101604081905261002f91610040565b6001600160a01b0316608052610070565b60006020828403121561005257600080fd5b81516001600160a01b038116811461006957600080fd5b9392505050565b60805161094e6100986000396000818160600152818161011201526101d9015261094e6000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c80630a4806ce14610046578063c415b95c1461005b578063cd2cf366146100ab575b600080fd5b61005961005436600461058f565b6100be565b005b6100827f000000000000000000000000000000000000000000000000000000000000000081565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b6100596100b936600461058f565b6101b6565b6000806100ce60208401846105cc565b6100dc90602081019061060a565b73ffffffffffffffffffffffffffffffffffffffff1661013661010260208601866105cc565b610110906020810190610647565b7f0000000000000000000000000000000000000000000000000000000000000000610281565b60405161014391906106d7565b6000604051808303816000865af19150503d8060008114610180576040519150601f19603f3d011682016040523d82523d6000602084013e610185565b606091505b5091509150816101b1576101b1816040518060600160405280602b81526020016108c3602b91396102fe565b505050565b61027d61022c6101c960208401846106e9565b6101d7906020810190610647565b7f000000000000000000000000000000000000000000000000000000000000000061020560208701876106e9565b6102169060a081019060800161060a565b61022360208801886106e9565b60a00135610403565b6040518060600160405280602b81526020016108ee602b913961025260208501856106e9565b61026090602081019061060a565b73ffffffffffffffffffffffffffffffffffffffff16919061046d565b5050565b6040805173ffffffffffffffffffffffffffffffffffffffff831660208201526060918591859101604080517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0818403018152908290526102e693929160200161071d565b60405160208183030381529060405290509392505050565b6020825161030c9190610744565b6004036103f25760208201517fffffffff0000000000000000000000000000000000000000000000000000000081167f08c379a000000000000000000000000000000000000000000000000000000000036103e157604483019250818360405160200161037a92919061077f565b604080517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0818403018152908290527f08c379a00000000000000000000000000000000000000000000000000000000082526103d8916004016107ae565b60405180910390fd5b8160405160200161037a91906107ff565b8060405160200161037a9190610840565b6040805173ffffffffffffffffffffffffffffffffffffffff858116602083015284168183015260608082018490528251808303820181526080830190935291610453918891889160a00161071d565b604051602081830303815290604052905095945050505050565b606060008473ffffffffffffffffffffffffffffffffffffffff168460405161049691906106d7565b6000604051808303816000865af19150503d80600081146104d3576040519150601f19603f3d011682016040523d82523d6000602084013e6104d8565b606091505b509250905080156105655781516000036105605773ffffffffffffffffffffffffffffffffffffffff85163b1515836040516020016105179190610881565b6040516020818303038152906040529061055e576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016103d891906107ae565b505b61056f565b61056f82846102fe565b509392505050565b60006080828403121561058957600080fd5b50919050565b6000602082840312156105a157600080fd5b813567ffffffffffffffff8111156105b857600080fd5b6105c484828501610577565b949350505050565b600082357fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6183360301811261060057600080fd5b9190910192915050565b60006020828403121561061c57600080fd5b813573ffffffffffffffffffffffffffffffffffffffff8116811461064057600080fd5b9392505050565b60008083357fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe184360301811261067c57600080fd5b83018035915067ffffffffffffffff82111561069757600080fd5b6020019150368190038213156106ac57600080fd5b9250929050565b60005b838110156106ce5781810151838201526020016106b6565b50506000910152565b600082516106008184602087016106b3565b600082357fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff4183360301811261060057600080fd5b82848237600083820160008152835161073a8183602088016106b3565b0195945050505050565b60008261077a577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500690565b600083516107918184602088016106b3565b8351908301906107a58183602088016106b3565b01949350505050565b60208152600082518060208401526107cd8160408501602087016106b3565b601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169190910160400192915050565b600082516108118184602087016106b3565b7f4e6f4572726f7253656c6563746f720000000000000000000000000000000000920191825250600f01919050565b600082516108528184602087016106b3565b7f556e657870656374656452657475726e64617461000000000000000000000000920191825250601401919050565b600082516108938184602087016106b3565b7f43616c6c20746f206e6f6e20636f6e747261637400000000000000000000000092019182525060140191905056fe45786563576974685369677346616365742e457865635769746853696773466565436f6c6c6563746f723a45786563576974685369677346616365742e65786563576974685369677352656c6179436f6e746578743aa2646970667358221220239a06c19428e1a7d8a78d52584d2c1ac892d0fde4adc468376db868d976193b64736f6c63430008110033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100415760003560e01c80630a4806ce14610046578063c415b95c1461005b578063cd2cf366146100ab575b600080fd5b61005961005436600461058f565b6100be565b005b6100827f000000000000000000000000000000000000000000000000000000000000000081565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b6100596100b936600461058f565b6101b6565b6000806100ce60208401846105cc565b6100dc90602081019061060a565b73ffffffffffffffffffffffffffffffffffffffff1661013661010260208601866105cc565b610110906020810190610647565b7f0000000000000000000000000000000000000000000000000000000000000000610281565b60405161014391906106d7565b6000604051808303816000865af19150503d8060008114610180576040519150601f19603f3d011682016040523d82523d6000602084013e610185565b606091505b5091509150816101b1576101b1816040518060600160405280602b81526020016108c3602b91396102fe565b505050565b61027d61022c6101c960208401846106e9565b6101d7906020810190610647565b7f000000000000000000000000000000000000000000000000000000000000000061020560208701876106e9565b6102169060a081019060800161060a565b61022360208801886106e9565b60a00135610403565b6040518060600160405280602b81526020016108ee602b913961025260208501856106e9565b61026090602081019061060a565b73ffffffffffffffffffffffffffffffffffffffff16919061046d565b5050565b6040805173ffffffffffffffffffffffffffffffffffffffff831660208201526060918591859101604080517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0818403018152908290526102e693929160200161071d565b60405160208183030381529060405290509392505050565b6020825161030c9190610744565b6004036103f25760208201517fffffffff0000000000000000000000000000000000000000000000000000000081167f08c379a000000000000000000000000000000000000000000000000000000000036103e157604483019250818360405160200161037a92919061077f565b604080517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0818403018152908290527f08c379a00000000000000000000000000000000000000000000000000000000082526103d8916004016107ae565b60405180910390fd5b8160405160200161037a91906107ff565b8060405160200161037a9190610840565b6040805173ffffffffffffffffffffffffffffffffffffffff858116602083015284168183015260608082018490528251808303820181526080830190935291610453918891889160a00161071d565b604051602081830303815290604052905095945050505050565b606060008473ffffffffffffffffffffffffffffffffffffffff168460405161049691906106d7565b6000604051808303816000865af19150503d80600081146104d3576040519150601f19603f3d011682016040523d82523d6000602084013e6104d8565b606091505b509250905080156105655781516000036105605773ffffffffffffffffffffffffffffffffffffffff85163b1515836040516020016105179190610881565b6040516020818303038152906040529061055e576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016103d891906107ae565b505b61056f565b61056f82846102fe565b509392505050565b60006080828403121561058957600080fd5b50919050565b6000602082840312156105a157600080fd5b813567ffffffffffffffff8111156105b857600080fd5b6105c484828501610577565b949350505050565b600082357fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6183360301811261060057600080fd5b9190910192915050565b60006020828403121561061c57600080fd5b813573ffffffffffffffffffffffffffffffffffffffff8116811461064057600080fd5b9392505050565b60008083357fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe184360301811261067c57600080fd5b83018035915067ffffffffffffffff82111561069757600080fd5b6020019150368190038213156106ac57600080fd5b9250929050565b60005b838110156106ce5781810151838201526020016106b6565b50506000910152565b600082516106008184602087016106b3565b600082357fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff4183360301811261060057600080fd5b82848237600083820160008152835161073a8183602088016106b3565b0195945050505050565b60008261077a577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500690565b600083516107918184602088016106b3565b8351908301906107a58183602088016106b3565b01949350505050565b60208152600082518060208401526107cd8160408501602087016106b3565b601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169190910160400192915050565b600082516108118184602087016106b3565b7f4e6f4572726f7253656c6563746f720000000000000000000000000000000000920191825250600f01919050565b600082516108528184602087016106b3565b7f556e657870656374656452657475726e64617461000000000000000000000000920191825250601401919050565b600082516108938184602087016106b3565b7f43616c6c20746f206e6f6e20636f6e747261637400000000000000000000000092019182525060140191905056fe45786563576974685369677346616365742e457865635769746853696773466565436f6c6c6563746f723a45786563576974685369677346616365742e65786563576974685369677352656c6179436f6e746578743aa2646970667358221220239a06c19428e1a7d8a78d52584d2c1ac892d0fde4adc468376db868d976193b64736f6c63430008110033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}

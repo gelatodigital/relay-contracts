@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.16;
+pragma solidity 0.8.17;
 
 // No need to implement user-specific signature verification
 // Only sponsor signature is verified in order to ensure integrity of fee payments
