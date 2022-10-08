@@ -46,7 +46,8 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         uint256 _fee,
         bytes32 _taskId
     ) external onlyGelato {
-        uint256 preBalance = _feeToken.getBalance(msg.sender);
+        // Check to make sure no one is sending to msg.sender
+        uint256 preBalance = _feeToken.getBalance(address(this));
 
         // TO DO: remove hacky way and replace with
         // implementation that _encodes GelatoRelayContext on Gelato
@@ -55,14 +56,14 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
             "GelatoRelay.callWithSyncFee:"
         );
 
-        uint256 postBalance = _feeToken.getBalance(msg.sender);
+        uint256 postBalance = _feeToken.getBalance(address(this));
 
-        emit LogCallWithSyncFee(
-            _target,
-            _feeToken,
-            postBalance - preBalance,
-            _taskId
-        );
+        // stuck fee
+        uint256 fee = postBalance - preBalance;
+
+        _feeToken.transfer(msg.sender, fee);
+
+        emit LogCallWithSyncFee(_target, _feeToken, fee, _taskId);
     }
 
     /// @notice Relay call + One Balance payment - with sponsor authentication
