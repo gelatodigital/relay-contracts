@@ -21,7 +21,6 @@ import {
 import {_eip2771Context} from "./functions/ContextUtils.sol";
 import {SponsoredCall, SponsoredUserAuthCall} from "./types/CallTypes.sol";
 import {IGelato} from "./interfaces/IGelato.sol";
-import "hardhat/console.sol";
 
 /// @title  Gelato Relay contract
 /// @notice This contract deals with synchronous payments and Gelato 1Balance payments
