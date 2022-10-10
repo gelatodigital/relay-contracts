@@ -7,6 +7,10 @@ import {GelatoRelayBase} from "./abstract/GelatoRelayBase.sol";
 import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
 import {GelatoTokenUtils} from "./lib/GelatoTokenUtils.sol";
 import {
+    _encodeGelatoRelayContext,
+    _encodeFeeCollector
+} from "@gelatonetwork/relay-context/contracts/functions/GelatoRelayUtils.sol";
+import {
     __getFeeCollector
 } from "@gelatonetwork/relay-context/contracts/GelatoRelayFeeCollector.sol";
 import {
@@ -14,11 +18,7 @@ import {
     _getFeeTokenRelayContext,
     _getFeeRelayContext
 } from "@gelatonetwork/relay-context/contracts/GelatoRelayContext.sol";
-import {
-    _eip2771Context,
-    _encodeGelatoRelayContext,
-    _encodeFeeCollector
-} from "./functions/ContextUtils.sol";
+import {_eip2771Context} from "./functions/ContextUtils.sol";
 import {SponsoredCall, SponsoredUserAuthCall} from "./types/CallTypes.sol";
 import {IGelato} from "./interfaces/IGelato.sol";
 import "hardhat/console.sol";
