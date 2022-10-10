@@ -14,6 +14,7 @@ coverage
 # hardhat
 artifacts
 cache
+deployments/localhost
 
 # macOS
 .DS_Store

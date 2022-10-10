@@ -1,50 +1,39 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.16;
+pragma solidity 0.8.17;
 
-import {IGelatoRelayBase1Balance} from "./IGelatoRelayBase1Balance.sol";
-import {
-    SponsorAuthCallWith1Balance,
-    UserAuthCallWith1Balance,
-    UserSponsorAuthCallWith1Balance
-} from "../types/CallTypes.sol";
+import {SponsoredCall, SponsoredUserAuthCall} from "../types/CallTypes.sol";
 
-interface IGelatoRelay is IGelatoRelayBase1Balance {
+interface IGelatoRelay {
     event LogCallWithSyncFee(
         address indexed target,
-        address feeToken,
-        uint256 fee,
-        bytes32 taskId
+        bytes32 indexed correlationId
     );
 
     function callWithSyncFee(
         address _target,
         bytes calldata _data,
+        bool _relayContext,
+        bytes32 _correlationId
+    ) external;
+
+    function sponsoredCall(
+        SponsoredCall calldata _call,
+        address _sponsor,
         address _feeToken,
-        bytes32 _taskId
-    ) external;
-
-    function sponsorAuthCallWith1Balance(
-        SponsorAuthCallWith1Balance calldata _call,
-        bytes calldata _sponsorSignature,
+        uint256 _oneBalanceChainId,
         uint256 _nativeToFeeTokenXRateNumerator,
         uint256 _nativeToFeeTokenXRateDenominator,
-        bytes32 _taskId
+        bytes32 _correlationId
     ) external;
 
-    function userAuthCallWith1Balance(
-        UserAuthCallWith1Balance calldata _call,
+    function sponsoredUserAuthCall(
+        SponsoredUserAuthCall calldata _call,
+        address _sponsor,
+        address _feeToken,
+        uint256 _oneBalanceChainId,
         bytes calldata _userSignature,
         uint256 _nativeToFeeTokenXRateNumerator,
         uint256 _nativeToFeeTokenXRateDenominator,
-        bytes32 _taskId
-    ) external;
-
-    function userSponsorAuthCallWith1Balance(
-        UserSponsorAuthCallWith1Balance calldata _call,
-        bytes calldata _userSignature,
-        bytes calldata _sponsorSignature,
-        uint256 _nativeToFeeTokenXRateNumerator,
-        uint256 _nativeToFeeTokenXRateDenominator,
-        bytes32 _taskId
+        bytes32 _correlationId
     ) external;
 }
