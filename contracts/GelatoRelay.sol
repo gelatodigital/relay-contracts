@@ -11,7 +11,8 @@ import {
 } from "@gelatonetwork/relay-context/contracts/GelatoRelayFeeCollector.sol";
 import {
     _getFeeCollectorRelayContext,
-    GelatoRelayContext
+    _getFeeTokenRelayContext,
+    _getFeeRelayContext
 } from "@gelatonetwork/relay-context/contracts/GelatoRelayContext.sol";
 import {
     _eip2771Context,
@@ -27,12 +28,7 @@ import "hardhat/console.sol";
 /// @dev    This contract must NEVER hold funds!
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here
 // solhint-disable-next-line max-states-count
-contract GelatoRelay is
-    IGelatoRelay,
-    IGelato1Balance,
-    GelatoRelayContext,
-    GelatoRelayBase
-{
+contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
     using GelatoCallUtils for address;
     using GelatoTokenUtils for address;
 
@@ -62,8 +58,8 @@ contract GelatoRelay is
                 _encodeGelatoRelayContext(
                     _data,
                     _getFeeCollectorRelayContext(),
-                    _getFeeToken(),
-                    _getFee()
+                    _getFeeTokenRelayContext(),
+                    _getFeeRelayContext()
                 ),
                 "GelatoRelay.callWithSyncFee:"
             )

@@ -1169,10 +1169,10 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
-"@gelatonetwork/relay-context@0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@gelatonetwork/relay-context/-/relay-context-0.4.1.tgz#8bc2a3049f7869b5e7b9a5fd4a4c9a577e49bafd"
-  integrity sha512-O3blE5m3z5rvhEOQC3coStTj3nPLP7IcdzNWkGexGaRrmIIbj3/jGXd4h8Y0XFL5AaYXiWHFPb2OChX52CS78A==
+"@gelatonetwork/relay-context@0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@gelatonetwork/relay-context/-/relay-context-0.5.0.tgz#c66c725d0b5cdac71da770d8f950af313adc10bb"
+  integrity sha512-Nm0tbpL3PMvbPBQnqlk32Tka0VNoxmq1aPLceoE3FFaGP3yRJ/VmgxxkGlPj3zTBi45HhZGFBvjmQnXqLI84pw==
   dependencies:
     "@openzeppelin/contracts" "4.7.3"
 
