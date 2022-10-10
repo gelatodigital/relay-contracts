@@ -30,14 +30,19 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ID}`,
-        blockNumber: 13476568,
+        url: `https://eth-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
+        blockNumber: 7728253,
       },
     },
     alfajores: {
       accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 44787,
       url: "https://alfajores-forno.celo-testnet.org",
+    },
+    arbitrum: {
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
+      chainId: 42161,
+      url: `https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
     avalanche: {
       url: "https://api.avax.network/ext/bc/C/rpc",
@@ -84,7 +89,6 @@ const config: HardhatUserConfig = {
       chainId: 42,
       url: `https://eth-kovan.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
-
     polygon: {
       accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 137,
@@ -110,6 +114,11 @@ const config: HardhatUserConfig = {
       chainId: 420,
       accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
     },
+    optimism: {
+      url: `https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
+      chainId: 10,
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
+    },
   },
   verify: {
     etherscan: {
@@ -120,7 +129,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: "0.8.16",
+        version: "0.8.17",
         settings: {
           optimizer: { enabled: true, runs: 999999 },
         },
