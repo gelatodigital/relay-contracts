@@ -88,7 +88,7 @@ describe("Test MockGelatoRelayFeeCollector Smart Contract", function () {
     const targetPayload =
       mockRelayFeeCollector.interface.encodeFunctionData("emitFeeCollector");
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee(address,bytes,bool,bytes32)",
+      "callWithSyncFeeV2",
       [targetFeeCollector, targetPayload, false, correlationId]
     );
 
@@ -119,9 +119,8 @@ describe("Test MockGelatoRelayFeeCollector Smart Contract", function () {
       checkerSignerSig,
     };
 
+    // await gelatoDiamond.execWithSigsFeeCollector(call);
     await expect(gelatoDiamond.execWithSigsFeeCollector(call))
-      .to.emit(mockRelayFeeCollector, "LogMsgData")
-      .withArgs(targetPayload)
       .and.to.emit(mockRelayFeeCollector, "LogFeeCollector")
       .withArgs(FEE_COLLECTOR);
   });

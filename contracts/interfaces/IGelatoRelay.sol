@@ -7,16 +7,14 @@ interface IGelatoRelay {
     event LogCallWithSyncFee(
         address indexed target,
         address feeToken,
-        uint256 fee,
-        bytes32 indexed correlationId
+        uint256 indexed fee,
+        bytes32 indexed taskId
     );
 
-    function callWithSyncFee(
-        address _target,
-        bytes calldata _data,
-        bool _relayContext,
-        bytes32 _correlationId
-    ) external;
+    event LogCallWithSyncFeeV2(
+        address indexed target,
+        bytes32 indexed correlationId
+    );
 
     function callWithSyncFee(
         address _target,
@@ -24,6 +22,13 @@ interface IGelatoRelay {
         address _feeToken,
         uint256 _fee,
         bytes32 _taskId
+    ) external;
+
+    function callWithSyncFeeV2(
+        address _target,
+        bytes calldata _data,
+        bool _relayContext,
+        bytes32 _correlationId
     ) external;
 
     function sponsoredCall(

@@ -2,17 +2,18 @@
 pragma solidity 0.8.17;
 
 import {
-    __getFeeCollector,
     GelatoRelayFeeCollector
 } from "@gelatonetwork/relay-context/contracts/GelatoRelayFeeCollector.sol";
 
 contract MockGelatoRelayFeeCollector is GelatoRelayFeeCollector {
-    event LogMsgData(bytes data);
     event LogFeeCollector(address feeCollector);
 
     function emitFeeCollector() external {
-        emit LogMsgData(__msgData());
-        emit LogFeeCollector(__getFeeCollector());
+        // (bytes memory data, address feeCollector) = abi.decode(
+        //     msg.data,
+        //     (bytes, address)
+        // )
+        emit LogFeeCollector(address(0));
     }
 
     // solhint-disable-next-line no-empty-blocks

@@ -88,9 +88,11 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
     const targetPayload =
       mockRelayContext.interface.encodeFunctionData("emitContext");
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee(address,bytes,bool,bytes32)",
+      "callWithSyncFeeV2",
       [targetRelayContext, targetPayload, true, correlationId]
     );
+
+    console.log("Diamond address in mockRelayContext: ", gelatoDiamond.address);
 
     const msg: MessageRelayContextStruct = {
       service: gelatoRelay.address,
@@ -128,7 +130,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       "testTransferRelayFee"
     );
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee(address,bytes,bool,bytes32)",
+      "callWithSyncFeeV2",
       [targetRelayContext, targetPayload, true, correlationId]
     );
 
@@ -170,7 +172,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       [maxFee]
     );
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee(address,bytes,bool,bytes32)",
+      "callWithSyncFeeV2",
       [targetRelayContext, targetPayload, true, correlationId]
     );
 
@@ -212,7 +214,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       [maxFee]
     );
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee(address,bytes,bool,bytes32)",
+      "callWithSyncFeeV2",
       [targetRelayContext, targetPayload, true, correlationId]
     );
 
@@ -254,7 +256,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       [maxFee]
     );
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee(address,bytes,bool,bytes32)",
+      "callWithSyncFeeV2",
       [targetRelayContext, targetPayload, true, correlationId]
     );
 
