@@ -67,7 +67,35 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
                 "GelatoRelay.callWithSyncFee:"
             );
 
-        emit LogCallWithSyncFee(_target, _correlationId);
+        emit LogCallWithSyncFee(
+            _target,
+            _getFeeTokenRelayContext(),
+            _getFeeRelayContext(),
+            _correlationId
+        );
+    }
+
+    function callWithSyncFee(
+        address _target,
+        bytes calldata _data,
+        address _feeToken,
+        uint256 _fee,
+        bytes32 _taskId
+    ) external onlyGelato {
+        uint256 preBalance = _feeToken.getBalance(address(this));
+
+        _target.revertingContractCall(
+            _encodeGelatoRelayContext(_data, msg.sender, _feeToken, _fee),
+            "GelatoRelay.callWithSyncFee:"
+        );
+
+        uint256 postBalance = _feeToken.getBalance(address(this));
+
+        uint256 fee = postBalance - preBalance;
+
+        _feeToken.transfer(msg.sender, fee);
+
+        emit LogCallWithSyncFee(_target, _feeToken, _fee, _taskId);
     }
 
     /// @notice Relay call + One Balance payment - with sponsor authentication

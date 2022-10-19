@@ -6,6 +6,8 @@ import {SponsoredCall, SponsoredUserAuthCall} from "../types/CallTypes.sol";
 interface IGelatoRelay {
     event LogCallWithSyncFee(
         address indexed target,
+        address feeToken,
+        uint256 fee,
         bytes32 indexed correlationId
     );
 
@@ -14,6 +16,14 @@ interface IGelatoRelay {
         bytes calldata _data,
         bool _relayContext,
         bytes32 _correlationId
+    ) external;
+
+    function callWithSyncFee(
+        address _target,
+        bytes calldata _data,
+        address _feeToken,
+        uint256 _fee,
+        bytes32 _taskId
     ) external;
 
     function sponsoredCall(

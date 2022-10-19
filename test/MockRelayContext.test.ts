@@ -88,7 +88,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
     const targetPayload =
       mockRelayContext.interface.encodeFunctionData("emitContext");
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee",
+      "callWithSyncFee(address,bytes,bool,bytes32)",
       [targetRelayContext, targetPayload, true, correlationId]
     );
 
@@ -128,7 +128,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       "testTransferRelayFee"
     );
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee",
+      "callWithSyncFee(address,bytes,bool,bytes32)",
       [targetRelayContext, targetPayload, true, correlationId]
     );
 
@@ -170,7 +170,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       [maxFee]
     );
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee",
+      "callWithSyncFee(address,bytes,bool,bytes32)",
       [targetRelayContext, targetPayload, true, correlationId]
     );
 
@@ -212,7 +212,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       [maxFee]
     );
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee",
+      "callWithSyncFee(address,bytes,bool,bytes32)",
       [targetRelayContext, targetPayload, true, correlationId]
     );
 
@@ -254,7 +254,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       [maxFee]
     );
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee",
+      "callWithSyncFee(address,bytes,bool,bytes32)",
       [targetRelayContext, targetPayload, true, correlationId]
     );
 

@@ -88,9 +88,13 @@ describe("Test MockGelatoRelayFeeCollector Smart Contract", function () {
     const targetPayload =
       mockRelayFeeCollector.interface.encodeFunctionData("emitFeeCollector");
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee",
+      "callWithSyncFee(address,bytes,bool,bytes32)",
       [targetFeeCollector, targetPayload, false, correlationId]
     );
+
+    console.log(gelatoDiamond.address);
+    console.log(gelatoRelay.address);
+    console.log(mockRelayFeeCollector.address);
 
     const msg: MessageFeeCollectorStruct = {
       service: gelatoRelay.address,
