@@ -9,6 +9,6 @@ interface IGelato1Balance {
         uint256 oneBalanceChainId,
         uint256 nativeToFeeTokenXRateNumerator,
         uint256 nativeToFeeTokenXRateDenominator,
-        bytes32 correlationId
+        bytes32 taskId
     );
 }
