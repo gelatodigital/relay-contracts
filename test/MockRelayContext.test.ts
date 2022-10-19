@@ -92,8 +92,6 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       [targetRelayContext, targetPayload, true, correlationId]
     );
 
-    console.log("Diamond address in mockRelayContext: ", gelatoDiamond.address);
-
     const msg: MessageRelayContextStruct = {
       service: gelatoRelay.address,
       data: relayPayload,

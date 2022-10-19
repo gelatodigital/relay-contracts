@@ -92,10 +92,6 @@ describe("Test MockGelatoRelayFeeCollector Smart Contract", function () {
       [targetFeeCollector, targetPayload, false, correlationId]
     );
 
-    console.log(gelatoDiamond.address);
-    console.log(gelatoRelay.address);
-    console.log(mockRelayFeeCollector.address);
-
     const msg: MessageFeeCollectorStruct = {
       service: gelatoRelay.address,
       data: relayPayload,

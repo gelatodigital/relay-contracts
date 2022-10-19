@@ -9,11 +9,7 @@ contract MockGelatoRelayFeeCollector is GelatoRelayFeeCollector {
     event LogFeeCollector(address feeCollector);
 
     function emitFeeCollector() external {
-        // (bytes memory data, address feeCollector) = abi.decode(
-        //     msg.data,
-        //     (bytes, address)
-        // )
-        emit LogFeeCollector(address(0));
+        emit LogFeeCollector(_getFeeCollector());
     }
 
     // solhint-disable-next-line no-empty-blocks
