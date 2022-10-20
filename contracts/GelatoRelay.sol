@@ -84,11 +84,11 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
                     _getFeeTokenRelayContext(),
                     _getFeeRelayContext()
                 ),
-                "GelatoRelay.callWithSyncFee:"
+                "GelatoRelay.callWithSyncFeeV2:"
             )
             : _target.revertingContractCall(
                 _encodeFeeCollector(_data, __getFeeCollector()),
-                "GelatoRelay.callWithSyncFee:"
+                "GelatoRelay.callWithSyncFeeV2:"
             );
 
         emit LogCallWithSyncFeeV2(_target, _correlationId);
