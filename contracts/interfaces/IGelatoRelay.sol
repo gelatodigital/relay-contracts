@@ -8,7 +8,7 @@ interface IGelatoRelay {
         address indexed target,
         address feeToken,
         uint256 fee,
-        bytes32 indexed taskId
+        bytes32 taskId
     );
 
     event LogCallWithSyncFeeV2(
