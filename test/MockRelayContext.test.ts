@@ -287,7 +287,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
     await expect(
       gelatoDiamond.execWithSigsRelayContext(call)
     ).to.be.revertedWith(
-      "ExecWithSigsFacet.execWithSigsRelayContext:GelatoRelay.callWithSyncFee:GelatoRelayContext._transferRelayFeeCapped: maxFee"
+      "ExecWithSigsFacet.execWithSigsRelayContext:GelatoRelay.callWithSyncFeeV2:GelatoRelayContext._transferRelayFeeCapped: maxFee"
     );
   });
 
