@@ -88,7 +88,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
     const targetPayload =
       mockRelayContext.interface.encodeFunctionData("emitContext");
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee",
+      "callWithSyncFeeV2",
       [targetRelayContext, targetPayload, true, correlationId]
     );
 
@@ -128,7 +128,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       "testTransferRelayFee"
     );
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee",
+      "callWithSyncFeeV2",
       [targetRelayContext, targetPayload, true, correlationId]
     );
 
@@ -170,7 +170,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       [maxFee]
     );
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee",
+      "callWithSyncFeeV2",
       [targetRelayContext, targetPayload, true, correlationId]
     );
 
@@ -212,7 +212,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       [maxFee]
     );
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee",
+      "callWithSyncFeeV2",
       [targetRelayContext, targetPayload, true, correlationId]
     );
 
@@ -254,7 +254,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       [maxFee]
     );
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
-      "callWithSyncFee",
+      "callWithSyncFeeV2",
       [targetRelayContext, targetPayload, true, correlationId]
     );
 
@@ -287,7 +287,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
     await expect(
       gelatoDiamond.execWithSigsRelayContext(call)
     ).to.be.revertedWith(
-      "ExecWithSigsFacet.execWithSigsRelayContext:GelatoRelay.callWithSyncFee:GelatoRelayContext._transferRelayFeeCapped: maxFee"
+      "ExecWithSigsFacet.execWithSigsRelayContext:GelatoRelay.callWithSyncFeeV2:GelatoRelayContext._transferRelayFeeCapped: maxFee"
     );
   });
 

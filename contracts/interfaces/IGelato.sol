@@ -54,11 +54,11 @@ interface IGelato {
 
     function execWithSigsFeeCollector(ExecWithSigsFeeCollector calldata _call)
         external
-        returns (uint256 estimatedGasUsed, uint256 fee);
+        returns (uint256 estimatedGasUsed, uint256 observedFee);
 
     function execWithSigsRelayContext(ExecWithSigsRelayContext calldata _call)
         external
-        returns (uint256 estimatedGasUsed, uint256 fee);
+        returns (uint256 estimatedGasUsed, uint256 observedFee);
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
 
