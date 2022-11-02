@@ -76,8 +76,13 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         bool _relayContext,
         bytes32 _correlationId
     ) external onlyGelato {
-        address feeToken = _getFeeTokenRelayContext();
-        uint256 preBalance = feeToken.getBalance(address(this));
+        address feeToken;
+        uint256 preBalance;
+
+        if (_relayContext) {
+            feeToken = _getFeeTokenRelayContext();
+            preBalance = feeToken.getBalance(address(this));
+        }
 
         _relayContext
             ? _target.revertingContractCall(
@@ -94,9 +99,10 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
                 "GelatoRelay.callWithSyncFeeV2:"
             );
 
-        uint256 postBalance = feeToken.getBalance(address(this));
-        uint256 fee = postBalance - preBalance;
-        feeToken.transfer(msg.sender, fee);
+        if (_relayContext) {
+            uint256 fee = feeToken.getBalance(address(this)) - preBalance;
+            if (fee != 0) feeToken.transfer(msg.sender, fee);
+        }
 
         emit LogCallWithSyncFeeV2(_target, _correlationId);
     }

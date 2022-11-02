@@ -14,9 +14,9 @@ library GelatoTokenUtils {
         address _to,
         uint256 _amount
     ) internal {
-        if (_amount == 0) return;
-        if (_token == NATIVE_TOKEN) Address.sendValue(payable(_to), _amount);
-        else SafeERC20.safeTransfer(IERC20(_token), _to, _amount);
+        _token == NATIVE_TOKEN
+            ? Address.sendValue(payable(_to), _amount)
+            : SafeERC20.safeTransfer(IERC20(_token), _to, _amount);
     }
 
     function getBalance(address token, address user)
