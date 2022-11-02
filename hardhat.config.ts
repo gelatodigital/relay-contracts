@@ -54,6 +54,11 @@ const config: HardhatUserConfig = {
       chainId: 56,
       url: "https://bsc-dataseed1.ninicoin.io/",
     },
+    celo: {
+      url: "https://forno.celo.org",
+      chainId: 42220,
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
+    },
     ethereum: {
       accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 1,
