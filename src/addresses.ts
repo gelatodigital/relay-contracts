@@ -11,7 +11,7 @@ export const getAddresses = (network: string): Addresses => {
       };
     case "alfajores":
       return {
-        GELATO: "0x700aD7EeE12d2fB5e63C81A6d257E6B52d99D4b3",
+        GELATO: "0xCf8EDB3333Fae73b23f689229F4De6Ac95d1f707",
       };
     case "arbitrum":
       return {
@@ -27,7 +27,7 @@ export const getAddresses = (network: string): Addresses => {
       };
     case "celo":
       return {
-        GELATO: "0x700aD7EeE12d2fB5e63C81A6d257E6B52d99D4b3",
+        GELATO: "0x8b3387eFf12D425839a7e33351e64F9fD9527262",
       };
     case "evmos":
       return {
