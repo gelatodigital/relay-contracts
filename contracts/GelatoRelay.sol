@@ -8,13 +8,10 @@ import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
 import {GelatoTokenUtils} from "./lib/GelatoTokenUtils.sol";
 import {SponsoredCall} from "./types/CallTypes.sol";
 
-// encoding functions
 import {
     _encodeFeeCollector,
     _encodeRelayContext
 } from "@gelatonetwork/relay-context/contracts/functions/GelatoRelayUtils.sol";
-
-// decoding functions
 import {
     __getFeeCollector
 } from "@gelatonetwork/relay-context/contracts/GelatoRelayFeeCollector.sol";
@@ -25,7 +22,7 @@ import {
 } from "@gelatonetwork/relay-context/contracts/GelatoRelayContext.sol";
 
 // backwards compatible encoding for msg.sender support instead of feeCollector
-import {_encodeMakerRelayContext} from "./functions/MakerUtils.sol";
+import {_deprecatedRelayContext} from "./functions/DeprecatedUtils.sol";
 
 /// @title  Gelato Relay contract
 /// @notice This contract deals with synchronous payments and Gelato 1Balance payments
@@ -55,7 +52,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         uint256 preBalance = _feeToken.getBalance(address(this));
 
         _target.revertingContractCall(
-            _encodeMakerRelayContext(_data, msg.sender, _feeToken, _fee),
+            _deprecatedRelayContext(_data, msg.sender, _feeToken, _fee),
             "GelatoRelay.callWithSyncFee:"
         );
 

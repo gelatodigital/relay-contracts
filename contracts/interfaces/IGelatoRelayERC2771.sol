@@ -14,7 +14,7 @@ interface IGelatoRelayERC2771 {
         address _target,
         bytes calldata _data,
         bytes calldata _userSignature,
-        bool _relayContext,
+        bool _isRelayContext,
         bytes32 _correlationId
     ) external;
 

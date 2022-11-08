@@ -5,10 +5,7 @@ import {
     IGelatoRelayERC2771Base
 } from "../interfaces/IGelatoRelayERC2771Base.sol";
 import {GelatoString} from "../lib/GelatoString.sol";
-import {
-    CallWithSyncFeeERC2771,
-    SponsoredCallERC2771
-} from "../types/CallTypes.sol";
+import {CallWithERC2771} from "../types/CallTypes.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 abstract contract GelatoRelayERC2771Base is IGelatoRelayERC2771Base {
@@ -69,7 +66,7 @@ abstract contract GelatoRelayERC2771Base is IGelatoRelayERC2771Base {
 
     function _requireCallWithSyncFeeERC2771Signature(
         bytes32 _domainSeparator,
-        CallWithSyncFeeERC2771 calldata _call,
+        CallWithERC2771 calldata _call,
         bytes calldata _signature,
         address _expectedSigner
     ) internal pure returns (bytes32 digest) {
@@ -93,7 +90,7 @@ abstract contract GelatoRelayERC2771Base is IGelatoRelayERC2771Base {
 
     function _requireSponsoredCallERC2771Signature(
         bytes32 _domainSeparator,
-        SponsoredCallERC2771 calldata _call,
+        CallWithERC2771 calldata _call,
         bytes calldata _signature,
         address _expectedSigner
     ) internal pure returns (bytes32 digest) {
@@ -115,11 +112,9 @@ abstract contract GelatoRelayERC2771Base is IGelatoRelayERC2771Base {
         );
     }
 
-    function _abiEncodeCallWithSyncFeeERC2771(CallWithSyncFeeERC2771 calldata _call)
-        internal
-        pure
-        returns (bytes memory)
-    {
+    function _abiEncodeCallWithSyncFeeERC2771(
+        CallWithERC2771 calldata _call
+    ) internal pure returns (bytes memory) {
         return
             abi.encode(
                 CALL_WITH_SYNC_FEE_ERC2771_TYPEHASH,
@@ -132,7 +127,7 @@ abstract contract GelatoRelayERC2771Base is IGelatoRelayERC2771Base {
             );
     }
 
-    function _abiEncodeSponsoredCallERC2771(SponsoredCallERC2771 calldata _call)
+    function _abiEncodeSponsoredCallERC2771(CallWithERC2771 calldata _call)
         internal
         pure
         returns (bytes memory)

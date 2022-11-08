@@ -8,14 +8,11 @@ import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
 import {GelatoTokenUtils} from "./lib/GelatoTokenUtils.sol";
 import {CallWithERC2771} from "./types/CallTypes.sol";
 
-// encoding functions
 import {
     _encodeERC2771Context,
     _encodeFeeCollectorERC2771,
     _encodeRelayContextERC2771
 } from "@gelatonetwork/relay-context/contracts/functions/GelatoRelayUtils.sol";
-
-// decoding functions
 import {
     _getFeeCollectorERC2771,
     _getMsgSenderFeeCollectorERC2771
@@ -100,9 +97,9 @@ contract GelatoRelayERC2771 is
             ? _target.revertingContractCall(
                 _encodeRelayContextERC2771(
                     _data,
-                    _getFeeCollectorRelayContext(),
-                    _getFeeTokenRelayContext(),
-                    _getFeeRelayContext(),
+                    _getFeeCollectorRelayContextERC2771(),
+                    _getFeeTokenRelayContextERC2771(),
+                    _getFeeRelayContextERC2771(),
                     _getMsgSenderRelayContextERC2771()
                 ),
                 "GelatoRelayERC2771.callWithSyncFeeERC2771:"
