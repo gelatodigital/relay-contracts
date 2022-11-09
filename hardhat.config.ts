@@ -25,6 +25,9 @@ const config: HardhatUserConfig = {
     relayDeployer: {
       default: "0xd1Ac051Dc0E1366502eF3Fe4D754fbeC6986a177",
     },
+    relayERC2771Deployer: {
+      default: "0x36D362d58FF493d8803A9728F9aA7308df861281",
+    },
   },
 
   networks: {

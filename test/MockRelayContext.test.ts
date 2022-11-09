@@ -27,7 +27,7 @@ const CHECKER_SIGNER_PK =
   "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a";
 const FEE_COLLECTOR = "0x3AC05161b76a35c1c28dC99Aa01BEd7B24cEA3bf";
 const correlationId = utils.formatBytes32String("CORRELATION_ID");
-const GOERLI_MULTI_SIG = "0x92F5CBe95fe02240E837047b97ACcd65Edadb1AE";
+const FUJI_DIAMOND_OWNER = "0x9386CdCcbf11335587F2C769BB88E6e30685945e";
 
 describe("Test MockGelatoRelayContext Smart Contract", function () {
   let executorSigner: Signer;
@@ -72,10 +72,10 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       getAddresses("goerli").GELATO
     )) as IGelato;
 
-    await impersonateAccount(GOERLI_MULTI_SIG); // Diamond Owner
-    await setBalance(GOERLI_MULTI_SIG, ethers.utils.parseEther("1"));
+    await impersonateAccount(FUJI_DIAMOND_OWNER); // Diamond Owner
+    await setBalance(FUJI_DIAMOND_OWNER, ethers.utils.parseEther("1"));
 
-    const devMS = await ethers.getSigner(GOERLI_MULTI_SIG);
+    const devMS = await ethers.getSigner(FUJI_DIAMOND_OWNER);
     await gelatoDiamond
       .connect(devMS)
       .addExecutorSigners([executorSignerAddress]);
