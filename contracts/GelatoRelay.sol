@@ -7,7 +7,6 @@ import {GelatoRelayBase} from "./abstract/GelatoRelayBase.sol";
 import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
 import {GelatoTokenUtils} from "./lib/GelatoTokenUtils.sol";
 import {SponsoredCall} from "./types/CallTypes.sol";
-
 import {
     _encodeFeeCollector,
     _encodeRelayContext
@@ -20,7 +19,6 @@ import {
     _getFeeTokenRelayContext,
     _getFeeRelayContext
 } from "@gelatonetwork/relay-context/contracts/GelatoRelayContext.sol";
-
 // backwards compatible encoding for msg.sender support instead of feeCollector
 import {_deprecatedRelayContext} from "./functions/DeprecatedUtils.sol";
 

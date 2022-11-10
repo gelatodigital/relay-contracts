@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.1;
 
-import {GelatoRelayContextERC2771} from "@gelatonetwork/relay-context/contracts/GelatoRelayContextERC2771.sol";
+import {
+    GelatoRelayContextERC2771
+} from "@gelatonetwork/relay-context/contracts/GelatoRelayContextERC2771.sol";
 
 contract MockGelatoRelayContextERC2771 is GelatoRelayContextERC2771 {
     event LogMsgData(bytes data);
@@ -31,5 +33,5 @@ contract MockGelatoRelayContextERC2771 is GelatoRelayContextERC2771 {
     }
 
     // solhint-disable-next-line no-empty-blocks
-    function testOnlyGelatoRelay() external onlyGelatoRelay {}
+    function testOnlyGelatoRelayERC2771() external onlyGelatoRelayERC2771 {}
 }

@@ -11,8 +11,7 @@ interface IGelatoRelayERC2771 {
 
     function callWithSyncFeeERC2771(
         CallWithERC2771 calldata _call,
-        address _target,
-        bytes calldata _data,
+        address _feeToken,
         bytes calldata _userSignature,
         bool _isRelayContext,
         bytes32 _correlationId

@@ -6,6 +6,8 @@ import {
   MessageRelayContextStruct,
 } from "../../typechain/contracts/interfaces/IGelato";
 
+import { CallWithERC2771Struct } from "../../typechain/contracts/GelatoRelayERC2771";
+
 // EXTERNAL FUNCTIONS
 // DIGESTS
 export function generateDigest(
@@ -27,6 +29,13 @@ export function generateDigestRelayContext(
   DOMAIN_SEPARATOR: string
 ): string {
   return _getDigestRelayContext(_msg, DOMAIN_SEPARATOR);
+}
+
+export function generateDigestCallWithSyncFeeERC2771(
+  _call: CallWithERC2771Struct,
+  DOMAIN_SEPARATOR: string
+): string {
+  return _getDigestCallWithSyncFeeERC2771(_call, DOMAIN_SEPARATOR);
 }
 
 export function recoverAddress(digest: string, signature: string): string {
@@ -74,6 +83,20 @@ function _getDigestRelayContext(
       "\x19\x01",
       DOMAIN_SEPARATOR,
       utils.keccak256(_abiEncodeExecWithSigsRelayContext(_msg)),
+    ]
+  );
+}
+
+function _getDigestCallWithSyncFeeERC2771(
+  _call: CallWithERC2771Struct,
+  DOMAIN_SEPARATOR: string
+): string {
+  return utils.solidityKeccak256(
+    ["string", "bytes", "bytes"],
+    [
+      "\x19\x01",
+      DOMAIN_SEPARATOR,
+      utils.keccak256(_abiEncodeCallWithSyncFeeERC2771(_call)),
     ]
   );
 }
@@ -140,6 +163,32 @@ function _abiEncodeExecWithSigsRelayContext(
   );
 }
 
+function _abiEncodeCallWithSyncFeeERC2771(
+  _call: CallWithERC2771Struct
+): string {
+  const typeHash = _callWithSyncFeeERC2771TypeHash();
+  return new utils.AbiCoder().encode(
+    [
+      "bytes32",
+      "uint256",
+      "address",
+      "bytes32",
+      "address",
+      "uint256",
+      "uint256",
+    ],
+    [
+      typeHash,
+      _call.chainId,
+      _call.target,
+      utils.keccak256(_call.data as string),
+      _call.user,
+      _call.userNonce,
+      _call.userDeadline,
+    ]
+  );
+}
+
 // TYPE HASHES
 function _execWithSigsTypeHash() {
   return utils.keccak256(
@@ -161,6 +210,14 @@ function _execWithSigsRelayContextTypeHash() {
   return utils.keccak256(
     utils.toUtf8Bytes(
       "MessageRelayContext(address service,bytes data,uint256 salt,uint256 deadline,address feeToken,uint256 fee)"
+    )
+  );
+}
+
+function _callWithSyncFeeERC2771TypeHash() {
+  return utils.keccak256(
+    utils.toUtf8Bytes(
+      "CallWithSyncFeeERC2771(uint256 chainId,address target,bytes data,address user,uint256 userNonce,uint256 userDeadline)"
     )
   );
 }

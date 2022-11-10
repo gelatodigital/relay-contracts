@@ -84,7 +84,7 @@ abstract contract GelatoRelayERC2771Base is IGelatoRelayERC2771Base {
         );
         require(
             error == ECDSA.RecoverError.NoError && recovered == _expectedSigner,
-            "GelatoRelayERC2771Base._requireSponsoredCallERC2771Signature"
+            "GelatoRelayERC2771Base._requireCallWithSyncFeeERC2771Signature"
         );
     }
 
@@ -112,9 +112,11 @@ abstract contract GelatoRelayERC2771Base is IGelatoRelayERC2771Base {
         );
     }
 
-    function _abiEncodeCallWithSyncFeeERC2771(
-        CallWithERC2771 calldata _call
-    ) internal pure returns (bytes memory) {
+    function _abiEncodeCallWithSyncFeeERC2771(CallWithERC2771 calldata _call)
+        internal
+        pure
+        returns (bytes memory)
+    {
         return
             abi.encode(
                 CALL_WITH_SYNC_FEE_ERC2771_TYPEHASH,

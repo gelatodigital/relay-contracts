@@ -6,13 +6,9 @@ import { getAddresses } from "../src/addresses";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
-  const { deployer, relayDeployer } = await getNamedAccounts();
+  const { relayDeployer } = await getNamedAccounts();
 
   if (hre.network.name !== "hardhat") {
-    if (deployer !== relayDeployer) {
-      console.error(`Wrong deployer: ${deployer}\n expected: ${relayDeployer}`);
-      process.exit(1);
-    }
     console.log(
       `Deploying GelatoRelay to ${hre.network.name}. Hit ctrl + c to abort`
     );
@@ -22,7 +18,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { GELATO } = getAddresses(hre.network.name);
 
   await deploy("GelatoRelay", {
-    from: deployer,
+    from: relayDeployer,
     proxy: true,
     args: [GELATO],
     log: true,
