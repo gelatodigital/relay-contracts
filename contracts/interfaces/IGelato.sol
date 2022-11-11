@@ -67,4 +67,6 @@ interface IGelato {
     function addExecutorSigners(address[] calldata _executorSigners) external;
 
     function addCheckerSigners(address[] calldata _checkerSigners) external;
+
+    function feeCollector() external view returns (address);
 }

@@ -1,18 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-// No need to implement user-specific signature verification
-// Only sponsor signature is verified in order to ensure integrity of fee payments
+// Sponsored relay call
 struct SponsoredCall {
     uint256 chainId;
     address target;
     bytes data;
 }
 
-// Relay call with built-in support with signature verification on behalf of user and sponsor
-// Both user and sponsor signatures are verified
-// The sponsor pays for the relay call
-struct SponsoredUserAuthCall {
+// Relay call with user signature verification for ERC 2771 compliance
+struct CallWithERC2771 {
     uint256 chainId;
     address target;
     bytes data;

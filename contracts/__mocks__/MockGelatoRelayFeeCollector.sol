@@ -6,9 +6,11 @@ import {
 } from "@gelatonetwork/relay-context/contracts/GelatoRelayFeeCollector.sol";
 
 contract MockGelatoRelayFeeCollector is GelatoRelayFeeCollector {
+    event LogMsgData(bytes data);
     event LogFeeCollector(address feeCollector);
 
     function emitFeeCollector() external {
+        emit LogMsgData(_getMsgData());
         emit LogFeeCollector(_getFeeCollector());
     }
 

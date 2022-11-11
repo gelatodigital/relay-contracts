@@ -6,20 +6,19 @@ import { getAddresses } from "../src/addresses";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
-  const { relayDeployer } = await getNamedAccounts();
+  const { relayERC2771Deployer } = await getNamedAccounts();
 
   if (hre.network.name !== "hardhat") {
     console.log(
-      `Deploying GelatoRelay to ${hre.network.name}. Hit ctrl + c to abort`
+      `Deploying GelatoRelayERC2771 to ${hre.network.name}. Hit ctrl + c to abort`
     );
     await sleep(5000);
   }
 
   const { GELATO } = getAddresses(hre.network.name);
 
-  await deploy("GelatoRelay", {
-    from: relayDeployer,
-    proxy: true,
+  await deploy("GelatoRelayERC2771", {
+    from: relayERC2771Deployer,
     args: [GELATO],
     log: true,
   });
@@ -28,6 +27,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 func.skip = async (hre: HardhatRuntimeEnvironment) => {
   return hre.network.name !== "hardhat";
 };
-func.tags = ["GelatoRelay"];
+func.tags = ["GelatoRelayERC2771"];
 
 export default func;
