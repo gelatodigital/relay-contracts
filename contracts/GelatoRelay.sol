@@ -31,11 +31,6 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
     using GelatoCallUtils for address;
     using GelatoTokenUtils for address;
 
-    //solhint-disable-next-line const-name-snakecase
-    string public constant name = "GelatoRelay";
-    //solhint-disable-next-line const-name-snakecase
-    string public constant version = "2";
-
     // solhint-disable-next-line no-empty-blocks
     constructor(address _gelato) GelatoRelayBase(_gelato) {}
 
@@ -58,7 +53,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
 
         uint256 fee = postBalance - preBalance;
 
-        _feeToken.transfer(msg.sender, fee);
+        if (fee != 0) _feeToken.transfer(msg.sender, fee);
 
         emit LogCallWithSyncFee(_target, _feeToken, _fee, _taskId);
     }
@@ -77,9 +72,11 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         bytes32 _correlationId
     ) external onlyGelato {
         address feeToken;
+        address feeCollector;
         uint256 preBalance;
 
         if (_isRelayContext) {
+            feeCollector = _getFeeCollectorRelayContext();
             feeToken = _getFeeTokenRelayContext();
             preBalance = feeToken.getBalance(address(this));
         }
@@ -88,7 +85,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
             ? _target.revertingContractCall(
                 _encodeRelayContext(
                     _data,
-                    _getFeeCollectorRelayContext(),
+                    feeCollector,
                     feeToken,
                     _getFeeRelayContext()
                 ),
@@ -101,14 +98,14 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
 
         if (_isRelayContext) {
             uint256 fee = feeToken.getBalance(address(this)) - preBalance;
-            if (fee != 0) feeToken.transfer(msg.sender, fee);
+            if (fee != 0) feeToken.transfer(feeCollector, fee);
         }
 
         emit LogCallWithSyncFeeV2(_target, _correlationId);
     }
 
     /// @notice Relay call + One Balance payment - with sponsor authentication
-    /// @notice Sponsor signature allows for payment via sponsor's 1Balance balance
+    /// @notice Signature allows for payment via sponsor's 1Balance balance
     /// @dev    Payment is handled with off-chain accounting using Gelato's 1Balance system
     /// @param _call Relay call data packed into SponsoredCall struct
     /// @notice Oracle value for exchange rate between native tokens and fee token
@@ -143,28 +140,5 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
             _nativeToFeeTokenXRateDenominator,
             _correlationId
         );
-    }
-
-    //solhint-disable-next-line func-name-mixedcase
-    function DOMAIN_SEPARATOR() external view returns (bytes32) {
-        return _getDomainSeparator();
-    }
-
-    function _getDomainSeparator() internal view returns (bytes32) {
-        return
-            keccak256(
-                abi.encode(
-                    keccak256(
-                        bytes(
-                            //solhint-disable-next-line max-line-length
-                            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-                        )
-                    ),
-                    keccak256(bytes(name)),
-                    keccak256(bytes(version)),
-                    block.chainid,
-                    address(this)
-                )
-            );
     }
 }
