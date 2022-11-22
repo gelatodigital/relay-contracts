@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 import {IGelatoRelay} from "./interfaces/IGelatoRelay.sol";
 import {IGelato1Balance} from "./interfaces/IGelato1Balance.sol";
-import {GelatoRelayBase} from "./abstract/GelatoRelayBase.sol";
 import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
 import {GelatoTokenUtils} from "./lib/GelatoTokenUtils.sol";
 import {SponsoredCall} from "./types/CallTypes.sol";
@@ -27,12 +26,20 @@ import {_deprecatedRelayContext} from "./functions/DeprecatedUtils.sol";
 /// @dev    This contract must NEVER hold funds!
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here
 // solhint-disable-next-line max-states-count
-contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
+contract GelatoRelay is IGelatoRelay, IGelato1Balance {
     using GelatoCallUtils for address;
     using GelatoTokenUtils for address;
 
-    // solhint-disable-next-line no-empty-blocks
-    constructor(address _gelato) GelatoRelayBase(_gelato) {}
+    address public immutable gelato;
+
+    modifier onlyGelato() {
+        require(msg.sender == gelato, "Only callable by gelato");
+        _;
+    }
+
+    constructor(address _gelato) {
+        gelato = _gelato;
+    }
 
     /// @dev Previous version kept for backward compatibility
     function callWithSyncFee(
@@ -123,7 +130,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         bytes32 _correlationId
     ) external onlyGelato {
         // CHECKS
-        _requireChainId(_call.chainId, "GelatoRelay.sponsoredCall:");
+        require(_call.chainId == block.chainid, "GelatoRelay.sponsoredCall:");
 
         // INTERACTIONS
         _call.target.revertingContractCall(

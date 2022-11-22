@@ -1,5 +1,5 @@
 import { task } from "hardhat/config";
-import { IGelatoRelayBase as GelatoRelay } from "../../typechain";
+import { IGelatoRelay as GelatoRelay } from "../../typechain";
 
 export const checkGelato = task(
   "checkGelato",
