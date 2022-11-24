@@ -112,7 +112,6 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance {
     }
 
     /// @notice Relay call + One Balance payment - with sponsor authentication
-    /// @notice Signature allows for payment via sponsor's 1Balance balance
     /// @dev    Payment is handled with off-chain accounting using Gelato's 1Balance system
     /// @param _call Relay call data packed into SponsoredCall struct
     /// @notice Oracle value for exchange rate between native tokens and fee token
@@ -130,7 +129,10 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance {
         bytes32 _correlationId
     ) external onlyGelato {
         // CHECKS
-        require(_call.chainId == block.chainid, "GelatoRelay.sponsoredCall:");
+        require(
+            _call.chainId == block.chainid,
+            "GelatoRelay.sponsoredCall:chainid"
+        );
 
         // INTERACTIONS
         _call.target.revertingContractCall(
