@@ -16,6 +16,8 @@ interface IGelatoRelay {
         bytes32 indexed correlationId
     );
 
+    function gelato() external view returns (address);
+
     function callWithSyncFee(
         address _target,
         bytes calldata _data,

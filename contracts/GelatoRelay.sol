@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 import {IGelatoRelay} from "./interfaces/IGelatoRelay.sol";
 import {IGelato1Balance} from "./interfaces/IGelato1Balance.sol";
-import {GelatoRelayBase} from "./abstract/GelatoRelayBase.sol";
 import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
 import {GelatoTokenUtils} from "./lib/GelatoTokenUtils.sol";
 import {SponsoredCall} from "./types/CallTypes.sol";
@@ -27,17 +26,20 @@ import {_deprecatedRelayContext} from "./functions/DeprecatedUtils.sol";
 /// @dev    This contract must NEVER hold funds!
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here
 // solhint-disable-next-line max-states-count
-contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
+contract GelatoRelay is IGelatoRelay, IGelato1Balance {
     using GelatoCallUtils for address;
     using GelatoTokenUtils for address;
 
-    //solhint-disable-next-line const-name-snakecase
-    string public constant name = "GelatoRelay";
-    //solhint-disable-next-line const-name-snakecase
-    string public constant version = "2";
+    address public immutable gelato;
 
-    // solhint-disable-next-line no-empty-blocks
-    constructor(address _gelato) GelatoRelayBase(_gelato) {}
+    modifier onlyGelato() {
+        require(msg.sender == gelato, "Only callable by gelato");
+        _;
+    }
+
+    constructor(address _gelato) {
+        gelato = _gelato;
+    }
 
     /// @dev Previous version kept for backward compatibility
     function callWithSyncFee(
@@ -58,7 +60,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
 
         uint256 fee = postBalance - preBalance;
 
-        _feeToken.transfer(msg.sender, fee);
+        if (fee != 0) _feeToken.transfer(msg.sender, fee);
 
         emit LogCallWithSyncFee(_target, _feeToken, _fee, _taskId);
     }
@@ -77,9 +79,11 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         bytes32 _correlationId
     ) external onlyGelato {
         address feeToken;
+        address feeCollector;
         uint256 preBalance;
 
         if (_isRelayContext) {
+            feeCollector = _getFeeCollectorRelayContext();
             feeToken = _getFeeTokenRelayContext();
             preBalance = feeToken.getBalance(address(this));
         }
@@ -88,7 +92,7 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
             ? _target.revertingContractCall(
                 _encodeRelayContext(
                     _data,
-                    _getFeeCollectorRelayContext(),
+                    feeCollector,
                     feeToken,
                     _getFeeRelayContext()
                 ),
@@ -101,14 +105,13 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
 
         if (_isRelayContext) {
             uint256 fee = feeToken.getBalance(address(this)) - preBalance;
-            if (fee != 0) feeToken.transfer(msg.sender, fee);
+            if (fee != 0) feeToken.transfer(feeCollector, fee);
         }
 
         emit LogCallWithSyncFeeV2(_target, _correlationId);
     }
 
     /// @notice Relay call + One Balance payment - with sponsor authentication
-    /// @notice Sponsor signature allows for payment via sponsor's 1Balance balance
     /// @dev    Payment is handled with off-chain accounting using Gelato's 1Balance system
     /// @param _call Relay call data packed into SponsoredCall struct
     /// @notice Oracle value for exchange rate between native tokens and fee token
@@ -126,7 +129,10 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
         bytes32 _correlationId
     ) external onlyGelato {
         // CHECKS
-        _requireChainId(_call.chainId, "GelatoRelay.sponsoredCall:");
+        require(
+            _call.chainId == block.chainid,
+            "GelatoRelay.sponsoredCall:chainid"
+        );
 
         // INTERACTIONS
         _call.target.revertingContractCall(
@@ -143,28 +149,5 @@ contract GelatoRelay is IGelatoRelay, IGelato1Balance, GelatoRelayBase {
             _nativeToFeeTokenXRateDenominator,
             _correlationId
         );
-    }
-
-    //solhint-disable-next-line func-name-mixedcase
-    function DOMAIN_SEPARATOR() external view returns (bytes32) {
-        return _getDomainSeparator();
-    }
-
-    function _getDomainSeparator() internal view returns (bytes32) {
-        return
-            keccak256(
-                abi.encode(
-                    keccak256(
-                        bytes(
-                            //solhint-disable-next-line max-line-length
-                            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-                        )
-                    ),
-                    keccak256(bytes(name)),
-                    keccak256(bytes(version)),
-                    block.chainid,
-                    address(this)
-                )
-            );
     }
 }
