@@ -39,7 +39,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         url: `https://api.avax-test.network/ext/bc/C/rpc`,
-        blockNumber: 15627952,
+        blockNumber: 16875970,
       },
     },
     alfajores: {
