@@ -14,7 +14,7 @@ import "./hardhat/tasks";
 import * as dotenv from "dotenv";
 dotenv.config({ path: __dirname + "/.env" });
 
-// const RELAY_DEPLOYER_PK = process.env.RELAY_DEPLOYER_PK;
+const RELAY_DEPLOYER_PK = process.env.RELAY_DEPLOYER_PK;
 const RELAY_ERC2771_DEPLOYER_PK = process.env.RELAY_ERC2771_DEPLOYER_PK;
 const ALCHEMY_ID = process.env.ALCHEMY_ID;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
@@ -83,7 +83,7 @@ const config: HardhatUserConfig = {
       accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
     },
     goerli: {
-      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 5,
       url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
