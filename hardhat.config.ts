@@ -31,7 +31,7 @@ const config: HardhatUserConfig = {
       default: "0xd1Ac051Dc0E1366502eF3Fe4D754fbeC6986a177",
     },
     relayERC2771Deployer: {
-      default: "0x85E9493aA83c855066d8060F8Ed4F12194eCa0ed",
+      default: "0xa4342E17DC5f5Ad441258F11cc2871D84a26FBfe",
     },
   },
 
@@ -39,150 +39,86 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         url: `https://api.avax-test.network/ext/bc/C/rpc`,
-        blockNumber: 15627952,
+        blockNumber: 16875970,
       },
     },
     alfajores: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
       chainId: 44787,
       url: "https://alfajores-forno.celo-testnet.org",
     },
     arbitrum: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
       chainId: 42161,
       url: `https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
     avalanche: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
       url: "https://api.avax.network/ext/bc/C/rpc",
       chainId: 43114,
     },
     bnb: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
       chainId: 56,
       url: "https://bsc-dataseed1.ninicoin.io/",
     },
     celo: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
       url: "https://forno.celo.org",
       chainId: 42220,
     },
     ethereum: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 1,
       url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
-    evmos: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
-      chainId: 9001,
-      url: "https://eth.bd.evmos.org:8545",
-    },
-    rinkeby: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
-      chainId: 4,
-      url: `https://eth-rinkeby.alchemyapi.io/v2/${ALCHEMY_ID}`,
-    },
     gnosis: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
       chainId: 100,
       url: `https://rpc.gnosischain.com/`,
     },
     fuji: {
       url: "https://api.avax-test.network/ext/bc/C/rpc",
       chainId: 43113,
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
     },
     goerli: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 5,
       url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
     arbitrumGoerli: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
       chainId: 421613,
       url: `https://arb-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
     polygon: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
       chainId: 137,
       url: `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
     mumbai: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
       chainId: 80001,
       url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
     moonbeam: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
       url: "https://moonbeam.api.onfinality.io/public",
       chainId: 1284,
     },
     moonriver: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
       url: "https://moonriver-rpc.dwellir.com",
       chainId: 1285,
     },
     optimisticGoerli: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
       url: `https://opt-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
       chainId: 420,
     },
     optimism: {
-      accounts:
-        RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK
-          ? [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK]
-          : [],
+      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
       url: `https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
       chainId: 10,
     },
