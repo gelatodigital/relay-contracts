@@ -68,7 +68,7 @@ const config: HardhatUserConfig = {
       chainId: 42220,
     },
     ethereum: {
-      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
+      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 1,
       url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
