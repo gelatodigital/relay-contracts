@@ -223,45 +223,6 @@
       "type": "event"
     },
     {
-      "inputs": [],
-      "name": "DOMAIN_SEPARATOR",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "SPONSORED_CALL_TYPEHASH",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "SPONSORED_USER_AUTH_CALL_TYPEHASH",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "address",
@@ -308,7 +269,7 @@
         },
         {
           "internalType": "bool",
-          "name": "_relayContext",
+          "name": "_isRelayContext",
           "type": "bool"
         },
         {
@@ -330,19 +291,6 @@
           "internalType": "address",
           "name": "",
           "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "name",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
         }
       ],
       "stateMutability": "view",
@@ -406,118 +354,6 @@
       "name": "sponsoredCall",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "chainId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "target",
-              "type": "address"
-            },
-            {
-              "internalType": "bytes",
-              "name": "data",
-              "type": "bytes"
-            },
-            {
-              "internalType": "address",
-              "name": "user",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "userNonce",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "userDeadline",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct SponsoredUserAuthCall",
-          "name": "_call",
-          "type": "tuple"
-        },
-        {
-          "internalType": "address",
-          "name": "_sponsor",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_feeToken",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_oneBalanceChainId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes",
-          "name": "_userSignature",
-          "type": "bytes"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_nativeToFeeTokenXRateNumerator",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_nativeToFeeTokenXRateDenominator",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "_correlationId",
-          "type": "bytes32"
-        }
-      ],
-      "name": "sponsoredUserAuthCall",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "userNonce",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "version",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {

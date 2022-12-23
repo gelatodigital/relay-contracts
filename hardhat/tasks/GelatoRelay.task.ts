@@ -1,8 +1,8 @@
 import { task } from "hardhat/config";
 import { IGelatoRelay as GelatoRelay } from "../../typechain";
 
-export const checkGelato = task(
-  "checkGelato",
+export const gelato = task(
+  "gelato",
   "return gelato address stored on GelatoRelay.sol"
 ).setAction(async (_, { deployments, ethers }) => {
   try {
@@ -19,8 +19,8 @@ export const checkGelato = task(
   }
 });
 
-export const checkOwner = task(
-  "checkOwner",
+export const owner = task(
+  "owner",
   "return owner address stored on GelatoRelay.sol"
 ).setAction(async (_, { deployments, ethers }) => {
   try {
