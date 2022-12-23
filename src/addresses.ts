@@ -29,6 +29,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x8b3387eFf12D425839a7e33351e64F9fD9527262",
       };
+    case "cronos":
+      return {
+        GELATO: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
+      };
     case "evmos":
       return {
         GELATO: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
@@ -37,9 +41,9 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x3CACa7b48D0573D793d3b0279b5F0029180E83b6",
       };
-    case "kovan":
+    case "fantom":
       return {
-        GELATO: "0xDf592cB2d32445F8e831d211AB20D3233cA41bD8",
+        GELATO: "0xebA27A2301975FF5BF7864b99F55A4f7A457ED10",
       };
     case "gnosis":
       return {
@@ -64,10 +68,6 @@ export const getAddresses = (network: string): Addresses => {
     case "mumbai":
       return {
         GELATO: "0x25aD59adbe00C2d80c86d01e2E05e1294DA84823",
-      };
-    case "rinkeby":
-      return {
-        GELATO: "0x0630d1b8C2df3F0a68Df578D02075027a6397173",
       };
     case "moonriver":
       return {

@@ -18,3 +18,22 @@ export const checkGelato = task(
     process.exit(1);
   }
 });
+
+export const checkOwner = task(
+  "checkOwner",
+  "return owner address stored on GelatoRelay.sol"
+).setAction(async (_, { deployments, ethers }) => {
+  try {
+    const ABI = ["function owner() view returns (address)"];
+    const gelatoRelay = await ethers.getContractAt(
+      ABI,
+      (
+        await deployments.get("GelatoRelay")
+      ).address
+    );
+    console.log(await gelatoRelay.owner());
+  } catch (error) {
+    console.error(error, "\n");
+    process.exit(1);
+  }
+});
