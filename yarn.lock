@@ -1169,12 +1169,12 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
-"@gelatonetwork/relay-context@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@gelatonetwork/relay-context/-/relay-context-1.0.0.tgz#a9382799f651d477621a93c14599600f4ed48c0e"
-  integrity sha512-VIPtNmWTZSoqXcprQQOSTTdybYhKxsbKnJSDArQapqowu93R0OjkPViQ18+kelc2VsuWpx/l6420lgGRiYywcw==
+"@gelatonetwork/relay-context@2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@gelatonetwork/relay-context/-/relay-context-2.1.0.tgz#46eef1162c7dca16031baeb528edceca686d9a3e"
+  integrity sha512-Pisn66Haq1OEBqrj9t8aPS2B7qX1j/AI0mDZNczeAws8JMn7PhZXLKcWYleAWUitlzFS59w4qS3Y/l7/8oWEiw==
   dependencies:
-    "@openzeppelin/contracts" "4.7.3"
+    "@openzeppelin/contracts" "4.8.0"
 
 "@humanwhocodes/config-array@^0.10.5":
   version "0.10.7"
@@ -1487,6 +1487,11 @@
   version "4.7.3"
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.7.3.tgz#939534757a81f8d69cc854c7692805684ff3111e"
   integrity sha512-dGRS0agJzu8ybo44pCIf3xBaPQN/65AIXNgK8+4gzKd5kbvlqyxryUYVLJv7fK98Seyd2hDZzVEHSWAh0Bt1Yw==
+
+"@openzeppelin/contracts@4.8.0":
+  version "4.8.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.8.0.tgz#6854c37df205dd2c056bdfa1b853f5d732109109"
+  integrity sha512-AGuwhRRL+NaKx73WKRNzeCxOCOCxpaqF+kp8TJ89QzAipSwZy/NoflkWaL9bywXFRhIzXt8j38sfF7KBKCPWLw==
 
 "@resolver-engine/core@^0.3.3":
   version "0.3.3"

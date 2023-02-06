@@ -40,15 +40,4 @@ interface IGelatoRelay {
         uint256 _nativeToFeeTokenXRateDenominator,
         bytes32 _correlationId
     ) external;
-
-    function sponsoredUserAuthCall(
-        SponsoredUserAuthCall calldata _call,
-        address _sponsor,
-        address _feeToken,
-        uint256 _oneBalanceChainId,
-        bytes calldata _userSignature,
-        uint256 _nativeToFeeTokenXRateNumerator,
-        uint256 _nativeToFeeTokenXRateDenominator,
-        bytes32 _correlationId
-    ) external;
 }

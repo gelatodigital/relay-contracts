@@ -9,6 +9,16 @@ struct SponsoredCall {
     bytes data;
 }
 
+// Relay call with user signature verification for ERC 2771 compliance
+struct CallWithERC2771 {
+    uint256 chainId;
+    address target;
+    bytes data;
+    address user;
+    uint256 userNonce;
+    uint256 userDeadline;
+}
+
 // Relay call with built-in support with signature verification on behalf of user and sponsor
 // Both user and sponsor signatures are verified
 // The sponsor pays for the relay call
