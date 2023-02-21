@@ -14,10 +14,33 @@ import "./hardhat/tasks";
 import * as dotenv from "dotenv";
 dotenv.config({ path: __dirname + "/.env" });
 
+const ALCHEMY_ID = process.env.ALCHEMY_ID;
+
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
+
 const RELAY_DEPLOYER_PK = process.env.RELAY_DEPLOYER_PK;
 const RELAY_ERC2771_DEPLOYER_PK = process.env.RELAY_ERC2771_DEPLOYER_PK;
-const ALCHEMY_ID = process.env.ALCHEMY_ID;
-const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
+
+const DEV_RELAY_DEPLOYER_PK = process.env.DEV_RELAY_DEPLOYER_PK;
+const DEV_RELAY_ERC2771_DEPLOYER_PK = process.env.DEV_RELAY_ERC2771_DEPLOYER_PK;
+
+let accounts: string[] = [];
+if (RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK) {
+  accounts = [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK];
+} else if (RELAY_DEPLOYER_PK) {
+  accounts = [RELAY_DEPLOYER_PK];
+} else if (RELAY_ERC2771_DEPLOYER_PK) {
+  accounts = [RELAY_ERC2771_DEPLOYER_PK];
+}
+
+let devAccounts: string[] = [];
+if (DEV_RELAY_DEPLOYER_PK && DEV_RELAY_ERC2771_DEPLOYER_PK) {
+  devAccounts = [DEV_RELAY_DEPLOYER_PK, DEV_RELAY_ERC2771_DEPLOYER_PK];
+} else if (DEV_RELAY_DEPLOYER_PK) {
+  devAccounts = [DEV_RELAY_DEPLOYER_PK];
+} else if (DEV_RELAY_ERC2771_DEPLOYER_PK) {
+  devAccounts = [DEV_RELAY_ERC2771_DEPLOYER_PK];
+}
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -33,6 +56,12 @@ const config: HardhatUserConfig = {
     relayERC2771Deployer: {
       default: "0xa4342E17DC5f5Ad441258F11cc2871D84a26FBfe",
     },
+    devRelayDeployer: {
+      default: "0x1100555739378dEe764377bbc091ceae1a3574F1",
+    },
+    devRelayERC2771Deployer: {
+      default: "0x6Cc27Ae5440d8016A36350fbaDA0Ed209Ad89822",
+    },
   },
 
   networks: {
@@ -42,35 +71,22 @@ const config: HardhatUserConfig = {
         blockNumber: 16875970,
       },
     },
-    alfajores: {
-      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
-      chainId: 44787,
-      url: "https://alfajores-forno.celo-testnet.org",
-    },
+
+    // Prod
     arbitrum: {
-      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
+      accounts,
       chainId: 42161,
       url: `https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
     avalanche: {
-      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
+      accounts,
       url: "https://api.avax.network/ext/bc/C/rpc",
       chainId: 43114,
     },
     bnb: {
-      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
+      accounts,
       chainId: 56,
       url: "https://bsc-dataseed1.ninicoin.io/",
-    },
-    celo: {
-      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
-      url: "https://forno.celo.org",
-      chainId: 42220,
-    },
-    cronos: {
-      url: "https://evm.cronos.org",
-      chainId: 25,
-      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
     },
     ethereum: {
       accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
@@ -78,59 +94,63 @@ const config: HardhatUserConfig = {
       url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
     gnosis: {
-      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
+      accounts,
       chainId: 100,
       url: `https://rpc.gnosischain.com/`,
     },
-    fantom: {
-      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
-      chainId: 250,
-      url: "https://rpc.ankr.com/fantom",
+    moonbeam: {
+      accounts,
+      url: "https://moonbeam.api.onfinality.io/public",
+      chainId: 1284,
+    },
+    moonriver: {
+      accounts,
+      url: "https://moonriver-rpc.dwellir.com",
+      chainId: 1285,
+    },
+    optimism: {
+      accounts,
+      url: `https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
+      chainId: 10,
+    },
+    polygon: {
+      accounts,
+      chainId: 137,
+      url: `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
+    },
+
+    // Staging
+    arbitrumGoerli: {
+      accounts,
+      chainId: 421613,
+      url: `https://arb-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
     fuji: {
       url: "https://api.avax-test.network/ext/bc/C/rpc",
       chainId: 43113,
-      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
+      accounts,
     },
     goerli: {
       accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
       chainId: 5,
       url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
-    arbitrumGoerli: {
-      accounts: RELAY_ERC2771_DEPLOYER_PK ? [RELAY_ERC2771_DEPLOYER_PK] : [],
-      chainId: 421613,
-      url: `https://arb-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
-    },
-    polygon: {
-      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
-      chainId: 137,
-      url: `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
-    },
     mumbai: {
-      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
+      accounts,
       chainId: 80001,
       url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
-    moonbeam: {
-      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
-      url: "https://moonbeam.api.onfinality.io/public",
-      chainId: 1284,
-    },
-    moonriver: {
-      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
-      url: "https://moonriver.api.onfinality.io/public",
-      chainId: 1285,
-    },
-    optimisticGoerli: {
-      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
+    optimismGoerli: {
+      accounts,
       url: `https://opt-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
       chainId: 420,
     },
-    optimism: {
-      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
-      url: `https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
-      chainId: 10,
+
+    // Dev
+    mumbaiDev: {
+      accounts: devAccounts,
+      chainId: 80001,
+      url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
   },
   verify: {
