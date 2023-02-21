@@ -1,5 +1,5 @@
 {
-  "address": "0xaBcC9b596420A9E9172FD5938620E265a0f9Df92",
+  "address": "0xB08823e822885cE7eEfDD75A63363fb287B64167",
   "abi": [
     {
       "inputs": [
@@ -145,6 +145,7 @@
       "type": "receive"
     }
   ],
+<<<<<<< Updated upstream:deployments/fantom/GelatoRelay_Proxy.json
   "transactionHash": "0xfe92c05d491c4511c4789cf4c5982661f8f5a90b79fc726cd190abdf96f842c7",
   "receipt": {
     "to": null,
@@ -161,12 +162,31 @@
         "blockNumber": 52684809,
         "transactionHash": "0xfe92c05d491c4511c4789cf4c5982661f8f5a90b79fc726cd190abdf96f842c7",
         "address": "0xaBcC9b596420A9E9172FD5938620E265a0f9Df92",
+=======
+  "transactionHash": "0xf166901ab84af0315497eb57aad0beb38e28e29526242edb2e7dd8566b08f5e0",
+  "receipt": {
+    "to": null,
+    "from": "0x1100555739378dEe764377bbc091ceae1a3574F1",
+    "contractAddress": "0xB08823e822885cE7eEfDD75A63363fb287B64167",
+    "transactionIndex": 7,
+    "gasUsed": "641899",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000800000000400000000000000020000000400100000000000008000000000000000000000000000000000000000000000000000000001800001000000000000000100000000804000000000020000000000000000000800000000000000000080000000000100400000000000000000000000000000000000000000000080000000000000000000200000000000000000000000000200000000000000000000000000000000004000000000000000000001000000000000000000000000000000100040000020000000000000000000000400000000080000020000000000000000000000100001",
+    "blockHash": "0xd6803dd3bdfdfe6b04c2f3693f9fea30f03279d2ef2d8b3b67e78a173b5d50db",
+    "transactionHash": "0xf166901ab84af0315497eb57aad0beb38e28e29526242edb2e7dd8566b08f5e0",
+    "logs": [
+      {
+        "transactionIndex": 7,
+        "blockNumber": 32261816,
+        "transactionHash": "0xf166901ab84af0315497eb57aad0beb38e28e29526242edb2e7dd8566b08f5e0",
+        "address": "0xB08823e822885cE7eEfDD75A63363fb287B64167",
+>>>>>>> Stashed changes:deployments/mumbaiDev/GelatoRelay_Proxy.json
         "topics": [
           "0x5570d70a002632a7b0b3c9304cc89efb62d8da9eca0dbd7752c83b7379068296",
           "0x0000000000000000000000000000000000000000000000000000000000000000",
-          "0x000000000000000000000000c5a998d0b5eb81bb3c9244152025e074c5ecf5bb"
+          "0x00000000000000000000000075cbb6973245a57f828a696239bb607dd01a00b6"
         ],
         "data": "0x",
+<<<<<<< Updated upstream:deployments/fantom/GelatoRelay_Proxy.json
         "logIndex": 0,
         "blockHash": "0x0002bc7c000012b14817ad706de92a62fad1a3de76dc293b065ab22ad9dc036a"
       },
@@ -175,24 +195,58 @@
         "blockNumber": 52684809,
         "transactionHash": "0xfe92c05d491c4511c4789cf4c5982661f8f5a90b79fc726cd190abdf96f842c7",
         "address": "0xaBcC9b596420A9E9172FD5938620E265a0f9Df92",
+=======
+        "logIndex": 52,
+        "blockHash": "0xd6803dd3bdfdfe6b04c2f3693f9fea30f03279d2ef2d8b3b67e78a173b5d50db"
+      },
+      {
+        "transactionIndex": 7,
+        "blockNumber": 32261816,
+        "transactionHash": "0xf166901ab84af0315497eb57aad0beb38e28e29526242edb2e7dd8566b08f5e0",
+        "address": "0xB08823e822885cE7eEfDD75A63363fb287B64167",
+>>>>>>> Stashed changes:deployments/mumbaiDev/GelatoRelay_Proxy.json
         "topics": [
           "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
           "0x0000000000000000000000000000000000000000000000000000000000000000",
-          "0x000000000000000000000000d1ac051dc0e1366502ef3fe4d754fbec6986a177"
+          "0x0000000000000000000000001100555739378dee764377bbc091ceae1a3574f1"
         ],
         "data": "0x",
+<<<<<<< Updated upstream:deployments/fantom/GelatoRelay_Proxy.json
         "logIndex": 1,
         "blockHash": "0x0002bc7c000012b14817ad706de92a62fad1a3de76dc293b065ab22ad9dc036a"
       }
     ],
     "blockNumber": 52684809,
     "cumulativeGasUsed": "641923",
+=======
+        "logIndex": 53,
+        "blockHash": "0xd6803dd3bdfdfe6b04c2f3693f9fea30f03279d2ef2d8b3b67e78a173b5d50db"
+      },
+      {
+        "transactionIndex": 7,
+        "blockNumber": 32261816,
+        "transactionHash": "0xf166901ab84af0315497eb57aad0beb38e28e29526242edb2e7dd8566b08f5e0",
+        "address": "0x0000000000000000000000000000000000001010",
+        "topics": [
+          "0x4dfe1bbbcf077ddc3e01291eea2d5c70c2b422b415d95645b9adcfd678cb1d63",
+          "0x0000000000000000000000000000000000000000000000000000000000001010",
+          "0x0000000000000000000000001100555739378dee764377bbc091ceae1a3574f1",
+          "0x000000000000000000000000be188d6641e8b680743a4815dfa0f6208038960f"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000036bb4a2d0a5000000000000000000000000000000000000000000000000001bbaa89534ae7150000000000000000000000000000000000000000000002dabfc27f8457cd19e0b0000000000000000000000000000000000000000000000001bb73ce091ddcc50000000000000000000000000000000000000000000002dabfc2b63fa1fa2430b",
+        "logIndex": 54,
+        "blockHash": "0xd6803dd3bdfdfe6b04c2f3693f9fea30f03279d2ef2d8b3b67e78a173b5d50db"
+      }
+    ],
+    "blockNumber": 32261816,
+    "cumulativeGasUsed": "7173696",
+>>>>>>> Stashed changes:deployments/mumbaiDev/GelatoRelay_Proxy.json
     "status": 1,
     "byzantium": true
   },
   "args": [
-    "0xC5a998D0b5eB81bb3C9244152025e074c5ECf5Bb",
-    "0xd1Ac051Dc0E1366502eF3Fe4D754fbeC6986a177",
+    "0x75cBB6973245a57f828a696239BB607Dd01a00b6",
+    "0x1100555739378dEe764377bbc091ceae1a3574F1",
     "0x"
   ],
   "numDeployments": 1,

@@ -6,19 +6,27 @@ import { getAddresses } from "../src/addresses";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
-  const { relayDeployer } = await getNamedAccounts();
+  const { relayDeployer, devRelayDeployer } = await getNamedAccounts();
+
+  const isDevEnv = hre.network.name.endsWith("Dev");
 
   if (hre.network.name !== "hardhat") {
     console.log(
       `Deploying GelatoRelay to ${hre.network.name}. Hit ctrl + c to abort`
     );
+    console.log(`\n IS DEV ENV: ${isDevEnv ? "✅" : "❌"} \n`);
     await sleep(5000);
   }
 
   const { GELATO } = getAddresses(hre.network.name);
 
+  if (!GELATO) {
+    console.error(`GELATO not defined on network: ${hre.network.name}`);
+    process.exit(1);
+  }
+
   await deploy("GelatoRelay", {
-    from: relayDeployer,
+    from: isDevEnv ? devRelayDeployer : relayDeployer,
     proxy: true,
     args: [GELATO],
     log: true,
