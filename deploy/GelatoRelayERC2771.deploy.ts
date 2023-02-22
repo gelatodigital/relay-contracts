@@ -13,7 +13,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   if (hre.network.name !== "hardhat") {
     console.log(
-      `Deploying GelatoRelay to ${hre.network.name}. Hit ctrl + c to abort`
+      `\n Deploying GelatoRelayERC2771 to ${hre.network.name}. Hit ctrl + c to abort`
     );
     console.log(`\n IS DEV ENV: ${isDevEnv ? "✅" : "❌"} \n`);
     await sleep(5000);
