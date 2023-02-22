@@ -89,7 +89,7 @@ const config: HardhatUserConfig = {
       url: "https://bsc-dataseed1.ninicoin.io/",
     },
     ethereum: {
-      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
+      accounts,
       chainId: 1,
       url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
@@ -125,13 +125,18 @@ const config: HardhatUserConfig = {
       chainId: 421613,
       url: `https://arb-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
+    baseGoerli: {
+      accounts,
+      chainId: 84531,
+      url: `${process.env.BASE_GOERLI_URL}`,
+    },
     fuji: {
       url: "https://api.avax-test.network/ext/bc/C/rpc",
       chainId: 43113,
       accounts,
     },
     goerli: {
-      accounts: RELAY_DEPLOYER_PK ? [RELAY_DEPLOYER_PK] : [],
+      accounts,
       chainId: 5,
       url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
@@ -147,6 +152,11 @@ const config: HardhatUserConfig = {
     },
 
     // Dev
+    baseGoerliDev: {
+      accounts: devAccounts,
+      chainId: 84531,
+      url: `${process.env.BASE_GOERLI_URL}`,
+    },
     mumbaiDev: {
       accounts: devAccounts,
       chainId: 80001,
