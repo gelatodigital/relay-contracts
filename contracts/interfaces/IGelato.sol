@@ -48,6 +48,7 @@ struct ExecWithSigsRelayContext {
 
 /// @dev includes the interfaces of all facets
 interface IGelato {
+    // ########## ExecWithSigsFacet #########
     function execWithSigs(ExecWithSigs calldata _data)
         external
         returns (uint256 estimatedGasUsed);
@@ -61,6 +62,10 @@ interface IGelato {
         returns (uint256 estimatedGasUsed, uint256 observedFee);
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
+
+    // ########## Ownership Facet #########
+
+    function owner() external view returns (address owner_);
 
     // ########## SignerFacet #########
 

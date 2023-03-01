@@ -1,5 +1,4 @@
-import hre = require("hardhat");
-const { ethers } = hre;
+import hre, { ethers, deployments } from "hardhat";
 import { expect } from "chai";
 import {
   IGelato,
@@ -13,7 +12,6 @@ import {
 } from "../typechain/contracts/interfaces/IGelato";
 
 import { utils, Signer } from "ethers";
-import { getAddresses } from "../src/addresses";
 import { generateDigestFeeCollector } from "../src/utils/EIP712Signatures";
 import {
   setBalance,
@@ -26,7 +24,6 @@ const CHECKER_SIGNER_PK =
   "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a";
 const FEE_COLLECTOR = "0x3AC05161b76a35c1c28dC99Aa01BEd7B24cEA3bf";
 const correlationId = utils.formatBytes32String("CORRELATION_ID");
-const FUJI_DIAMOND_OWNER = "0x9386CdCcbf11335587F2C769BB88E6e30685945e";
 
 describe("Test MockGelatoRelayFeeCollector Smart Contract", function () {
   let executorSigner: Signer;
@@ -35,7 +32,7 @@ describe("Test MockGelatoRelayFeeCollector Smart Contract", function () {
   let checkerSignerAddress: string;
 
   let gelatoRelay: GelatoRelay;
-  let mockRelayFeeCollector: MockGelatoRelayFeeCollector;
+  let mockGelatoRelayFeeCollector: MockGelatoRelayFeeCollector;
   let mockERC20: MockERC20;
 
   let gelatoDiamond: IGelato;
@@ -56,37 +53,63 @@ describe("Test MockGelatoRelayFeeCollector Smart Contract", function () {
     executorSignerAddress = await executorSigner.getAddress();
     checkerSignerAddress = await checkerSigner.getAddress();
 
-    gelatoRelay = (await hre.ethers.getContract("GelatoRelay")) as GelatoRelay;
-    mockRelayFeeCollector = (await hre.ethers.getContract(
-      "MockGelatoRelayFeeCollector"
-    )) as MockGelatoRelayFeeCollector;
-    mockERC20 = (await hre.ethers.getContract("MockERC20")) as MockERC20;
+    const {
+      gelatoRelay: gelatoRelayAddress,
+      gelatoDiamond: gelatoDiamondAddress,
+    } = await hre.getNamedAccounts();
 
-    targetAddress = mockRelayFeeCollector.address;
+    // In the deploy script: setCode(gelatoRelayAddress, localDeployedBytecode)
+    gelatoRelay = (await hre.ethers.getContractAt(
+      "GelatoRelay",
+      gelatoRelayAddress
+    )) as GelatoRelay;
+
+    mockGelatoRelayFeeCollector = (await hre.ethers.getContractAt(
+      "MockGelatoRelayFeeCollector",
+      (
+        await deployments.get("MockGelatoRelayFeeCollector")
+      ).address
+    )) as MockGelatoRelayFeeCollector;
+
+    mockERC20 = (await hre.ethers.getContractAt(
+      "MockERC20",
+      (
+        await deployments.get("MockERC20")
+      ).address
+    )) as MockERC20;
+
+    targetAddress = mockGelatoRelayFeeCollector.address;
     salt = 42069;
     deadline = 2664381086;
     feeToken = mockERC20.address;
 
     gelatoDiamond = (await ethers.getContractAt(
       "IGelato",
-      getAddresses("fuji").GELATO
+      gelatoDiamondAddress
     )) as IGelato;
 
-    await impersonateAccount(FUJI_DIAMOND_OWNER); // Diamond Owner
-    await setBalance(FUJI_DIAMOND_OWNER, ethers.utils.parseEther("1"));
+    const gelatoDiamondOwnerAddress = await gelatoDiamond.owner();
 
-    const fujiDiamondOwner = await ethers.getSigner(FUJI_DIAMOND_OWNER);
+    await impersonateAccount(gelatoDiamondOwnerAddress);
+    await setBalance(gelatoDiamondOwnerAddress, ethers.utils.parseEther("1"));
+
+    const gelatoDiamondOwner = await ethers.getSigner(
+      gelatoDiamondOwnerAddress
+    );
+
     await gelatoDiamond
-      .connect(fujiDiamondOwner)
+      .connect(gelatoDiamondOwner)
       .addExecutorSigners([executorSignerAddress]);
     await gelatoDiamond
-      .connect(fujiDiamondOwner)
+      .connect(gelatoDiamondOwner)
       .addCheckerSigners([checkerSignerAddress]);
   });
 
   it("#1: emitFeeCollector", async () => {
     const targetPayload =
-      mockRelayFeeCollector.interface.encodeFunctionData("emitFeeCollector");
+      mockGelatoRelayFeeCollector.interface.encodeFunctionData(
+        "emitFeeCollector"
+      );
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
       "callWithSyncFeeV2",
       [targetAddress, targetPayload, false, correlationId]
@@ -116,15 +139,15 @@ describe("Test MockGelatoRelayFeeCollector Smart Contract", function () {
     };
 
     await expect(gelatoDiamond.execWithSigsFeeCollector(call))
-      .to.emit(mockRelayFeeCollector, "LogMsgData")
+      .to.emit(mockGelatoRelayFeeCollector, "LogMsgData")
       .withArgs(targetPayload)
-      .and.to.emit(mockRelayFeeCollector, "LogFeeCollector")
+      .and.to.emit(mockGelatoRelayFeeCollector, "LogFeeCollector")
       .withArgs(FEE_COLLECTOR);
   });
 
   it("#2: testOnlyGelatoRelay reverts if not GelatoRelay", async () => {
     await expect(
-      mockRelayFeeCollector.testOnlyGelatoRelay()
+      mockGelatoRelayFeeCollector.testOnlyGelatoRelay()
     ).to.be.revertedWith("onlyGelatoRelay");
   });
 });

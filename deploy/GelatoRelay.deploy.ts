@@ -6,15 +6,27 @@ import { getAddresses } from "../src/addresses";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
-  const { relayDeployer, devRelayDeployer } = await getNamedAccounts();
+  const {
+    deployer: hardhatAccount,
+    relayDeployer,
+    devRelayDeployer,
+  } = await getNamedAccounts();
 
+  const isHardhat = hre.network.name === "hardhat";
   const isDevEnv = hre.network.name.endsWith("Dev");
 
-  if (hre.network.name !== "hardhat") {
+  let deployer: string;
+
+  if (isHardhat) {
+    deployer = hardhatAccount;
+  } else {
     console.log(
       `Deploying GelatoRelay to ${hre.network.name}. Hit ctrl + c to abort`
     );
     console.log(`\n IS DEV ENV: ${isDevEnv ? "✅" : "❌"} \n`);
+
+    deployer = isDevEnv ? devRelayDeployer : relayDeployer;
+
     await sleep(5000);
   }
 
@@ -26,10 +38,10 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   }
 
   await deploy("GelatoRelay", {
-    from: isDevEnv ? devRelayDeployer : relayDeployer,
+    from: deployer,
     proxy: true,
     args: [GELATO],
-    log: true,
+    log: isHardhat ? false : true,
   });
 };
 

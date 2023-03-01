@@ -1,5 +1,4 @@
-import hre = require("hardhat");
-const { ethers } = hre;
+import hre, { ethers, deployments } from "hardhat";
 import { expect } from "chai";
 import {
   IGelato,
@@ -14,7 +13,6 @@ import {
 } from "../typechain/contracts/interfaces/IGelato";
 import { INIT_TOKEN_BALANCE as FEE } from "./constants";
 import { utils, Signer } from "ethers";
-import { getAddresses } from "../src/addresses";
 import { generateDigestRelayContext } from "../src/utils/EIP712Signatures";
 import {
   setBalance,
@@ -27,7 +25,6 @@ const CHECKER_SIGNER_PK =
   "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a";
 const FEE_COLLECTOR = "0x3AC05161b76a35c1c28dC99Aa01BEd7B24cEA3bf";
 const correlationId = utils.formatBytes32String("CORRELATION_ID");
-const FUJI_DIAMOND_OWNER = "0x9386CdCcbf11335587F2C769BB88E6e30685945e";
 
 describe("Test MockGelatoRelayContext Smart Contract", function () {
   let executorSigner: Signer;
@@ -36,7 +33,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
   let checkerSignerAddress: string;
 
   let gelatoRelay: GelatoRelay;
-  let mockRelayContext: MockGelatoRelayContext;
+  let mockGelatoRelayContext: MockGelatoRelayContext;
   let mockERC20: MockERC20;
 
   let gelatoDiamond: IGelato;
@@ -57,36 +54,61 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
     executorSignerAddress = await executorSigner.getAddress();
     checkerSignerAddress = await checkerSigner.getAddress();
 
-    gelatoRelay = (await hre.ethers.getContract("GelatoRelay")) as GelatoRelay;
-    mockRelayContext = (await hre.ethers.getContract(
-      "MockGelatoRelayContext"
+    const {
+      gelatoRelay: gelatoRelayAddress,
+      gelatoDiamond: gelatoDiamondAddress,
+    } = await hre.getNamedAccounts();
+
+    // In the deploy script: setCode(gelatoRelayAddress, localDeployedBytecode)
+    gelatoRelay = (await hre.ethers.getContractAt(
+      "GelatoRelay",
+      gelatoRelayAddress
+    )) as GelatoRelay;
+
+    mockGelatoRelayContext = (await hre.ethers.getContractAt(
+      "MockGelatoRelayContext",
+      (
+        await deployments.get("MockGelatoRelayContext")
+      ).address
     )) as MockGelatoRelayContext;
-    mockERC20 = (await hre.ethers.getContract("MockERC20")) as MockERC20;
-    targetAddress = mockRelayContext.address;
+
+    mockERC20 = (await hre.ethers.getContractAt(
+      "MockERC20",
+      (
+        await deployments.get("MockERC20")
+      ).address
+    )) as MockERC20;
+
+    targetAddress = mockGelatoRelayContext.address;
     salt = 42069;
     deadline = 2664381086;
     feeToken = mockERC20.address;
 
     gelatoDiamond = (await ethers.getContractAt(
       "IGelato",
-      getAddresses("fuji").GELATO
+      gelatoDiamondAddress
     )) as IGelato;
 
-    await impersonateAccount(FUJI_DIAMOND_OWNER); // Diamond Owner
-    await setBalance(FUJI_DIAMOND_OWNER, ethers.utils.parseEther("1"));
+    const gelatoDiamondOwnerAddress = await gelatoDiamond.owner();
 
-    const fujiDiamondOwner = await ethers.getSigner(FUJI_DIAMOND_OWNER);
+    await impersonateAccount(gelatoDiamondOwnerAddress);
+    await setBalance(gelatoDiamondOwnerAddress, ethers.utils.parseEther("1"));
+
+    const gelatoDiamondOwner = await ethers.getSigner(
+      gelatoDiamondOwnerAddress
+    );
+
     await gelatoDiamond
-      .connect(fujiDiamondOwner)
+      .connect(gelatoDiamondOwner)
       .addExecutorSigners([executorSignerAddress]);
     await gelatoDiamond
-      .connect(fujiDiamondOwner)
+      .connect(gelatoDiamondOwner)
       .addCheckerSigners([checkerSignerAddress]);
   });
 
   it("#1: emitContext", async () => {
     const targetPayload =
-      mockRelayContext.interface.encodeFunctionData("emitContext");
+      mockGelatoRelayContext.interface.encodeFunctionData("emitContext");
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
       "callWithSyncFeeV2",
       [targetAddress, targetPayload, true, correlationId]
@@ -116,15 +138,18 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       checkerSignerSig,
     };
 
-    await expect(gelatoDiamond.execWithSigsRelayContext(call))
-      .to.emit(mockRelayContext, "LogMsgData")
+    await expect(
+      gelatoDiamond.execWithSigsRelayContext(call),
+      "execWithSigsRelayContext"
+    )
+      .to.emit(mockGelatoRelayContext, "LogMsgData")
       .withArgs(targetPayload)
-      .and.to.emit(mockRelayContext, "LogContext")
+      .and.to.emit(mockGelatoRelayContext, "LogContext")
       .withArgs(FEE_COLLECTOR, feeToken, FEE);
   });
 
   it("#2: testTransferRelayFee", async () => {
-    const targetPayload = mockRelayContext.interface.encodeFunctionData(
+    const targetPayload = mockGelatoRelayContext.interface.encodeFunctionData(
       "testTransferRelayFee"
     );
     const relayPayload = gelatoRelay.interface.encodeFunctionData(
@@ -165,7 +190,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
 
   it("#3: testTransferRelayFeeCapped: works if at maxFee", async () => {
     const maxFee = FEE;
-    const targetPayload = mockRelayContext.interface.encodeFunctionData(
+    const targetPayload = mockGelatoRelayContext.interface.encodeFunctionData(
       "testTransferRelayFeeCapped",
       [maxFee]
     );
@@ -207,7 +232,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
 
   it("#4: testTransferRelayFeeCapped: works if below maxFee", async () => {
     const maxFee = FEE.add(1);
-    const targetPayload = mockRelayContext.interface.encodeFunctionData(
+    const targetPayload = mockGelatoRelayContext.interface.encodeFunctionData(
       "testTransferRelayFeeCapped",
       [maxFee]
     );
@@ -249,7 +274,7 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
 
   it("#5: testTransferRelayFeeCapped: reverts if above maxFee", async () => {
     const maxFee = FEE.sub(1);
-    const targetPayload = mockRelayContext.interface.encodeFunctionData(
+    const targetPayload = mockGelatoRelayContext.interface.encodeFunctionData(
       "testTransferRelayFeeCapped",
       [maxFee]
     );
@@ -292,8 +317,8 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
   });
 
   it("#6: testOnlyGelatoRelay reverts if not GelatoRelay", async () => {
-    await expect(mockRelayContext.testOnlyGelatoRelay()).to.be.revertedWith(
-      "onlyGelatoRelay"
-    );
+    await expect(
+      mockGelatoRelayContext.testOnlyGelatoRelay()
+    ).to.be.revertedWith("onlyGelatoRelay");
   });
 });
