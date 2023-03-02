@@ -59,7 +59,8 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
       gelatoDiamond: gelatoDiamondAddress,
     } = await hre.getNamedAccounts();
 
-    // In the deploy script: setCode(gelatoRelayAddress, localDeployedBytecode)
+    // In GelatoRelay.deploy.ts we upgrade forked instance
+    // to locally deployed new implementation.
     gelatoRelay = (await hre.ethers.getContractAt(
       "GelatoRelay",
       gelatoRelayAddress
@@ -183,9 +184,9 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
 
     await mockERC20.transfer(targetAddress, FEE);
 
-    await gelatoDiamond.execWithSigsRelayContext(call);
-
-    expect(await mockERC20.balanceOf(FEE_COLLECTOR)).to.be.eq(FEE);
+    expect(
+      await gelatoDiamond.execWithSigsRelayContext(call)
+    ).to.changeTokenBalance(mockERC20, FEE_COLLECTOR, FEE);
   });
 
   it("#3: testTransferRelayFeeCapped: works if at maxFee", async () => {
@@ -225,9 +226,9 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
 
     await mockERC20.transfer(targetAddress, FEE);
 
-    await gelatoDiamond.execWithSigsRelayContext(call);
-
-    expect(await mockERC20.balanceOf(FEE_COLLECTOR)).to.be.eq(FEE);
+    expect(
+      await gelatoDiamond.execWithSigsRelayContext(call)
+    ).to.changeTokenBalance(mockERC20, FEE_COLLECTOR, FEE);
   });
 
   it("#4: testTransferRelayFeeCapped: works if below maxFee", async () => {
@@ -267,9 +268,9 @@ describe("Test MockGelatoRelayContext Smart Contract", function () {
 
     await mockERC20.transfer(targetAddress, FEE);
 
-    await gelatoDiamond.execWithSigsRelayContext(call);
-
-    expect(await mockERC20.balanceOf(FEE_COLLECTOR)).to.be.eq(FEE);
+    await expect(
+      gelatoDiamond.execWithSigsRelayContext(call)
+    ).to.changeTokenBalance(mockERC20, FEE_COLLECTOR, FEE);
   });
 
   it("#5: testTransferRelayFeeCapped: reverts if above maxFee", async () => {

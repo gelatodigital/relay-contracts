@@ -3,6 +3,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { sleep } from "../src/utils";
 import { getAddresses } from "../src/addresses";
+import { setCode } from "@nomicfoundation/hardhat-network-helpers";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
@@ -10,6 +11,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     deployer: hardhatAccount,
     relayERC2771Deployer,
     devRelayERC2771Deployer,
+    gelatoRelayERC2771,
   } = await getNamedAccounts();
 
   const isHardhat = hre.network.name === "hardhat";
@@ -42,6 +44,17 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     args: [GELATO],
     log: isHardhat ? false : true,
   });
+
+  if (isHardhat) {
+    const gelatoRelayERC2771Local = await (
+      await deployments.get("GelatoRelayERC2771")
+    ).address;
+
+    await setCode(
+      gelatoRelayERC2771,
+      await hre.ethers.provider.getCode(gelatoRelayERC2771Local)
+    );
+  }
 };
 
 func.skip = async (hre: HardhatRuntimeEnvironment) => {

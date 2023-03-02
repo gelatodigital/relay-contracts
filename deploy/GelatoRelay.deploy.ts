@@ -3,6 +3,11 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { sleep } from "../src/utils";
 import { getAddresses } from "../src/addresses";
+import { IEIP173Proxy } from "../typechain";
+import {
+  impersonateAccount,
+  setBalance,
+} from "@nomicfoundation/hardhat-network-helpers";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
@@ -10,6 +15,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     deployer: hardhatAccount,
     relayDeployer,
     devRelayDeployer,
+    gelatoRelay,
   } = await getNamedAccounts();
 
   const isHardhat = hre.network.name === "hardhat";
@@ -43,6 +49,31 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     args: [GELATO],
     log: isHardhat ? false : true,
   });
+
+  // For local testing we want to upgrade the forked
+  // instance of gelatoRelay to our locally deployed implementation
+  if (isHardhat) {
+    const gelatoRelayProxy = (await hre.ethers.getContractAt(
+      "IEIP173Proxy",
+      gelatoRelay
+    )) as IEIP173Proxy;
+
+    const gelatoRelayOwnerAddr = await gelatoRelayProxy.owner();
+
+    await impersonateAccount(gelatoRelayOwnerAddr);
+    await setBalance(gelatoRelayOwnerAddr, hre.ethers.utils.parseEther("1"));
+
+    const gelatoRelayOwner = await hre.ethers.getSigner(gelatoRelayOwnerAddr);
+
+    await gelatoRelayProxy
+      .connect(gelatoRelayOwner)
+      .upgradeTo(
+        (
+          await deployments.get("GelatoRelay_Implementation")
+        ).address,
+        { gasLimit: 1_000_000 }
+      );
+  }
 };
 
 func.skip = async (hre: HardhatRuntimeEnvironment) => {
