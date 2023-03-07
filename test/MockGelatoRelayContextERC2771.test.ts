@@ -1,5 +1,4 @@
-import hre = require("hardhat");
-const { ethers } = hre;
+import hre, { ethers, deployments } from "hardhat";
 import { expect } from "chai";
 import {
   IGelato,
@@ -7,17 +6,13 @@ import {
   MockGelatoRelayContextERC2771,
   MockERC20,
 } from "../typechain";
-
 import {
   MessageRelayContextStruct,
   ExecWithSigsRelayContextStruct,
 } from "../typechain/contracts/interfaces/IGelato";
-
 import { CallWithERC2771Struct } from "../typechain/contracts/GelatoRelayERC2771";
-
 import { INIT_TOKEN_BALANCE as FEE } from "./constants";
 import { utils, Signer } from "ethers";
-import { getAddresses } from "../src/addresses";
 import {
   generateDigestCallWithSyncFeeERC2771,
   generateDigestRelayContext,
@@ -36,7 +31,6 @@ const MSG_SENDER_PK =
   "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6";
 const FEE_COLLECTOR = "0x3AC05161b76a35c1c28dC99Aa01BEd7B24cEA3bf";
 const correlationId = utils.formatBytes32String("CORRELATION_ID");
-const FUJI_DIAMOND_OWNER = "0x9386CdCcbf11335587F2C769BB88E6e30685945e";
 
 describe("Test MockGelatoRelayContextERC2771 Smart Contract", function () {
   let executorSigner: Signer;
@@ -47,7 +41,7 @@ describe("Test MockGelatoRelayContextERC2771 Smart Contract", function () {
   let msgSenderAddress: string;
 
   let gelatoRelayERC2771: GelatoRelayERC2771;
-  let mockRelayContextERC2771: MockGelatoRelayContextERC2771;
+  let mockGelatoRelayContextERC2771: MockGelatoRelayContextERC2771;
   let mockERC20: MockERC20;
 
   let gelatoDiamond: IGelato;
@@ -66,36 +60,60 @@ describe("Test MockGelatoRelayContextERC2771 Smart Contract", function () {
 
     [, executorSigner, checkerSigner, msgSender] =
       await hre.ethers.getSigners();
+
     executorSignerAddress = await executorSigner.getAddress();
     checkerSignerAddress = await checkerSigner.getAddress();
     msgSenderAddress = await msgSender.getAddress();
 
-    gelatoRelayERC2771 = (await hre.ethers.getContract(
-      "GelatoRelayERC2771"
+    const {
+      gelatoRelayERC2771: gelatoRelayERC2771Address,
+      gelatoDiamond: gelatoDiamondAddress,
+    } = await hre.getNamedAccounts();
+
+    // In the deploy script: setCode(gelatoRelayERC2771Address, localDeployedBytecode)
+    gelatoRelayERC2771 = (await hre.ethers.getContractAt(
+      "GelatoRelayERC2771",
+      gelatoRelayERC2771Address
     )) as GelatoRelayERC2771;
-    mockRelayContextERC2771 = (await hre.ethers.getContract(
-      "MockGelatoRelayContextERC2771"
+
+    mockGelatoRelayContextERC2771 = (await hre.ethers.getContractAt(
+      "MockGelatoRelayContextERC2771",
+      (
+        await deployments.get("MockGelatoRelayContextERC2771")
+      ).address
     )) as MockGelatoRelayContextERC2771;
-    mockERC20 = (await hre.ethers.getContract("MockERC20")) as MockERC20;
-    targetAddress = mockRelayContextERC2771.address;
+
+    mockERC20 = (await hre.ethers.getContractAt(
+      "MockERC20",
+      (
+        await deployments.get("MockERC20")
+      ).address
+    )) as MockERC20;
+
+    targetAddress = mockGelatoRelayContextERC2771.address;
     salt = 42069;
     deadline = 2664381086;
     feeToken = mockERC20.address;
 
     gelatoDiamond = (await ethers.getContractAt(
       "IGelato",
-      getAddresses("fuji").GELATO
+      gelatoDiamondAddress
     )) as IGelato;
 
-    await impersonateAccount(FUJI_DIAMOND_OWNER); // Diamond Owner
-    await setBalance(FUJI_DIAMOND_OWNER, ethers.utils.parseEther("1"));
+    const gelatoDiamondOwnerAddress = await gelatoDiamond.owner();
 
-    const fujiDiamondOwner = await ethers.getSigner(FUJI_DIAMOND_OWNER);
+    await impersonateAccount(gelatoDiamondOwnerAddress);
+    await setBalance(gelatoDiamondOwnerAddress, ethers.utils.parseEther("1"));
+
+    const gelatoDiamondOwner = await ethers.getSigner(
+      gelatoDiamondOwnerAddress
+    );
+
     await gelatoDiamond
-      .connect(fujiDiamondOwner)
+      .connect(gelatoDiamondOwner)
       .addExecutorSigners([executorSignerAddress]);
     await gelatoDiamond
-      .connect(fujiDiamondOwner)
+      .connect(gelatoDiamondOwner)
       .addCheckerSigners([checkerSignerAddress]);
   });
 
@@ -103,7 +121,7 @@ describe("Test MockGelatoRelayContextERC2771 Smart Contract", function () {
     const currentTime = await time.latest();
 
     const targetPayload =
-      mockRelayContextERC2771.interface.encodeFunctionData("emitContext");
+      mockGelatoRelayContextERC2771.interface.encodeFunctionData("emitContext");
 
     const callWithERC2771: CallWithERC2771Struct = {
       chainId: 31337, // HH network
@@ -157,17 +175,18 @@ describe("Test MockGelatoRelayContextERC2771 Smart Contract", function () {
     };
 
     await expect(gelatoDiamond.execWithSigsRelayContext(call))
-      .to.emit(mockRelayContextERC2771, "LogMsgData")
+      .to.emit(mockGelatoRelayContextERC2771, "LogMsgData")
       .withArgs(targetPayload)
-      .and.to.emit(mockRelayContextERC2771, "LogContext")
+      .and.to.emit(mockGelatoRelayContextERC2771, "LogContext")
       .withArgs(FEE_COLLECTOR, feeToken, FEE, msgSenderAddress);
   });
 
   it("#2: testTransferRelayFee", async () => {
     const currentTime = await time.latest();
-    const targetPayload = mockRelayContextERC2771.interface.encodeFunctionData(
-      "testTransferRelayFee"
-    );
+    const targetPayload =
+      mockGelatoRelayContextERC2771.interface.encodeFunctionData(
+        "testTransferRelayFee"
+      );
 
     const callWithERC2771: CallWithERC2771Struct = {
       chainId: 31337, // HH network
@@ -222,19 +241,20 @@ describe("Test MockGelatoRelayContextERC2771 Smart Contract", function () {
 
     await mockERC20.transfer(targetAddress, FEE);
 
-    await gelatoDiamond.execWithSigsRelayContext(call);
-
-    expect(await mockERC20.balanceOf(FEE_COLLECTOR)).to.be.eq(FEE);
+    expect(
+      await gelatoDiamond.execWithSigsRelayContext(call)
+    ).to.changeTokenBalance(mockERC20, FEE_COLLECTOR, FEE);
   });
 
   it("#3: testTransferRelayFeeCapped: works if at maxFee", async () => {
     const maxFee = FEE;
     const currentTime = await time.latest();
 
-    const targetPayload = mockRelayContextERC2771.interface.encodeFunctionData(
-      "testTransferRelayFeeCapped",
-      [maxFee]
-    );
+    const targetPayload =
+      mockGelatoRelayContextERC2771.interface.encodeFunctionData(
+        "testTransferRelayFeeCapped",
+        [maxFee]
+      );
 
     const callWithERC2771: CallWithERC2771Struct = {
       chainId: 31337, // HH network
@@ -289,19 +309,20 @@ describe("Test MockGelatoRelayContextERC2771 Smart Contract", function () {
 
     await mockERC20.transfer(targetAddress, FEE);
 
-    await gelatoDiamond.execWithSigsRelayContext(call);
-
-    expect(await mockERC20.balanceOf(FEE_COLLECTOR)).to.be.eq(FEE);
+    expect(
+      await gelatoDiamond.execWithSigsRelayContext(call)
+    ).to.changeTokenBalance(mockERC20, FEE_COLLECTOR, FEE);
   });
 
   it("#4: testTransferRelayFeeCapped: works if below maxFee", async () => {
     const currentTime = await time.latest();
     const maxFee = FEE.add(1);
 
-    const targetPayload = mockRelayContextERC2771.interface.encodeFunctionData(
-      "testTransferRelayFeeCapped",
-      [maxFee]
-    );
+    const targetPayload =
+      mockGelatoRelayContextERC2771.interface.encodeFunctionData(
+        "testTransferRelayFeeCapped",
+        [maxFee]
+      );
 
     const callWithERC2771: CallWithERC2771Struct = {
       chainId: 31337, // HH network
@@ -356,19 +377,20 @@ describe("Test MockGelatoRelayContextERC2771 Smart Contract", function () {
 
     await mockERC20.transfer(targetAddress, FEE);
 
-    await gelatoDiamond.execWithSigsRelayContext(call);
-
-    expect(await mockERC20.balanceOf(FEE_COLLECTOR)).to.be.eq(FEE);
+    expect(
+      await gelatoDiamond.execWithSigsRelayContext(call)
+    ).to.changeTokenBalance(mockERC20, FEE_COLLECTOR, FEE);
   });
 
   it("#5: testTransferRelayFeeCapped: reverts if above maxFee", async () => {
     const currentTime = await time.latest();
     const maxFee = FEE.sub(1);
 
-    const targetPayload = mockRelayContextERC2771.interface.encodeFunctionData(
-      "testTransferRelayFeeCapped",
-      [maxFee]
-    );
+    const targetPayload =
+      mockGelatoRelayContextERC2771.interface.encodeFunctionData(
+        "testTransferRelayFeeCapped",
+        [maxFee]
+      );
 
     const callWithERC2771: CallWithERC2771Struct = {
       chainId: 31337, // HH network
@@ -432,7 +454,7 @@ describe("Test MockGelatoRelayContextERC2771 Smart Contract", function () {
 
   it("#6: testOnlyGelatoRelayERC2771 reverts if not gelatoRelayERC2771", async () => {
     await expect(
-      mockRelayContextERC2771.testOnlyGelatoRelayERC2771()
+      mockGelatoRelayContextERC2771.testOnlyGelatoRelayERC2771()
     ).to.be.revertedWith("onlyGelatoRelayERC2771");
   });
 });

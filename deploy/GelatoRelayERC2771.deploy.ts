@@ -3,19 +3,32 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { sleep } from "../src/utils";
 import { getAddresses } from "../src/addresses";
+import { setCode } from "@nomicfoundation/hardhat-network-helpers";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
-  const { relayERC2771Deployer, devRelayERC2771Deployer } =
-    await getNamedAccounts();
+  const {
+    deployer: hardhatAccount,
+    relayERC2771Deployer,
+    devRelayERC2771Deployer,
+    gelatoRelayERC2771,
+  } = await getNamedAccounts();
 
+  const isHardhat = hre.network.name === "hardhat";
   const isDevEnv = hre.network.name.endsWith("Dev");
 
-  if (hre.network.name !== "hardhat") {
+  let deployer: string;
+
+  if (isHardhat) {
+    deployer = hardhatAccount;
+  } else {
     console.log(
-      `\n Deploying GelatoRelayERC2771 to ${hre.network.name}. Hit ctrl + c to abort`
+      `Deploying GelatoRelay to ${hre.network.name}. Hit ctrl + c to abort`
     );
     console.log(`\n IS DEV ENV: ${isDevEnv ? "✅" : "❌"} \n`);
+
+    deployer = isDevEnv ? devRelayERC2771Deployer : relayERC2771Deployer;
+
     await sleep(5000);
   }
 
@@ -27,10 +40,21 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   }
 
   await deploy("GelatoRelayERC2771", {
-    from: isDevEnv ? devRelayERC2771Deployer : relayERC2771Deployer,
+    from: deployer,
     args: [GELATO],
-    log: true,
+    log: isHardhat ? false : true,
   });
+
+  if (isHardhat) {
+    const gelatoRelayERC2771Local = await (
+      await deployments.get("GelatoRelayERC2771")
+    ).address;
+
+    await setCode(
+      gelatoRelayERC2771,
+      await hre.ethers.provider.getCode(gelatoRelayERC2771Local)
+    );
+  }
 };
 
 func.skip = async (hre: HardhatRuntimeEnvironment) => {

@@ -7,7 +7,8 @@ export const getAddresses = (network: string): Addresses => {
   switch (network) {
     case "hardhat":
       return {
-        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
+        // We fork ethereum for local testing
+        GELATO: "0x3CACa7b48D0573D793d3b0279b5F0029180E83b6",
       };
     case "arbitrum":
       return {

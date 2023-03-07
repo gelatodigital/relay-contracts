@@ -11,6 +11,7 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 abstract contract GelatoRelayERC2771Base is IGelatoRelayERC2771Base {
     using GelatoString for string;
 
+    // solhint-disable-next-line named-parameters-mapping
     mapping(address => uint256) public userNonce;
 
     address public immutable gelato;
