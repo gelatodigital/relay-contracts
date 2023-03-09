@@ -5,6 +5,7 @@ import "@nomiclabs/hardhat-ethers";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@typechain/hardhat";
 import "hardhat-deploy";
+import "@chugsplash/plugins";
 
 // ================================= TASKS =========================================
 // ❗COMMENT IN to use || COMMENT OUT before git push to have CI work
@@ -179,6 +180,17 @@ const config: HardhatUserConfig = {
   },
 
   solidity: {
+    // chugsplash
+    settings: {
+      outputSelection: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        "*": {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          "*": ["storageLayout"],
+        },
+      },
+    },
+
     compilers: [
       {
         version: "0.8.17",

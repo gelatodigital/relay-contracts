@@ -11,6 +11,6 @@
     "outDir": "dist"
   },
   "files": ["hardhat.config.ts"],
-  "include": ["hardhat", "deploy", "test", "typechain", "src"],
+  "include": ["hardhat", "deploy", "test", "typechain", "src", "chugsplash"],
   "exclude": ["node_modules"]
 }
