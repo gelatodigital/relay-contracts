@@ -127,6 +127,11 @@ const config: HardhatUserConfig = {
       chainId: 137,
       url: `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
+    polygonZk: {
+      accounts,
+      chainId: 1101,
+      url: "https://zkevm-rpc.com",
+    },
 
     // Staging
     arbitrumGoerli: {
@@ -138,6 +143,11 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 84531,
       url: `${process.env.BASE_GOERLI_URL}`,
+    },
+    chiado: {
+      accounts,
+      chainId: 10200,
+      url: "https://rpc.chiadochain.net",
     },
     fuji: {
       url: "https://api.avax-test.network/ext/bc/C/rpc",
@@ -159,6 +169,11 @@ const config: HardhatUserConfig = {
       url: `https://opt-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
       chainId: 420,
     },
+    polygonZkGoerli: {
+      accounts,
+      chainId: 1442,
+      url: "https://rpc.public.zkevm-test.net",
+    },
 
     // Dev
     baseGoerliDev: {
@@ -170,6 +185,11 @@ const config: HardhatUserConfig = {
       accounts: devAccounts,
       chainId: 80001,
       url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_ID}`,
+    },
+    polygonZkGoerliDev: {
+      accounts: devAccounts,
+      chainId: 1442,
+      url: "https://rpc.public.zkevm-test.net",
     },
   },
   verify: {

@@ -30,6 +30,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x7C5c4Af1618220C090A6863175de47afb20fa9Df",
       };
+    case "chiado":
+      return {
+        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
+      };
     case "ethereum":
       return {
         GELATO: "0x3CACa7b48D0573D793d3b0279b5F0029180E83b6",
@@ -53,6 +57,18 @@ export const getAddresses = (network: string): Addresses => {
     case "polygon":
       return {
         GELATO: "0x7598e84B2E114AB62CAB288CE5f7d5f6bad35BbA",
+      };
+    case "polygonZk":
+      return {
+        GELATO: "0x08EFb6D315c7e74C39620c9AAEA289730f43a429",
+      };
+    case "polygonZkGoerli":
+      return {
+        GELATO: "0xaB0A8DCb1590C4565C35cC785dc25A0590398054",
+      };
+    case "polygonZkGoerliDev":
+      return {
+        GELATO: "0x1861708A1F55F433BaDE81895815c481e0c33448",
       };
     case "mumbai":
       return {
