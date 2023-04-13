@@ -16,6 +16,8 @@ dotenv.config({ path: __dirname + "/.env" });
 
 const ALCHEMY_ID = process.env.ALCHEMY_ID;
 
+const BICOCCA_RPC_KEY = process.env.BICOCCA_RPC_KEY;
+
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
 const RELAY_DEPLOYER_PK = process.env.RELAY_DEPLOYER_PK;
@@ -144,6 +146,12 @@ const config: HardhatUserConfig = {
       chainId: 84531,
       url: `${process.env.BASE_GOERLI_URL}`,
     },
+    bicocca: {
+      accounts,
+      chainId: 29313331,
+      url: `https://relayer.bicoccachain.net/${BICOCCA_RPC_KEY}`,
+      gasPrice: 0,
+    },
     chiado: {
       accounts,
       chainId: 10200,
@@ -181,6 +189,12 @@ const config: HardhatUserConfig = {
       accounts: devAccounts,
       chainId: 84531,
       url: `${process.env.BASE_GOERLI_URL}`,
+    },
+    bicoccaDev: {
+      accounts: devAccounts,
+      chainId: 29313331,
+      url: `https://relayer.bicoccachain.net/${BICOCCA_RPC_KEY}`,
+      gasPrice: 0,
     },
     mumbaiDev: {
       accounts: devAccounts,

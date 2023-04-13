@@ -26,6 +26,14 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0xCf8EDB3333Fae73b23f689229F4De6Ac95d1f707",
       };
+    case "bicocca":
+      return {
+        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
+      };
+    case "bicoccaDev":
+      return {
+        GELATO: "0xEB9b4944EB937dEE6CC8d721dA982d6019A2Fb8a",
+      };
     case "bnb":
       return {
         GELATO: "0x7C5c4Af1618220C090A6863175de47afb20fa9Df",
@@ -74,12 +82,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x25aD59adbe00C2d80c86d01e2E05e1294DA84823",
       };
-
     case "mumbaiDev":
       return {
         GELATO: "0x266E4AB6baD069aFc28d3C2CC129f6F8455b1dc2",
       };
-
     case "moonriver":
       return {
         GELATO: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
