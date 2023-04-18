@@ -45,9 +45,11 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   await deploy("GelatoRelay", {
     from: deployer,
-    proxy: true,
+    proxy: {
+      proxyContract: "EIP173Proxy",
+    },
     args: [GELATO],
-    log: isHardhat ? false : true,
+    log: !isHardhat,
   });
 
   // For local testing we want to upgrade the forked
@@ -79,6 +81,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 func.skip = async (hre: HardhatRuntimeEnvironment) => {
   return hre.network.name !== "hardhat";
 };
+
 func.tags = ["GelatoRelay"];
 
 export default func;

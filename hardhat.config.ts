@@ -5,6 +5,9 @@ import "@nomiclabs/hardhat-ethers";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@typechain/hardhat";
 import "hardhat-deploy";
+import "@matterlabs/hardhat-zksync-solc";
+import "@matterlabs/hardhat-zksync-deploy";
+import "@matterlabs/hardhat-zksync-verify";
 
 // ================================= TASKS =========================================
 // ❗COMMENT IN to use || COMMENT OUT before git push to have CI work
@@ -134,6 +137,14 @@ const config: HardhatUserConfig = {
       chainId: 1101,
       url: "https://zkevm-rpc.com",
     },
+    zksync: {
+      accounts,
+      chainId: 324,
+      url: "https://mainnet.era.zksync.io",
+      zksync: true,
+      verifyURL:
+        "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
+    },
 
     // Staging
     arbitrumGoerli: {
@@ -168,6 +179,11 @@ const config: HardhatUserConfig = {
       chainId: 5,
       url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
+    lineaGoerli: {
+      accounts,
+      chainId: 59140,
+      url: `https://rpc.goerli.linea.build`,
+    },
     mumbai: {
       accounts,
       chainId: 80001,
@@ -183,6 +199,14 @@ const config: HardhatUserConfig = {
       chainId: 1442,
       url: "https://rpc.public.zkevm-test.net",
     },
+    zksyncGoerli: {
+      accounts,
+      chainId: 280,
+      url: "https://testnet.era.zksync.dev",
+      zksync: true,
+      verifyURL:
+        "https://zksync2-testnet-explorer.zksync.dev/contract_verification",
+    },
 
     // Dev
     baseGoerliDev: {
@@ -196,6 +220,11 @@ const config: HardhatUserConfig = {
       url: `https://relayer.bicoccachain.net/${BICOCCA_RPC_KEY}`,
       gasPrice: 0,
     },
+    lineaGoerliDev: {
+      accounts: devAccounts,
+      chainId: 59140,
+      url: `https://rpc.goerli.linea.build`,
+    },
     mumbaiDev: {
       accounts: devAccounts,
       chainId: 80001,
@@ -205,6 +234,14 @@ const config: HardhatUserConfig = {
       accounts: devAccounts,
       chainId: 1442,
       url: "https://rpc.public.zkevm-test.net",
+    },
+    zksyncGoerliDev: {
+      accounts: devAccounts,
+      chainId: 280,
+      url: "https://testnet.era.zksync.dev",
+      zksync: true,
+      verifyURL:
+        "https://zksync2-testnet-explorer.zksync.dev/contract_verification",
     },
   },
   verify: {
@@ -227,6 +264,19 @@ const config: HardhatUserConfig = {
   typechain: {
     outDir: "typechain",
     target: "ethers-v5",
+  },
+
+  zksolc: {
+    version: "1.3.8",
+    compilerSource: "binary",
+    settings: {
+      isSystem: false,
+      forceEvmla: false,
+      optimizer: {
+        enabled: true,
+        mode: "3",
+      },
+    },
   },
 };
 
