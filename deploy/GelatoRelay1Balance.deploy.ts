@@ -13,8 +13,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
   const {
     deployer: hardhatAccount,
-    relayDeployer,
-    devRelayDeployer,
+    relay1BalanceDeployer,
+    devRelay1BalanceDeployer,
     gelatoRelay,
   } = await getNamedAccounts();
 
@@ -27,11 +27,11 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     deployer = hardhatAccount;
   } else {
     console.log(
-      `\nDeploying GelatoRelay to ${hre.network.name}. Hit ctrl + c to abort`
+      `\nDeploying GelatoRelay1Balance to ${hre.network.name}. Hit ctrl + c to abort`
     );
-    console.log(`\n IS DEV ENV: ${isDevEnv} \n`);
+    console.log(`\n IS DEV ENV: ${isDevEnv ? "✅" : "❌"} \n`);
 
-    deployer = isDevEnv ? devRelayDeployer : relayDeployer;
+    deployer = isDevEnv ? devRelay1BalanceDeployer : relay1BalanceDeployer;
 
     await sleep(5000);
   }
@@ -43,7 +43,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     process.exit(1);
   }
 
-  await deploy("GelatoRelay", {
+  await deploy("GelatoRelay1Balance", {
     from: deployer,
     proxy: true,
     args: [GELATO],
@@ -69,7 +69,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       .connect(gelatoRelayOwner)
       .upgradeTo(
         (
-          await deployments.get("GelatoRelay_Implementation")
+          await deployments.get("GelatoRelay1Balance_Implementation")
         ).address,
         { gasLimit: 1_000_000 }
       );
@@ -79,6 +79,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 func.skip = async (hre: HardhatRuntimeEnvironment) => {
   return hre.network.name !== "hardhat";
 };
-func.tags = ["GelatoRelay"];
+func.tags = ["GelatoRelay1Balance"];
 
 export default func;
