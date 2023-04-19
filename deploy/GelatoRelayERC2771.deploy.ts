@@ -25,7 +25,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.log(
       `Deploying GelatoRelay to ${hre.network.name}. Hit ctrl + c to abort`
     );
-    console.log(`\n IS DEV ENV: ${isDevEnv ? "✅" : "❌"} \n`);
+    console.log(`\n IS DEV ENV: ${isDevEnv} \n`);
 
     deployer = isDevEnv ? devRelayERC2771Deployer : relayERC2771Deployer;
 

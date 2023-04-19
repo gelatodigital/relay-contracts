@@ -1,5 +1,5 @@
 import { task } from "hardhat/config";
-import { IGelatoRelay as GelatoRelay } from "../../typechain";
+import { IEIP173Proxy, IGelatoRelay as GelatoRelay } from "../../typechain";
 
 export const gelato = task(
   "gelato",
@@ -37,3 +37,31 @@ export const owner = task(
     process.exit(1);
   }
 });
+
+export const transferOwnership = task(
+  "transferOwnership",
+  "GelatoRelay.transferOwnership"
+)
+  .addPositionalParam("owner")
+  .setAction(async ({ owner }: { owner: string }, { deployments, ethers }) => {
+    try {
+      const gelatoRelay = (await ethers.getContractAt(
+        "IEIP173Proxy",
+        (
+          await deployments.get("GelatoRelay")
+        ).address
+      )) as IEIP173Proxy;
+
+      console.log(`Old owner: ${await gelatoRelay.owner()}`);
+
+      const txResponse = await gelatoRelay.transferOwnership(owner);
+      console.log("\n waiting for mining\n");
+      console.log(`Tx hash: ${txResponse.hash}`);
+      await txResponse.wait();
+
+      console.log(`New owner: ${await gelatoRelay.owner()}`);
+    } catch (error) {
+      console.error((error as Error).message);
+      process.exit(1);
+    }
+  });
