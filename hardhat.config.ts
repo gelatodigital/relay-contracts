@@ -133,13 +133,13 @@ const config: HardhatUserConfig = {
     },
     moonbeam: {
       accounts,
-      url: "https://moonbeam.api.onfinality.io/public",
       chainId: 1284,
+      url: "https://moonbeam.api.onfinality.io/public",
     },
     moonriver: {
       accounts,
-      url: "https://moonriver-rpc.dwellir.com",
       chainId: 1285,
+      url: "https://moonriver.public.blastapi.io",
     },
     optimism: {
       accounts,

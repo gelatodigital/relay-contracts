@@ -33,7 +33,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
     deployer = isDevEnv ? devRelayDeployer : relayDeployer;
 
-    await sleep(3000);
+    await sleep(5000);
   }
 
   const { GELATO } = getAddresses(hre.network.name);
@@ -76,9 +76,10 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   }
 };
 
-// func.skip = async (hre: HardhatRuntimeEnvironment) => {
-//   return hre.network.name !== "hardhat";
-// };
+func.skip = async (hre: HardhatRuntimeEnvironment) => {
+  return hre.network.name !== "hardhat";
+};
+func.dependencies = ["GelatoRelay1Balance"];
 func.tags = ["GelatoRelay"];
 
 export default func;
