@@ -19,8 +19,8 @@ export const gelato = task(
   }
 });
 
-export const owner = task(
-  "owner",
+export const ownerGelatoRelay = task(
+  "ownerGelatoRelay",
   "return owner address stored on GelatoRelay.sol"
 ).setAction(async (_, { deployments, ethers }) => {
   try {
@@ -32,6 +32,25 @@ export const owner = task(
       ).address
     );
     console.log(await gelatoRelay.owner());
+  } catch (error) {
+    console.error(error, "\n");
+    process.exit(1);
+  }
+});
+
+export const ownerGelatoRelay1Balance = task(
+  "ownerGelatoRelay1Balance",
+  "return owner address stored on GelatoRelay1Balance.sol"
+).setAction(async (_, { deployments, ethers }) => {
+  try {
+    const ABI = ["function owner() view returns (address)"];
+    const gelatoRelay1Balance = await ethers.getContractAt(
+      ABI,
+      (
+        await deployments.get("GelatoRelay1Balance")
+      ).address
+    );
+    console.log(await gelatoRelay1Balance.owner());
   } catch (error) {
     console.error(error, "\n");
     process.exit(1);
