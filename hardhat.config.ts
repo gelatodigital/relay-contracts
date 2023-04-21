@@ -174,11 +174,6 @@ const config: HardhatUserConfig = {
       url: "https://rpc.chiadochain.net",
       gasPrice: 1500000000,
     },
-    fuji: {
-      url: "https://api.avax-test.network/ext/bc/C/rpc",
-      chainId: 43113,
-      accounts,
-    },
     goerli: {
       accounts,
       chainId: 5,

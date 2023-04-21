@@ -86,7 +86,7 @@ export const transferOwnershipGelatoRelay = task(
 
         await txResponse.wait();
 
-        console.log(`New owner: ${await gelatoRelay.owner()}`);
+        console.log(`\nNew owner: ${await gelatoRelay.owner()}`);
       } catch (error) {
         console.error((error as Error).message);
         process.exit(1);
@@ -123,7 +123,7 @@ export const transferOwnershipGelatoRelay1Balance = task(
 
         await txResponse.wait();
 
-        console.log(`New owner: ${await gelatoRelay1Balance.owner()}`);
+        console.log(`\nNew owner: ${await gelatoRelay1Balance.owner()}`);
       } catch (error) {
         console.error((error as Error).message);
         process.exit(1);
