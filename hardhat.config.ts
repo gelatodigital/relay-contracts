@@ -24,27 +24,40 @@ const BICOCCA_RPC_KEY = process.env.BICOCCA_RPC_KEY;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
 const RELAY_DEPLOYER_PK = process.env.RELAY_DEPLOYER_PK;
+const RELAY_1BALANCE_DEPLOYER_PK = process.env.RELAY_1BALANCE_DEPLOYER_PK;
 const RELAY_ERC2771_DEPLOYER_PK = process.env.RELAY_ERC2771_DEPLOYER_PK;
 
 const DEV_RELAY_DEPLOYER_PK = process.env.DEV_RELAY_DEPLOYER_PK;
+const DEV_RELAY_1BALANCE_DEPLOYER_PK =
+  process.env.DEV_RELAY_1BALANCE_DEPLOYER_PK;
 const DEV_RELAY_ERC2771_DEPLOYER_PK = process.env.DEV_RELAY_ERC2771_DEPLOYER_PK;
 
+// CAUTION: for deployments put ALL keys in .env
 let accounts: string[] = [];
-if (RELAY_DEPLOYER_PK && RELAY_ERC2771_DEPLOYER_PK) {
-  accounts = [RELAY_DEPLOYER_PK, RELAY_ERC2771_DEPLOYER_PK];
-} else if (RELAY_DEPLOYER_PK) {
-  accounts = [RELAY_DEPLOYER_PK];
-} else if (RELAY_ERC2771_DEPLOYER_PK) {
-  accounts = [RELAY_ERC2771_DEPLOYER_PK];
+if (
+  RELAY_DEPLOYER_PK &&
+  RELAY_1BALANCE_DEPLOYER_PK &&
+  RELAY_ERC2771_DEPLOYER_PK
+) {
+  accounts = [
+    RELAY_DEPLOYER_PK,
+    RELAY_1BALANCE_DEPLOYER_PK,
+    RELAY_ERC2771_DEPLOYER_PK,
+  ];
 }
 
+// CAUTION: for deployments put ALL keys in .env
 let devAccounts: string[] = [];
-if (DEV_RELAY_DEPLOYER_PK && DEV_RELAY_ERC2771_DEPLOYER_PK) {
-  devAccounts = [DEV_RELAY_DEPLOYER_PK, DEV_RELAY_ERC2771_DEPLOYER_PK];
-} else if (DEV_RELAY_DEPLOYER_PK) {
-  devAccounts = [DEV_RELAY_DEPLOYER_PK];
-} else if (DEV_RELAY_ERC2771_DEPLOYER_PK) {
-  devAccounts = [DEV_RELAY_ERC2771_DEPLOYER_PK];
+if (
+  DEV_RELAY_DEPLOYER_PK &&
+  DEV_RELAY_1BALANCE_DEPLOYER_PK &&
+  DEV_RELAY_ERC2771_DEPLOYER_PK
+) {
+  devAccounts = [
+    DEV_RELAY_DEPLOYER_PK,
+    DEV_RELAY_1BALANCE_DEPLOYER_PK,
+    DEV_RELAY_ERC2771_DEPLOYER_PK,
+  ];
 }
 
 const config: HardhatUserConfig = {
@@ -55,18 +68,29 @@ const config: HardhatUserConfig = {
     deployer: {
       default: 0,
     },
+    // Relay Deployers
     relayDeployer: {
       default: "0xd1Ac051Dc0E1366502eF3Fe4D754fbeC6986a177",
+    },
+    relay1BalanceDeployer: {
+      default: "0x562c4e878b5Cd1f64007358695e8187CB4517c64",
     },
     relayERC2771Deployer: {
       default: "0xa4342E17DC5f5Ad441258F11cc2871D84a26FBfe",
     },
+
+    // Dev Relay Deployers
     devRelayDeployer: {
       default: "0x1100555739378dEe764377bbc091ceae1a3574F1",
+    },
+    devRelay1BalanceDeployer: {
+      default: "0x2d20e2882f4052eecDa682F6211477E4eBfe4B06",
     },
     devRelayERC2771Deployer: {
       default: "0x6Cc27Ae5440d8016A36350fbaDA0Ed209Ad89822",
     },
+
+    // Smart Contracts for local testing
     gelatoRelay: {
       hardhat: "0xaBcC9b596420A9E9172FD5938620E265a0f9Df92",
     },
@@ -114,13 +138,13 @@ const config: HardhatUserConfig = {
     },
     moonbeam: {
       accounts,
-      url: "https://moonbeam.api.onfinality.io/public",
       chainId: 1284,
+      url: "https://moonbeam.api.onfinality.io/public",
     },
     moonriver: {
       accounts,
-      url: "https://moonriver-rpc.dwellir.com",
       chainId: 1285,
+      url: "https://moonriver.public.blastapi.io",
     },
     optimism: {
       accounts,
@@ -155,7 +179,7 @@ const config: HardhatUserConfig = {
     baseGoerli: {
       accounts,
       chainId: 84531,
-      url: `${process.env.BASE_GOERLI_URL}`,
+      url: "https://goerli.base.org",
     },
     bicocca: {
       accounts,
@@ -168,11 +192,6 @@ const config: HardhatUserConfig = {
       chainId: 10200,
       url: "https://rpc.chiadochain.net",
       gasPrice: 1500000000,
-    },
-    fuji: {
-      url: "https://api.avax-test.network/ext/bc/C/rpc",
-      chainId: 43113,
-      accounts,
     },
     goerli: {
       accounts,
@@ -212,7 +231,7 @@ const config: HardhatUserConfig = {
     baseGoerliDev: {
       accounts: devAccounts,
       chainId: 84531,
-      url: `${process.env.BASE_GOERLI_URL}`,
+      url: "https://goerli.base.org",
     },
     bicoccaDev: {
       accounts: devAccounts,
@@ -253,7 +272,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: "0.8.17",
+        version: "0.8.19",
         settings: {
           optimizer: { enabled: true, runs: 999999 },
         },
