@@ -42,7 +42,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   await deploy("GelatoRelayERC2771", {
     from: deployer,
     args: [GELATO],
-    log: !isHardhat,
+    log: isHardhat ? false : true,
   });
 
   if (isHardhat) {
@@ -60,7 +60,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 func.skip = async (hre: HardhatRuntimeEnvironment) => {
   return hre.network.name !== "hardhat";
 };
-
 func.tags = ["GelatoRelayERC2771"];
 
 export default func;
