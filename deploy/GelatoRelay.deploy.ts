@@ -27,7 +27,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     deployer = hardhatAccount;
   } else {
     console.log(
-      `Deploying GelatoRelay to ${hre.network.name}. Hit ctrl + c to abort`
+      `\nDeploying GelatoRelay to ${hre.network.name}. Hit ctrl + c to abort`
     );
     console.log(`\n IS DEV ENV: ${isDevEnv} \n`);
 
@@ -45,7 +45,9 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   await deploy("GelatoRelay", {
     from: deployer,
-    proxy: true,
+    proxy: {
+      proxyContract: "EIP173Proxy",
+    },
     args: [GELATO],
     log: isHardhat ? false : true,
   });
@@ -79,6 +81,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 func.skip = async (hre: HardhatRuntimeEnvironment) => {
   return hre.network.name !== "hardhat";
 };
+func.dependencies = ["GelatoRelay1Balance"];
 func.tags = ["GelatoRelay"];
 
 export default func;

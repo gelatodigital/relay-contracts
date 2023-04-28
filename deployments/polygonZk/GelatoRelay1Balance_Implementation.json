@@ -1,0 +1,193 @@
+{
+  "address": "0xb82e63585e53C47Ee83104f22c21ab1FE76F2EAE",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_gelato",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "sponsor",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "feeToken",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "oneBalanceChainId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "nativeToFeeTokenXRateNumerator",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "nativeToFeeTokenXRateDenominator",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "correlationId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "LogUseGelato1Balance",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "gelato",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "chainId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "target",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct SponsoredCall",
+          "name": "_call",
+          "type": "tuple"
+        },
+        {
+          "internalType": "address",
+          "name": "_sponsor",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_feeToken",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_oneBalanceChainId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_nativeToFeeTokenXRateNumerator",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_nativeToFeeTokenXRateDenominator",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_correlationId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "sponsoredCall",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x43ae3b703eadba84c6344c907239cbdde9ec906addf149bba43b5ade8d5e26c2",
+  "receipt": {
+    "to": null,
+    "from": "0x562c4e878b5Cd1f64007358695e8187CB4517c64",
+    "contractAddress": "0xb82e63585e53C47Ee83104f22c21ab1FE76F2EAE",
+    "transactionIndex": 0,
+    "gasUsed": "510054",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x968acf1b4316245e5dbbd3cb709b725e2f5afc9f6cba8ea354d13594c66333ee",
+    "transactionHash": "0x43ae3b703eadba84c6344c907239cbdde9ec906addf149bba43b5ade8d5e26c2",
+    "logs": [],
+    "blockNumber": 151727,
+    "cumulativeGasUsed": "510054",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x08EFb6D315c7e74C39620c9AAEA289730f43a429"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "2d08a4ad5602ec2ae197b4ab75ad8dbe",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_gelato\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sponsor\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"feeToken\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"oneBalanceChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"nativeToFeeTokenXRateNumerator\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"nativeToFeeTokenXRateDenominator\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"correlationId\",\"type\":\"bytes32\"}],\"name\":\"LogUseGelato1Balance\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"gelato\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"internalType\":\"struct SponsoredCall\",\"name\":\"_call\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"_sponsor\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_feeToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_oneBalanceChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_nativeToFeeTokenXRateNumerator\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_nativeToFeeTokenXRateDenominator\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"_correlationId\",\"type\":\"bytes32\"}],\"name\":\"sponsoredCall\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"This contract must NEVER hold funds!Maliciously crafted transaction payloads could wipe out any funds left here\",\"kind\":\"dev\",\"methods\":{\"sponsoredCall((uint256,address,bytes),address,address,uint256,uint256,uint256,bytes32)\":{\"details\":\"Payment is handled with off-chain accounting using Gelato's 1Balance system\",\"params\":{\"_call\":\"Relay call data packed into SponsoredCall struct\",\"_correlationId\":\"Unique task identifier generated by gelato\",\"_nativeToFeeTokenXRateDenominator\":\"Exchange rate denominator\",\"_nativeToFeeTokenXRateNumerator\":\"Exchange rate numerator\"}}},\"title\":\"Gelato Relay contract\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"sponsoredCall((uint256,address,bytes),address,address,uint256,uint256,uint256,bytes32)\":{\"notice\":\"Relay call + One Balance payment - with sponsor authenticationOracle value for exchange rate between native tokens and fee token\"}},\"notice\":\"This contract deals with synchronous payments and Gelato 1Balance payments\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/GelatoRelay1Balance.sol\":\"GelatoRelay1Balance\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":999999},\"remappings\":[]},\"sources\":{\"contracts/GelatoRelay1Balance.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.19;\\n\\nimport {IGelatoRelay1Balance} from \\\"./interfaces/IGelatoRelay1Balance.sol\\\";\\nimport {IGelato1Balance} from \\\"./interfaces/IGelato1Balance.sol\\\";\\nimport {GelatoCallUtils} from \\\"./lib/GelatoCallUtils.sol\\\";\\nimport {SponsoredCall} from \\\"./types/CallTypes.sol\\\";\\n\\n/// @title  Gelato Relay contract\\n/// @notice This contract deals with synchronous payments and Gelato 1Balance payments\\n/// @dev    This contract must NEVER hold funds!\\n/// @dev    Maliciously crafted transaction payloads could wipe out any funds left here\\n// solhint-disable-next-line max-states-count\\ncontract GelatoRelay1Balance is IGelatoRelay1Balance, IGelato1Balance {\\n    using GelatoCallUtils for address;\\n\\n    address public immutable gelato;\\n\\n    modifier onlyGelato() {\\n        require(msg.sender == gelato, \\\"Only callable by gelato\\\");\\n        _;\\n    }\\n\\n    constructor(address _gelato) {\\n        gelato = _gelato;\\n    }\\n\\n    /// @notice Relay call + One Balance payment - with sponsor authentication\\n    /// @dev    Payment is handled with off-chain accounting using Gelato's 1Balance system\\n    /// @param _call Relay call data packed into SponsoredCall struct\\n    /// @notice Oracle value for exchange rate between native tokens and fee token\\n    /// @param  _nativeToFeeTokenXRateNumerator Exchange rate numerator\\n    /// @param  _nativeToFeeTokenXRateDenominator Exchange rate denominator\\n    /// @param _correlationId Unique task identifier generated by gelato\\n    // solhint-disable-next-line function-max-lines\\n    function sponsoredCall(\\n        SponsoredCall calldata _call,\\n        address _sponsor,\\n        address _feeToken,\\n        uint256 _oneBalanceChainId,\\n        uint256 _nativeToFeeTokenXRateNumerator,\\n        uint256 _nativeToFeeTokenXRateDenominator,\\n        bytes32 _correlationId\\n    ) external onlyGelato {\\n        // CHECKS\\n        require(\\n            _call.chainId == block.chainid,\\n            \\\"GelatoRelay.sponsoredCall:chainid\\\"\\n        );\\n\\n        // INTERACTIONS\\n        _call.target.revertingContractCall(\\n            _call.data,\\n            \\\"GelatoRelay.sponsoredCall:\\\"\\n        );\\n\\n        emit LogUseGelato1Balance(\\n            _sponsor,\\n            _call.target,\\n            _feeToken,\\n            _oneBalanceChainId,\\n            _nativeToFeeTokenXRateNumerator,\\n            _nativeToFeeTokenXRateDenominator,\\n            _correlationId\\n        );\\n    }\\n}\\n\",\"keccak256\":\"0x4cdf6711dee52be84d91f4cb07b30071cdc07a0377a996b6c8c928a54d264a28\",\"license\":\"MIT\"},\"contracts/interfaces/IGelato1Balance.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.19;\\n\\ninterface IGelato1Balance {\\n    event LogUseGelato1Balance(\\n        address indexed sponsor,\\n        address indexed target,\\n        address indexed feeToken,\\n        uint256 oneBalanceChainId,\\n        uint256 nativeToFeeTokenXRateNumerator,\\n        uint256 nativeToFeeTokenXRateDenominator,\\n        bytes32 correlationId\\n    );\\n}\\n\",\"keccak256\":\"0x071aaf38b552fa0b6545bb87ee18e378b6d954d92a4d20429fb9ff6636bd812d\",\"license\":\"MIT\"},\"contracts/interfaces/IGelatoRelay1Balance.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.19;\\n\\nimport {SponsoredCall} from \\\"../types/CallTypes.sol\\\";\\n\\ninterface IGelatoRelay1Balance {\\n    function gelato() external view returns (address);\\n\\n    function sponsoredCall(\\n        SponsoredCall calldata _call,\\n        address _sponsor,\\n        address _feeToken,\\n        uint256 _oneBalanceChainId,\\n        uint256 _nativeToFeeTokenXRateNumerator,\\n        uint256 _nativeToFeeTokenXRateDenominator,\\n        bytes32 _correlationId\\n    ) external;\\n}\\n\",\"keccak256\":\"0x13821ff84978366090edf1ff21dbb83673b68e9a8cd3ed15f98a96b6e7fd88f7\",\"license\":\"MIT\"},\"contracts/lib/GelatoBytes.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.19;\\n\\nlibrary GelatoBytes {\\n    function calldataSliceSelector(bytes calldata _bytes)\\n        internal\\n        pure\\n        returns (bytes4 selector)\\n    {\\n        selector =\\n            _bytes[0] |\\n            (bytes4(_bytes[1]) >> 8) |\\n            (bytes4(_bytes[2]) >> 16) |\\n            (bytes4(_bytes[3]) >> 24);\\n    }\\n\\n    function memorySliceSelector(bytes memory _bytes)\\n        internal\\n        pure\\n        returns (bytes4 selector)\\n    {\\n        selector =\\n            _bytes[0] |\\n            (bytes4(_bytes[1]) >> 8) |\\n            (bytes4(_bytes[2]) >> 16) |\\n            (bytes4(_bytes[3]) >> 24);\\n    }\\n\\n    function revertWithError(bytes memory _bytes, string memory _tracingInfo)\\n        internal\\n        pure\\n    {\\n        // 68: 32-location, 32-length, 4-ErrorSelector, UTF-8 err\\n        if (_bytes.length % 32 == 4) {\\n            bytes4 selector;\\n            assembly {\\n                selector := mload(add(0x20, _bytes))\\n            }\\n            if (selector == 0x08c379a0) {\\n                // Function selector for Error(string)\\n                assembly {\\n                    _bytes := add(_bytes, 68)\\n                }\\n                revert(string(abi.encodePacked(_tracingInfo, string(_bytes))));\\n            } else {\\n                revert(\\n                    string(abi.encodePacked(_tracingInfo, \\\"NoErrorSelector\\\"))\\n                );\\n            }\\n        } else {\\n            revert(\\n                string(abi.encodePacked(_tracingInfo, \\\"UnexpectedReturndata\\\"))\\n            );\\n        }\\n    }\\n\\n    function returnError(bytes memory _bytes, string memory _tracingInfo)\\n        internal\\n        pure\\n        returns (string memory)\\n    {\\n        // 68: 32-location, 32-length, 4-ErrorSelector, UTF-8 err\\n        if (_bytes.length % 32 == 4) {\\n            bytes4 selector;\\n            assembly {\\n                selector := mload(add(0x20, _bytes))\\n            }\\n            if (selector == 0x08c379a0) {\\n                // Function selector for Error(string)\\n                assembly {\\n                    _bytes := add(_bytes, 68)\\n                }\\n                return string(abi.encodePacked(_tracingInfo, string(_bytes)));\\n            } else {\\n                return\\n                    string(abi.encodePacked(_tracingInfo, \\\"NoErrorSelector\\\"));\\n            }\\n        } else {\\n            return\\n                string(abi.encodePacked(_tracingInfo, \\\"UnexpectedReturndata\\\"));\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0xee50e6c2a58774eabca73ebfc269e2747eb98e4ea2b4eba52489e07fb6907686\",\"license\":\"MIT\"},\"contracts/lib/GelatoCallUtils.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.19;\\n\\nimport {GelatoBytes} from \\\"./GelatoBytes.sol\\\";\\n\\nlibrary GelatoCallUtils {\\n    using GelatoBytes for bytes;\\n\\n    function revertingContractCall(\\n        address _contract,\\n        bytes memory _data,\\n        string memory _errorMsg\\n    ) internal returns (bytes memory returndata) {\\n        bool success;\\n        (success, returndata) = _contract.call(_data);\\n\\n        // solhint-disable-next-line max-line-length\\n        // https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/f9b6fc3fdab7aca33a9cfa8837c5cd7f67e176be/contracts/utils/AddressUpgradeable.sol#L177\\n        if (success) {\\n            if (returndata.length == 0) {\\n                // only check isContract if the call was successful and the return data is empty\\n                // otherwise we already know that it was a contract\\n                require(\\n                    isContract(_contract),\\n                    string(abi.encodePacked(_errorMsg, \\\"Call to non contract\\\"))\\n                );\\n            }\\n        } else {\\n            returndata.revertWithError(_errorMsg);\\n        }\\n    }\\n\\n    // solhint-disable-next-line max-line-length\\n    // https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/f9b6fc3fdab7aca33a9cfa8837c5cd7f67e176be/contracts/utils/AddressUpgradeable.sol#L36\\n    function isContract(address account) internal view returns (bool) {\\n        // This method relies on extcodesize/address.code.length, which returns 0\\n        // for contracts in construction, since the code is only stored at the end\\n        // of the constructor execution.\\n\\n        return account.code.length > 0;\\n    }\\n}\\n\",\"keccak256\":\"0x11e4ea95a18969ba7e200f76e6a86251e8b6d8cf4ccd038906accfd52b363ddf\",\"license\":\"MIT\"},\"contracts/types/CallTypes.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity 0.8.19;\\n\\n// Sponsored relay call\\nstruct SponsoredCall {\\n    uint256 chainId;\\n    address target;\\n    bytes data;\\n}\\n\\n// Relay call with user signature verification for ERC 2771 compliance\\nstruct CallWithERC2771 {\\n    uint256 chainId;\\n    address target;\\n    bytes data;\\n    address user;\\n    uint256 userNonce;\\n    uint256 userDeadline;\\n}\\n\",\"keccak256\":\"0xbc583e1e9f05d9abe32796988504b192f22ea8a8a3924cf2801acf8fd44d238a\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60a060405234801561001057600080fd5b506040516108db3803806108db83398101604081905261002f91610040565b6001600160a01b0316608052610070565b60006020828403121561005257600080fd5b81516001600160a01b038116811461006957600080fd5b9392505050565b60805161084b610090600039600081816055015260b8015261084b6000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c806327be3c241461003b578063573ea57514610050575b600080fd5b61004e610049366004610541565b6100a0565b005b6100777f000000000000000000000000000000000000000000000000000000000000000081565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b3373ffffffffffffffffffffffffffffffffffffffff7f00000000000000000000000000000000000000000000000000000000000000001614610144576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601760248201527f4f6e6c792063616c6c61626c652062792067656c61746f00000000000000000060448201526064015b60405180910390fd5b863546146101d4576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602160248201527f47656c61746f52656c61792e73706f6e736f72656443616c6c3a636861696e6960448201527f6400000000000000000000000000000000000000000000000000000000000000606482015260840161013b565b61027d6101e460408901896105c9565b8080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525050604080518082018252601a81527f47656c61746f52656c61792e73706f6e736f72656443616c6c3a0000000000006020808301919091529093506102609250908c01908c01610635565b73ffffffffffffffffffffffffffffffffffffffff169190610312565b5073ffffffffffffffffffffffffffffffffffffffff85166102a56040890160208a01610635565b60408051878152602081018790529081018590526060810184905273ffffffffffffffffffffffffffffffffffffffff918216918916907f116bfd46451bbd23e7a5f5b7420b28e3d98d4c477f173da513aaaeac3c4baada9060800160405180910390a450505050505050565b606060008473ffffffffffffffffffffffffffffffffffffffff168460405161033b919061067b565b6000604051808303816000865af19150503d8060008114610378576040519150601f19603f3d011682016040523d82523d6000602084013e61037d565b606091505b5092509050801561040a5781516000036104055773ffffffffffffffffffffffffffffffffffffffff85163b1515836040516020016103bc9190610697565b60405160208183030381529060405290610403576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161013b91906106d8565b505b610414565b610414828461041c565b509392505050565b6020825161042a9190610729565b6004036105075760208201517fffffffff0000000000000000000000000000000000000000000000000000000081167f08c379a000000000000000000000000000000000000000000000000000000000036104f6576044830192508183604051602001610498929190610764565b604080517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0818403018152908290527f08c379a000000000000000000000000000000000000000000000000000000000825261013b916004016106d8565b816040516020016104989190610793565b8060405160200161049891906107d4565b803573ffffffffffffffffffffffffffffffffffffffff8116811461053c57600080fd5b919050565b600080600080600080600060e0888a03121561055c57600080fd5b873567ffffffffffffffff81111561057357600080fd5b88016060818b03121561058557600080fd5b965061059360208901610518565b95506105a160408901610518565b969995985095966060810135965060808101359560a0820135955060c0909101359350915050565b60008083357fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe18436030181126105fe57600080fd5b83018035915067ffffffffffffffff82111561061957600080fd5b60200191503681900382131561062e57600080fd5b9250929050565b60006020828403121561064757600080fd5b61065082610518565b9392505050565b60005b8381101561067257818101518382015260200161065a565b50506000910152565b6000825161068d818460208701610657565b9190910192915050565b600082516106a9818460208701610657565b7f43616c6c20746f206e6f6e20636f6e7472616374000000000000000000000000920191825250601401919050565b60208152600082518060208401526106f7816040850160208701610657565b601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169190910160400192915050565b60008261075f577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500690565b60008351610776818460208801610657565b83519083019061078a818360208801610657565b01949350505050565b600082516107a5818460208701610657565b7f4e6f4572726f7253656c6563746f720000000000000000000000000000000000920191825250600f01919050565b600082516107e6818460208701610657565b7f556e657870656374656452657475726e6461746100000000000000000000000092019182525060140191905056fea2646970667358221220801f15548ed0163ac94ae16b7720f94b78c56506da6480ba4cc2416235c848f564736f6c63430008130033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c806327be3c241461003b578063573ea57514610050575b600080fd5b61004e610049366004610541565b6100a0565b005b6100777f000000000000000000000000000000000000000000000000000000000000000081565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b3373ffffffffffffffffffffffffffffffffffffffff7f00000000000000000000000000000000000000000000000000000000000000001614610144576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601760248201527f4f6e6c792063616c6c61626c652062792067656c61746f00000000000000000060448201526064015b60405180910390fd5b863546146101d4576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602160248201527f47656c61746f52656c61792e73706f6e736f72656443616c6c3a636861696e6960448201527f6400000000000000000000000000000000000000000000000000000000000000606482015260840161013b565b61027d6101e460408901896105c9565b8080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525050604080518082018252601a81527f47656c61746f52656c61792e73706f6e736f72656443616c6c3a0000000000006020808301919091529093506102609250908c01908c01610635565b73ffffffffffffffffffffffffffffffffffffffff169190610312565b5073ffffffffffffffffffffffffffffffffffffffff85166102a56040890160208a01610635565b60408051878152602081018790529081018590526060810184905273ffffffffffffffffffffffffffffffffffffffff918216918916907f116bfd46451bbd23e7a5f5b7420b28e3d98d4c477f173da513aaaeac3c4baada9060800160405180910390a450505050505050565b606060008473ffffffffffffffffffffffffffffffffffffffff168460405161033b919061067b565b6000604051808303816000865af19150503d8060008114610378576040519150601f19603f3d011682016040523d82523d6000602084013e61037d565b606091505b5092509050801561040a5781516000036104055773ffffffffffffffffffffffffffffffffffffffff85163b1515836040516020016103bc9190610697565b60405160208183030381529060405290610403576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161013b91906106d8565b505b610414565b610414828461041c565b509392505050565b6020825161042a9190610729565b6004036105075760208201517fffffffff0000000000000000000000000000000000000000000000000000000081167f08c379a000000000000000000000000000000000000000000000000000000000036104f6576044830192508183604051602001610498929190610764565b604080517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0818403018152908290527f08c379a000000000000000000000000000000000000000000000000000000000825261013b916004016106d8565b816040516020016104989190610793565b8060405160200161049891906107d4565b803573ffffffffffffffffffffffffffffffffffffffff8116811461053c57600080fd5b919050565b600080600080600080600060e0888a03121561055c57600080fd5b873567ffffffffffffffff81111561057357600080fd5b88016060818b03121561058557600080fd5b965061059360208901610518565b95506105a160408901610518565b969995985095966060810135965060808101359560a0820135955060c0909101359350915050565b60008083357fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe18436030181126105fe57600080fd5b83018035915067ffffffffffffffff82111561061957600080fd5b60200191503681900382131561062e57600080fd5b9250929050565b60006020828403121561064757600080fd5b61065082610518565b9392505050565b60005b8381101561067257818101518382015260200161065a565b50506000910152565b6000825161068d818460208701610657565b9190910192915050565b600082516106a9818460208701610657565b7f43616c6c20746f206e6f6e20636f6e7472616374000000000000000000000000920191825250601401919050565b60208152600082518060208401526106f7816040850160208701610657565b601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169190910160400192915050565b60008261075f577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500690565b60008351610776818460208801610657565b83519083019061078a818360208801610657565b01949350505050565b600082516107a5818460208701610657565b7f4e6f4572726f7253656c6563746f720000000000000000000000000000000000920191825250600f01919050565b600082516107e6818460208701610657565b7f556e657870656374656452657475726e6461746100000000000000000000000092019182525060140191905056fea2646970667358221220801f15548ed0163ac94ae16b7720f94b78c56506da6480ba4cc2416235c848f564736f6c63430008130033",
+  "devdoc": {
+    "details": "This contract must NEVER hold funds!Maliciously crafted transaction payloads could wipe out any funds left here",
+    "kind": "dev",
+    "methods": {
+      "sponsoredCall((uint256,address,bytes),address,address,uint256,uint256,uint256,bytes32)": {
+        "details": "Payment is handled with off-chain accounting using Gelato's 1Balance system",
+        "params": {
+          "_call": "Relay call data packed into SponsoredCall struct",
+          "_correlationId": "Unique task identifier generated by gelato",
+          "_nativeToFeeTokenXRateDenominator": "Exchange rate denominator",
+          "_nativeToFeeTokenXRateNumerator": "Exchange rate numerator"
+        }
+      }
+    },
+    "title": "Gelato Relay contract",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "sponsoredCall((uint256,address,bytes),address,address,uint256,uint256,uint256,bytes32)": {
+        "notice": "Relay call + One Balance payment - with sponsor authenticationOracle value for exchange rate between native tokens and fee token"
+      }
+    },
+    "notice": "This contract deals with synchronous payments and Gelato 1Balance payments",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}

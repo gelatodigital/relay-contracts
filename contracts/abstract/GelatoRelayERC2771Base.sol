@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity 0.8.19;
 
 import {
     IGelatoRelayERC2771Base
@@ -21,14 +21,6 @@ abstract contract GelatoRelayERC2771Base is IGelatoRelayERC2771Base {
             bytes(
                 // solhint-disable-next-line max-line-length
                 "CallWithSyncFeeERC2771(uint256 chainId,address target,bytes data,address user,uint256 userNonce,uint256 userDeadline)"
-            )
-        );
-
-    bytes32 public constant SPONSORED_CALL_ERC2771_TYPEHASH =
-        keccak256(
-            bytes(
-                // solhint-disable-next-line max-line-length
-                "SponsoredCallERC2771(uint256 chainId,address target,bytes data,address user,uint256 userNonce,uint256 userDeadline)"
             )
         );
 
@@ -89,30 +81,6 @@ abstract contract GelatoRelayERC2771Base is IGelatoRelayERC2771Base {
         );
     }
 
-    function _requireSponsoredCallERC2771Signature(
-        bytes32 _domainSeparator,
-        CallWithERC2771 calldata _call,
-        bytes calldata _signature,
-        address _expectedSigner
-    ) internal pure returns (bytes32 digest) {
-        digest = keccak256(
-            abi.encodePacked(
-                "\x19\x01",
-                _domainSeparator,
-                keccak256(_abiEncodeSponsoredCallERC2771(_call))
-            )
-        );
-
-        (address recovered, ECDSA.RecoverError error) = ECDSA.tryRecover(
-            digest,
-            _signature
-        );
-        require(
-            error == ECDSA.RecoverError.NoError && recovered == _expectedSigner,
-            "GelatoRelayERC2771Base._requireSponsoredCallERC2771Signature"
-        );
-    }
-
     function _abiEncodeCallWithSyncFeeERC2771(CallWithERC2771 calldata _call)
         internal
         pure
@@ -121,23 +89,6 @@ abstract contract GelatoRelayERC2771Base is IGelatoRelayERC2771Base {
         return
             abi.encode(
                 CALL_WITH_SYNC_FEE_ERC2771_TYPEHASH,
-                _call.chainId,
-                _call.target,
-                keccak256(_call.data),
-                _call.user,
-                _call.userNonce,
-                _call.userDeadline
-            );
-    }
-
-    function _abiEncodeSponsoredCallERC2771(CallWithERC2771 calldata _call)
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return
-            abi.encode(
-                SPONSORED_CALL_ERC2771_TYPEHASH,
                 _call.chainId,
                 _call.target,
                 keccak256(_call.data),
