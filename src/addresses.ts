@@ -14,6 +14,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x4775aF8FEf4809fE10bf05867d2b038a4b5B2146",
       };
+    case "arbitrumGoerli":
+      return {
+        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
+      };
     case "avalanche":
       return {
         GELATO: "0x7C5c4Af1618220C090A6863175de47afb20fa9Df",
@@ -25,6 +29,14 @@ export const getAddresses = (network: string): Addresses => {
     case "baseGoerliDev":
       return {
         GELATO: "0xCf8EDB3333Fae73b23f689229F4De6Ac95d1f707",
+      };
+    case "bicocca":
+      return {
+        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
+      };
+    case "bicoccaDev":
+      return {
+        GELATO: "0xEB9b4944EB937dEE6CC8d721dA982d6019A2Fb8a",
       };
     case "bnb":
       return {
@@ -42,17 +54,41 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x29b6603D17B9D8f021EcB8845B6FD06E1Adf89DE",
       };
-    case "fuji":
-      return {
-        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
-      };
     case "goerli":
       return {
         GELATO: "0x683913B3A32ada4F8100458A3E1675425BdAa7DF",
       };
-    case "arbitrumGoerli":
+    case "lineaGoerli":
       return {
         GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
+      };
+    case "lineaGoerliDev":
+      return {
+        GELATO: "0x1861708A1F55F433BaDE81895815c481e0c33448",
+      };
+    case "moonbeam":
+      return {
+        GELATO: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
+      };
+    case "moonriver":
+      return {
+        GELATO: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
+      };
+    case "mumbai":
+      return {
+        GELATO: "0x25aD59adbe00C2d80c86d01e2E05e1294DA84823",
+      };
+    case "mumbaiDev":
+      return {
+        GELATO: "0x266E4AB6baD069aFc28d3C2CC129f6F8455b1dc2",
+      };
+    case "optimismGoerli":
+      return {
+        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
+      };
+    case "optimism":
+      return {
+        GELATO: "0x01051113D81D7d6DA508462F2ad6d7fD96cF42Ef",
       };
     case "polygon":
       return {
@@ -70,31 +106,17 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x1861708A1F55F433BaDE81895815c481e0c33448",
       };
-    case "mumbai":
+    case "zksync":
       return {
-        GELATO: "0x25aD59adbe00C2d80c86d01e2E05e1294DA84823",
+        GELATO: "0x52cb9f60225aA830AE420126BC8e3d5B2fc5bCf4",
       };
-
-    case "mumbaiDev":
+    case "zksyncGoerli":
       return {
-        GELATO: "0x266E4AB6baD069aFc28d3C2CC129f6F8455b1dc2",
+        GELATO: "0x296530a4224D5A5669a3f0C772EC7337ca3D3f1d",
       };
-
-    case "moonriver":
+    case "zksyncGoerliDev":
       return {
-        GELATO: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
-      };
-    case "moonbeam":
-      return {
-        GELATO: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
-      };
-    case "optimismGoerli":
-      return {
-        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
-      };
-    case "optimism":
-      return {
-        GELATO: "0x01051113D81D7d6DA508462F2ad6d7fD96cF42Ef",
+        GELATO: "0x0730d466570f7413Df70298B019B3B775511E974",
       };
     default:
       throw new Error(`No addresses for Network: ${network}`);

@@ -5,6 +5,9 @@ import "@nomiclabs/hardhat-ethers";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@typechain/hardhat";
 import "hardhat-deploy";
+import "@matterlabs/hardhat-zksync-solc";
+import "@matterlabs/hardhat-zksync-deploy";
+import "@matterlabs/hardhat-zksync-verify";
 
 // ================================= TASKS =========================================
 // ❗COMMENT IN to use || COMMENT OUT before git push to have CI work
@@ -15,6 +18,8 @@ import * as dotenv from "dotenv";
 dotenv.config({ path: __dirname + "/.env" });
 
 const ALCHEMY_ID = process.env.ALCHEMY_ID;
+
+const BICOCCA_RPC_KEY = process.env.BICOCCA_RPC_KEY;
 
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
@@ -156,6 +161,14 @@ const config: HardhatUserConfig = {
       chainId: 1101,
       url: "https://zkevm-rpc.com",
     },
+    zksync: {
+      accounts,
+      chainId: 324,
+      url: "https://mainnet.era.zksync.io",
+      zksync: true,
+      verifyURL:
+        "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
+    },
 
     // Staging
     arbitrumGoerli: {
@@ -168,6 +181,12 @@ const config: HardhatUserConfig = {
       chainId: 84531,
       url: "https://goerli.base.org",
     },
+    bicocca: {
+      accounts,
+      chainId: 29313331,
+      url: `https://relayer.bicoccachain.net/${BICOCCA_RPC_KEY}`,
+      gasPrice: 0,
+    },
     chiado: {
       accounts,
       chainId: 10200,
@@ -178,6 +197,11 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 5,
       url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ID}`,
+    },
+    lineaGoerli: {
+      accounts,
+      chainId: 59140,
+      url: `https://rpc.goerli.linea.build`,
     },
     mumbai: {
       accounts,
@@ -194,12 +218,31 @@ const config: HardhatUserConfig = {
       chainId: 1442,
       url: "https://rpc.public.zkevm-test.net",
     },
+    zksyncGoerli: {
+      accounts,
+      chainId: 280,
+      url: "https://testnet.era.zksync.dev",
+      zksync: true,
+      verifyURL:
+        "https://zksync2-testnet-explorer.zksync.dev/contract_verification",
+    },
 
     // Dev
     baseGoerliDev: {
       accounts: devAccounts,
       chainId: 84531,
       url: "https://goerli.base.org",
+    },
+    bicoccaDev: {
+      accounts: devAccounts,
+      chainId: 29313331,
+      url: `https://relayer.bicoccachain.net/${BICOCCA_RPC_KEY}`,
+      gasPrice: 0,
+    },
+    lineaGoerliDev: {
+      accounts: devAccounts,
+      chainId: 59140,
+      url: `https://rpc.goerli.linea.build`,
     },
     mumbaiDev: {
       accounts: devAccounts,
@@ -210,6 +253,14 @@ const config: HardhatUserConfig = {
       accounts: devAccounts,
       chainId: 1442,
       url: "https://rpc.public.zkevm-test.net",
+    },
+    zksyncGoerliDev: {
+      accounts: devAccounts,
+      chainId: 280,
+      url: "https://testnet.era.zksync.dev",
+      zksync: true,
+      verifyURL:
+        "https://zksync2-testnet-explorer.zksync.dev/contract_verification",
     },
   },
   verify: {
@@ -232,6 +283,19 @@ const config: HardhatUserConfig = {
   typechain: {
     outDir: "typechain",
     target: "ethers-v5",
+  },
+
+  zksolc: {
+    version: "1.3.8",
+    compilerSource: "binary",
+    settings: {
+      isSystem: false,
+      forceEvmla: false,
+      optimizer: {
+        enabled: true,
+        mode: "3",
+      },
+    },
   },
 };
 

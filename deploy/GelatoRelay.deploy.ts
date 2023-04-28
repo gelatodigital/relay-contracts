@@ -45,7 +45,9 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   await deploy("GelatoRelay", {
     from: deployer,
-    proxy: true,
+    proxy: {
+      proxyContract: "EIP173Proxy",
+    },
     args: [GELATO],
     log: isHardhat ? false : true,
   });
