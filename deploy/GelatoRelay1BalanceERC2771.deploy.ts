@@ -11,7 +11,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     deployer: hardhatAccount,
     relayERC2771Deployer,
     devRelayERC2771Deployer,
-    gelatoRelayERC2771,
+    gelatoRelay1BalanceERC2771,
   } = await getNamedAccounts();
 
   const isHardhat = hre.network.name === "hardhat";
@@ -23,7 +23,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     deployer = hardhatAccount;
   } else {
     console.log(
-      `\nDeploying GelatoRelay to ${hre.network.name}. Hit ctrl + c to abort`
+      `\nDeploying GelatoRelay1BalanceERC2771 to ${hre.network.name}. Hit ctrl + c to abort`
     );
     console.log(`\n IS DEV ENV: ${isDevEnv} \n`);
 
@@ -39,20 +39,20 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     process.exit(1);
   }
 
-  await deploy("GelatoRelayERC2771", {
+  await deploy("GelatoRelay1BalanceERC2771", {
     from: deployer,
     args: [GELATO],
     log: !isHardhat,
   });
 
   if (isHardhat) {
-    const gelatoRelayERC2771Local = await (
-      await deployments.get("GelatoRelayERC2771")
+    const gelatoRelay1BalanceERC2771Local = await (
+      await deployments.get("GelatoRelay1BalanceERC2771")
     ).address;
 
     await setCode(
-      gelatoRelayERC2771,
-      await hre.ethers.provider.getCode(gelatoRelayERC2771Local)
+      gelatoRelay1BalanceERC2771,
+      await hre.ethers.provider.getCode(gelatoRelay1BalanceERC2771Local)
     );
   }
 };
@@ -60,6 +60,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 func.skip = async (hre: HardhatRuntimeEnvironment) => {
   return hre.network.name !== "hardhat";
 };
-func.tags = ["GelatoRelayERC2771"];
+
+func.dependencies = ["GelatoRelayERC2771"];
+func.tags = ["GelatoRelay1BalanceERC2771"];
 
 export default func;

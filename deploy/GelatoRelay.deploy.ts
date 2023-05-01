@@ -49,7 +49,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       proxyContract: "EIP173Proxy",
     },
     args: [GELATO],
-    log: isHardhat ? false : true,
+    log: !isHardhat,
   });
 
   // For local testing we want to upgrade the forked

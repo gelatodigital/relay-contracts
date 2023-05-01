@@ -76,7 +76,7 @@ const config: HardhatUserConfig = {
       default: "0x562c4e878b5Cd1f64007358695e8187CB4517c64",
     },
     relayERC2771Deployer: {
-      default: "0xa4342E17DC5f5Ad441258F11cc2871D84a26FBfe",
+      default: "0x346389e519536A049588b8ADcde807B69A175939",
     },
 
     // Dev Relay Deployers
@@ -87,15 +87,21 @@ const config: HardhatUserConfig = {
       default: "0x2d20e2882f4052eecDa682F6211477E4eBfe4B06",
     },
     devRelayERC2771Deployer: {
-      default: "0x6Cc27Ae5440d8016A36350fbaDA0Ed209Ad89822",
+      default: "0xbfdFA5b712F5F36981E09945A5d6aF180dbF4b94",
     },
 
     // Smart Contracts for local testing
     gelatoRelay: {
       hardhat: "0xaBcC9b596420A9E9172FD5938620E265a0f9Df92",
     },
+    gelatoRelay1Balance: {
+      hardhat: "0x75bA5Af8EFFDCFca32E1e288806d54277D1fde99",
+    },
     gelatoRelayERC2771: {
-      hardhat: "0xBf175FCC7086b4f9bd59d5EAE8eA67b8f940DE0d",
+      hardhat: "0xb539068872230f20456CF38EC52EF2f91AF4AE49",
+    },
+    gelatoRelay1BalanceERC2771: {
+      hardhat: "0xd8253782c45a12053594b9deB72d8e8aB2Fca54c",
     },
     gelatoDiamond: {
       hardhat: "0x3caca7b48d0573d793d3b0279b5f0029180e83b6",
@@ -106,7 +112,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         url: `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
-        blockNumber: 16742309,
+        blockNumber: 17146095,
       },
     },
 
@@ -184,7 +190,7 @@ const config: HardhatUserConfig = {
     bicocca: {
       accounts,
       chainId: 29313331,
-      url: `https://relayer.bicoccachain.net/${BICOCCA_RPC_KEY}`,
+      url: `https://gelato.bicoccachain.net?apikey=${BICOCCA_RPC_KEY}`,
       gasPrice: 0,
     },
     chiado: {
@@ -236,7 +242,7 @@ const config: HardhatUserConfig = {
     bicoccaDev: {
       accounts: devAccounts,
       chainId: 29313331,
-      url: `https://relayer.bicoccachain.net/${BICOCCA_RPC_KEY}`,
+      url: `https://gelato.bicoccachain.net?apikey=${BICOCCA_RPC_KEY}`,
       gasPrice: 0,
     },
     lineaGoerliDev: {
