@@ -15,7 +15,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     deployer: hardhatAccount,
     relay1BalanceDeployer,
     devRelay1BalanceDeployer,
-    gelatoRelay,
+    gelatoRelay1Balance,
   } = await getNamedAccounts();
 
   const isHardhat = hre.network.name === "hardhat";
@@ -29,7 +29,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.log(
       `\nDeploying GelatoRelay1Balance to ${hre.network.name}. Hit ctrl + c to abort`
     );
-    console.log(`\n IS DEV ENV: ${isDevEnv ? "✅" : "❌"} \n`);
+    console.log(`\n IS DEV ENV: ${isDevEnv} \n`);
 
     deployer = isDevEnv ? devRelay1BalanceDeployer : relay1BalanceDeployer;
 
@@ -49,26 +49,31 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       proxyContract: "EIP173Proxy",
     },
     args: [GELATO],
-    log: isHardhat ? false : true,
+    log: !isHardhat,
   });
 
   // For local testing we want to upgrade the forked
   // instance of gelatoRelay to our locally deployed implementation
   if (isHardhat) {
-    const gelatoRelayProxy = (await hre.ethers.getContractAt(
+    const gelatoRelay1BalanceProxy = (await hre.ethers.getContractAt(
       "IEIP173Proxy",
-      gelatoRelay
+      gelatoRelay1Balance
     )) as IEIP173Proxy;
 
-    const gelatoRelayOwnerAddr = await gelatoRelayProxy.owner();
+    const gelatoRelay1BalanceOwnerAddr = await gelatoRelay1BalanceProxy.owner();
 
-    await impersonateAccount(gelatoRelayOwnerAddr);
-    await setBalance(gelatoRelayOwnerAddr, hre.ethers.utils.parseEther("1"));
+    await impersonateAccount(gelatoRelay1BalanceOwnerAddr);
+    await setBalance(
+      gelatoRelay1BalanceOwnerAddr,
+      hre.ethers.utils.parseEther("1")
+    );
 
-    const gelatoRelayOwner = await hre.ethers.getSigner(gelatoRelayOwnerAddr);
+    const gelatoRelay1BalanceOwner = await hre.ethers.getSigner(
+      gelatoRelay1BalanceOwnerAddr
+    );
 
-    await gelatoRelayProxy
-      .connect(gelatoRelayOwner)
+    await gelatoRelay1BalanceProxy
+      .connect(gelatoRelay1BalanceOwner)
       .upgradeTo(
         (
           await deployments.get("GelatoRelay1Balance_Implementation")

@@ -22,7 +22,7 @@
   },
   "license": "ISC",
   "devDependencies": {
-    "@gelatonetwork/relay-context": "2.1.0",
+    "@gelatonetwork/relay-context": "3.0.0",
     "@matterlabs/hardhat-zksync-deploy": "0.6.3",
     "@matterlabs/hardhat-zksync-solc": "0.3.16",
     "@matterlabs/hardhat-zksync-verify": "^0.1.5",

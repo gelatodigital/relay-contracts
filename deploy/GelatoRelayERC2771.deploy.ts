@@ -23,7 +23,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     deployer = hardhatAccount;
   } else {
     console.log(
-      `\nDeploying GelatoRelay to ${hre.network.name}. Hit ctrl + c to abort`
+      `\nDeploying GelatoRelayERC2771 to ${hre.network.name}. Hit ctrl + c to abort`
     );
     console.log(`\n IS DEV ENV: ${isDevEnv} \n`);
 
@@ -42,7 +42,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   await deploy("GelatoRelayERC2771", {
     from: deployer,
     args: [GELATO],
-    log: isHardhat ? false : true,
+    log: !isHardhat,
   });
 
   if (isHardhat) {
@@ -60,6 +60,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 func.skip = async (hre: HardhatRuntimeEnvironment) => {
   return hre.network.name !== "hardhat";
 };
+
 func.tags = ["GelatoRelayERC2771"];
 
 export default func;
