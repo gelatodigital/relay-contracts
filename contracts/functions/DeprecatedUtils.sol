@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
 
 /// @dev USED ONLY FOR BACKWARDS COMPTABILITY:
 /// PLEASE USE _encodeRelayContext in GelatoRelayUtils from "relay-context-contracts" pkg.

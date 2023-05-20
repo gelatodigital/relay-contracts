@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
 
 // Sponsored relay call
 struct SponsoredCall {
@@ -16,4 +16,9 @@ struct CallWithERC2771 {
     address user;
     uint256 userNonce;
     uint256 userDeadline;
+}
+
+struct RelayContext {
+    address feeToken;
+    uint256 fee;
 }

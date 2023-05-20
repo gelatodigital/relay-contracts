@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
 
 import {IGelatoRelay} from "./interfaces/IGelatoRelay.sol";
 import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";

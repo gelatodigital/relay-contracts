@@ -6,7 +6,6 @@ import {
   MockGelatoRelayContext,
   MockERC20,
 } from "../typechain";
-
 import {
   MessageRelayContextStruct,
   ExecWithSigsRelayContextStruct,

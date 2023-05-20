@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
 
 import {IGelatoRelayERC2771} from "./interfaces/IGelatoRelayERC2771.sol";
 import {GelatoRelayERC2771Base} from "./abstract/GelatoRelayERC2771Base.sol";

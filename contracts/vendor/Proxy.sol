@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
 
 // EIP-1967
 abstract contract Proxy {
@@ -49,9 +49,10 @@ abstract contract Proxy {
         }
     }
 
-    function _setImplementation(address newImplementation, bytes memory data)
-        internal
-    {
+    function _setImplementation(
+        address newImplementation,
+        bytes memory data
+    ) internal {
         address previousImplementation;
         // solhint-disable-next-line security/no-inline-assembly
         assembly {
