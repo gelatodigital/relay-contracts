@@ -122,7 +122,7 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
     );
 
     //Transaction
-    const targetPayload = await safeHelper.getExecMultiTransactionData([
+    const targetPayload = await safeHelper.encodeExecTransactionData([
       {
         to: gelatoRelayPayerContextMemory.address,
         data: gelatoRelayPayerContextMemory.interface.encodeFunctionData(
@@ -211,7 +211,7 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
     );
 
     //Transaction
-    const targetPayload = await safeHelper.getExecMultiTransactionData([
+    const targetPayload = await safeHelper.encodeExecTransactionData([
       {
         to: gelatoRelayPayerContextMemory.address,
         data: gelatoRelayPayerContextMemory.interface.encodeFunctionData(
@@ -294,7 +294,7 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
     await setBalance(safeProxy.address, initialBalance);
 
     //Transaction
-    const targetPayload = await safeHelper.getExecMultiTransactionData([
+    const targetPayload = await safeHelper.encodeExecTransactionData([
       {
         to: gelatoRelayPayerContextMemory.address,
         data: gelatoRelayPayerContextMemory.interface.encodeFunctionData(

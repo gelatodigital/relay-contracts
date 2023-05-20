@@ -1,5 +1,10 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { BigNumber, BigNumberish, ContractReceipt } from "ethers";
+import {
+  BigNumber,
+  BigNumberish,
+  ContractReceipt,
+  ContractTransaction,
+} from "ethers";
 import { arrayify, solidityPack } from "ethers/lib/utils";
 import { ethers } from "hardhat";
 import { IMultiSend, ISafe, ISafeProxyFactory } from "../../typechain";
@@ -24,7 +29,7 @@ type MetaTransactionData = {
   to: string;
   value: BigNumberish;
   data: string;
-  operation?: OperationType;
+  operation: OperationType;
 };
 
 export class SafeHelper {
@@ -82,18 +87,57 @@ export class SafeHelper {
   }
 
   async execTransaction(
-    to: string,
-    data: string,
-    value: BigNumberish,
-    operation: OperationType
-  ) {
-    if (!this.#safeProxy) {
-      throw new Error("deploy function is not invoked");
+    txs: MetaTransactionData[]
+  ): Promise<ContractTransaction> {
+    if (!txs.length) {
+      throw new Error("No transaction is provided");
     }
-    const signature = await this._getSignature(to, data, value, operation);
-    return this.#safeProxy
-      .connect(this.#signer)
-      .execTransaction(
+    if (txs.length === 1) {
+      if (!this.#safeProxy) {
+        throw new Error("deploy function is not invoked");
+      }
+      const { to, data, value, operation } = txs[0];
+      const signature = await this._getSignature(to, data, value, operation);
+      return this.#safeProxy
+        .connect(this.#signer)
+        .execTransaction(
+          to,
+          value,
+          data,
+          operation,
+          0,
+          0,
+          0,
+          ZERO_ADDRESS,
+          ZERO_ADDRESS,
+          signature
+        );
+    }
+    if (!this.#multiSend) {
+      throw new Error("init function is not invoked");
+    }
+    const data = this._encodeMultiSendData(txs);
+    return this.execTransaction([
+      {
+        to: MULTI_SEND,
+        data: this.#multiSend.interface.encodeFunctionData("multiSend", [data]),
+        value: 0,
+        operation: OperationType.DelegateCall,
+      },
+    ]);
+  }
+
+  async encodeExecTransactionData(txs: MetaTransactionData[]): Promise<string> {
+    if (!txs.length) {
+      throw new Error("No transaction is provided");
+    }
+    if (txs.length === 1) {
+      if (!this.#safeProxy) {
+        throw new Error("deploy function is not invoked");
+      }
+      const { to, data, value, operation } = txs[0];
+      const signature = await this._getSignature(to, data, value, operation);
+      return this.#safeProxy.interface.encodeFunctionData("execTransaction", [
         to,
         value,
         data,
@@ -103,48 +147,9 @@ export class SafeHelper {
         0,
         ZERO_ADDRESS,
         ZERO_ADDRESS,
-        signature
-      );
-  }
-
-  async getExecTransactioData(
-    to: string,
-    data: string,
-    value: BigNumberish,
-    operation: OperationType
-  ) {
-    if (!this.#safeProxy) {
-      throw new Error("deploy function is not invoked");
+        signature,
+      ]);
     }
-    const signature = await this._getSignature(to, data, value, operation);
-    return this.#safeProxy.interface.encodeFunctionData("execTransaction", [
-      to,
-      value,
-      data,
-      operation,
-      0,
-      0,
-      0,
-      ZERO_ADDRESS,
-      ZERO_ADDRESS,
-      signature,
-    ]);
-  }
-
-  async execMultiTransaction(txs: MetaTransactionData[]) {
-    if (!this.#multiSend) {
-      throw new Error("init function is not invoked");
-    }
-    const data = this._encodeMultiSendData(txs);
-    return this.execTransaction(
-      MULTI_SEND,
-      this.#multiSend.interface.encodeFunctionData("multiSend", [data]),
-      0,
-      OperationType.DelegateCall
-    );
-  }
-
-  async getExecMultiTransactionData(txs: MetaTransactionData[]) {
     if (!this.#multiSend || !this.#safeProxy) {
       throw new Error("init function is not invoked");
     }
@@ -153,12 +158,9 @@ export class SafeHelper {
     const data = this.#multiSend.interface.encodeFunctionData("multiSend", [
       encodedMultiSendData,
     ]);
-    return this.getExecTransactioData(
-      MULTI_SEND,
-      data,
-      0,
-      OperationType.DelegateCall
-    );
+    return this.encodeExecTransactionData([
+      { to: MULTI_SEND, data, value: 0, operation: OperationType.DelegateCall },
+    ]);
   }
 
   private _encodeMetaTransaction(tx: MetaTransactionData): string {
