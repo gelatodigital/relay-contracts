@@ -131,10 +131,10 @@ export class SafeHelper {
     if (!txs.length) {
       throw new Error("No transaction is provided");
     }
+    if (!this.#safeProxy) {
+      throw new Error("deploy function is not invoked");
+    }
     if (txs.length === 1) {
-      if (!this.#safeProxy) {
-        throw new Error("deploy function is not invoked");
-      }
       const { to, data, value, operation } = txs[0];
       const signature = await this._getSignature(to, data, value, operation);
       return this.#safeProxy.interface.encodeFunctionData("execTransaction", [
@@ -150,7 +150,7 @@ export class SafeHelper {
         signature,
       ]);
     }
-    if (!this.#multiSend || !this.#safeProxy) {
+    if (!this.#multiSend) {
       throw new Error("init function is not invoked");
     }
 

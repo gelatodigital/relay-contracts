@@ -19,15 +19,14 @@ import {
 import { OperationType, SafeHelper } from "./utils/safeHelper";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
-//TODO: Get this from the named accounts if possible
-const gelatoRelayPayerContextMemoryAddress =
-  "0x6212cb549De37c25071cF506aB7E115D140D9e42";
-
 const EXEC_SIGNER_PK =
   "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d";
 const CHECKER_SIGNER_PK =
   "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a";
 const FEE_COLLECTOR = "0x3AC05161b76a35c1c28dC99Aa01BEd7B24cEA3bf";
+
+const SIMPLE_COUNTER_ETHEREUM = "0xA050b50869582F834f20bbc86f5C39658DeE1c41";
+
 const correlationId = utils.formatBytes32String("CORRELATION_ID");
 
 describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
@@ -43,10 +42,11 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
   let safeProxy: ISafe;
 
   let gelatoDiamond: IGelato;
-  let targetAddress: string;
   let salt: number;
   let deadline: number;
   let feeToken: string;
+
+  let targetData: string;
 
   let safeHelper: SafeHelper;
 
@@ -67,10 +67,11 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
 
     gelatoRelayPayerContextMemory = (await hre.ethers.getContractAt(
       "GelatoRelayPayerContextMemory",
-      gelatoRelayPayerContextMemoryAddress
+      (
+        await hre.deployments.get("GelatoRelayPayerContextMemory")
+      ).address
     )) as GelatoRelayPayerContextMemory;
 
-    targetAddress = "0xA050b50869582F834f20bbc86f5C39658DeE1c41"; // Simple Counter Contract on Ethereum
     salt = 42069;
     deadline = 2664381086;
     feeToken = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
@@ -82,8 +83,9 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
 
     counter = (await hre.ethers.getContractAt(
       "ICounter",
-      targetAddress
+      SIMPLE_COUNTER_ETHEREUM
     )) as ICounter;
+    targetData = counter.interface.encodeFunctionData("increment");
 
     const gelatoDiamondOwnerAddress = await gelatoDiamond.owner();
 
@@ -122,7 +124,7 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
     );
 
     //Transaction
-    const targetPayload = await safeHelper.encodeExecTransactionData([
+    const safePayload = await safeHelper.encodeExecTransactionData([
       {
         to: gelatoRelayPayerContextMemory.address,
         data: gelatoRelayPayerContextMemory.interface.encodeFunctionData(
@@ -133,8 +135,8 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
         operation: OperationType.DelegateCall,
       },
       {
-        to: targetAddress,
-        data: "0xd09de08a",
+        to: SIMPLE_COUNTER_ETHEREUM,
+        data: targetData,
         value: "0",
         operation: OperationType.Call,
       },
@@ -143,7 +145,7 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
     const relayPayload =
       gelatoRelayPayerContextMemory.interface.encodeFunctionData(
         "callWithSyncFeeStoreContext",
-        [safeProxy.address, targetPayload, correlationId]
+        [safeProxy.address, safePayload, correlationId]
       );
 
     const msg: MessageRelayContextStruct = {
@@ -211,7 +213,7 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
     );
 
     //Transaction
-    const targetPayload = await safeHelper.encodeExecTransactionData([
+    const safePayload = await safeHelper.encodeExecTransactionData([
       {
         to: gelatoRelayPayerContextMemory.address,
         data: gelatoRelayPayerContextMemory.interface.encodeFunctionData(
@@ -222,8 +224,8 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
         operation: OperationType.DelegateCall,
       },
       {
-        to: targetAddress,
-        data: "0xd09de08a",
+        to: SIMPLE_COUNTER_ETHEREUM,
+        data: targetData,
         value: "0",
         operation: OperationType.Call,
       },
@@ -232,7 +234,7 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
     const relayPayload =
       gelatoRelayPayerContextMemory.interface.encodeFunctionData(
         "callWithSyncFeeStoreContext",
-        [safeProxy.address, targetPayload, correlationId]
+        [safeProxy.address, safePayload, correlationId]
       );
 
     const msg: MessageRelayContextStruct = {
@@ -294,7 +296,7 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
     await setBalance(safeProxy.address, initialBalance);
 
     //Transaction
-    const targetPayload = await safeHelper.encodeExecTransactionData([
+    const safePayload = await safeHelper.encodeExecTransactionData([
       {
         to: gelatoRelayPayerContextMemory.address,
         data: gelatoRelayPayerContextMemory.interface.encodeFunctionData(
@@ -305,8 +307,8 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
         operation: OperationType.DelegateCall,
       },
       {
-        to: targetAddress,
-        data: "0xd09de08a",
+        to: SIMPLE_COUNTER_ETHEREUM,
+        data: targetData,
         value: "0",
         operation: OperationType.Call,
       },
@@ -315,7 +317,69 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
     const relayPayload =
       gelatoRelayPayerContextMemory.interface.encodeFunctionData(
         "callWithSyncFeeStoreContext",
-        [safeProxy.address, targetPayload, correlationId]
+        [safeProxy.address, safePayload, correlationId]
+      );
+
+    const msg: MessageRelayContextStruct = {
+      service: gelatoRelayPayerContextMemory.address,
+      data: relayPayload,
+      salt,
+      deadline,
+      feeToken,
+      fee: relayerFee,
+    };
+
+    const domainSeparator = await gelatoDiamond.DOMAIN_SEPARATOR();
+
+    const esKey = new utils.SigningKey(EXEC_SIGNER_PK);
+    const csKey = new utils.SigningKey(CHECKER_SIGNER_PK);
+    const digest = generateDigestRelayContext(msg, domainSeparator);
+    const executorSignerSig = utils.joinSignature(esKey.signDigest(digest));
+    const checkerSignerSig = utils.joinSignature(csKey.signDigest(digest));
+
+    const call: ExecWithSigsRelayContextStruct = {
+      correlationId,
+      msg,
+      executorSignerSig,
+      checkerSignerSig,
+    };
+
+    await expect(
+      gelatoDiamond.execWithSigsRelayContext(call)
+    ).to.be.revertedWith(
+      "ExecWithSigsFacet.execWithSigsRelayContext:GelatoRelayPayerContextMemory.callWithSyncFeeStoreContext:GS013"
+    );
+  });
+
+  it("#3: reverts if transferFee is not called via delegate call", async () => {
+    //Setup
+    const initialBalance = hre.ethers.utils.parseEther("1");
+    const relayerFee = ethers.utils.parseEther("0.2");
+    await setBalance(safeProxy.address, initialBalance);
+
+    //Transaction
+    const safePayload = await safeHelper.encodeExecTransactionData([
+      {
+        to: gelatoRelayPayerContextMemory.address,
+        data: gelatoRelayPayerContextMemory.interface.encodeFunctionData(
+          "transferFeeDelegateCall",
+          [safeProxy.address]
+        ),
+        value: "0",
+        operation: OperationType.Call,
+      },
+      {
+        to: SIMPLE_COUNTER_ETHEREUM,
+        data: targetData,
+        value: "0",
+        operation: OperationType.Call,
+      },
+    ]);
+
+    const relayPayload =
+      gelatoRelayPayerContextMemory.interface.encodeFunctionData(
+        "callWithSyncFeeStoreContext",
+        [safeProxy.address, safePayload, correlationId]
       );
 
     const msg: MessageRelayContextStruct = {

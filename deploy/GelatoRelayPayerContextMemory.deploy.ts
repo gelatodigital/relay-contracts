@@ -7,26 +7,21 @@ import { getAddresses } from "../src/addresses";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
-  const {
-    deployer: hardhatAccount,
-    relayERC2771Deployer,
-    devRelayERC2771Deployer,
-  } = await getNamedAccounts();
+  const { deployer, relayERC2771Deployer, devRelayERC2771Deployer } =
+    await getNamedAccounts();
+
+  let deployerAccount = deployer;
 
   const isHardhat = hre.network.name === "hardhat";
   const isDevEnv = hre.network.name.endsWith("Dev");
 
-  let deployer: string;
-
-  if (isHardhat) {
-    deployer = hardhatAccount;
-  } else {
+  if (!isHardhat) {
     console.log(
       `\nDeploying GelatoRelayPayerContextMemory to ${hre.network.name}. Hit ctrl + c to abort`
     );
     console.log(`\n IS DEV ENV: ${isDevEnv} \n`);
 
-    deployer = isDevEnv ? devRelayERC2771Deployer : relayERC2771Deployer;
+    deployerAccount = isDevEnv ? devRelayERC2771Deployer : relayERC2771Deployer;
 
     await sleep(5000);
   }
@@ -39,7 +34,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   }
 
   await deploy("GelatoRelayPayerContextMemory", {
-    from: deployer,
+    from: deployerAccount,
     args: [GELATO],
     log: !isHardhat,
   });
