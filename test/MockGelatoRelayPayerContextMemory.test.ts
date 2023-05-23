@@ -112,16 +112,11 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
   it("#1: successful relay with maxFee", async () => {
     //Setup
     const initialBalance = hre.ethers.utils.parseEther("1");
-    const relayerFee = ethers.utils.parseEther("0.2");
+    const relayerFee = 200;
     const maxFee = initialBalance;
     await setBalance(safeProxy.address, initialBalance);
-    const safeProxyBalanceBefore = await ethers.provider.getBalance(
-      safeProxy.address
-    );
+
     const counterBefore = await counter.counter();
-    const feeCollectorBalanceBefore = await ethers.provider.getBalance(
-      FEE_COLLECTOR
-    );
 
     //Transaction
     const safePayload = await safeHelper.encodeExecTransactionData([
@@ -176,41 +171,28 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
       gelatoDiamond.execWithSigsRelayContext(call),
       "execWithSigsRelayContext"
     )
-      .to.emit(gelatoRelayPayerContextMemory, "LogCallWithSyncFeeStoreContext")
+      .to.changeEtherBalances(
+        [safeProxy.address, FEE_COLLECTOR],
+        [-relayerFee, relayerFee]
+      )
+      .and.to.emit(
+        gelatoRelayPayerContextMemory,
+        "LogCallWithSyncFeeStoreContext"
+      )
       .withArgs(safeProxy.address, correlationId);
 
-    //Checks
-    // Safe balance should be decreased by the relayer fee
-    const safeProxyBalanceAfter = await ethers.provider.getBalance(
-      safeProxy.address
-    );
-    expect(safeProxyBalanceAfter).to.equal(
-      safeProxyBalanceBefore.sub(relayerFee)
-    );
     // Counter should be incremented by 1
     const counterAfter = await counter.counter();
     expect(counterAfter).to.equal(counterBefore.add(1));
-    // Fee Collector should receive the relayer fee
-    const feeCollectorBalanceAfter = await ethers.provider.getBalance(
-      FEE_COLLECTOR
-    );
-    expect(feeCollectorBalanceAfter).to.equal(
-      feeCollectorBalanceBefore.add(relayerFee)
-    );
   });
 
   it("#2: successful relay without maxFee", async () => {
     //Setup
     const initialBalance = hre.ethers.utils.parseEther("1");
-    const relayerFee = ethers.utils.parseEther("0.2");
+    const relayerFee = 100;
+
     await setBalance(safeProxy.address, initialBalance);
-    const safeProxyBalanceBefore = await ethers.provider.getBalance(
-      safeProxy.address
-    );
     const counterBefore = await counter.counter();
-    const feeCollectorBalanceBefore = await ethers.provider.getBalance(
-      FEE_COLLECTOR
-    );
 
     //Transaction
     const safePayload = await safeHelper.encodeExecTransactionData([
@@ -265,27 +247,19 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
       gelatoDiamond.execWithSigsRelayContext(call),
       "execWithSigsRelayContext"
     )
-      .to.emit(gelatoRelayPayerContextMemory, "LogCallWithSyncFeeStoreContext")
+      .to.changeEtherBalances(
+        [safeProxy.address, FEE_COLLECTOR],
+        [-relayerFee, relayerFee]
+      )
+      .and.to.emit(
+        gelatoRelayPayerContextMemory,
+        "LogCallWithSyncFeeStoreContext"
+      )
       .withArgs(safeProxy.address, correlationId);
 
-    //Checks
-    // Safe balance should be decreased by the relayer fee
-    const safeProxyBalanceAfter = await ethers.provider.getBalance(
-      safeProxy.address
-    );
-    expect(safeProxyBalanceAfter).to.equal(
-      safeProxyBalanceBefore.sub(relayerFee)
-    );
     // Counter should be incremented by 1
     const counterAfter = await counter.counter();
     expect(counterAfter).to.equal(counterBefore.add(1));
-    // Fee Collector should receive the relayer fee
-    const feeCollectorBalanceAfter = await ethers.provider.getBalance(
-      FEE_COLLECTOR
-    );
-    expect(feeCollectorBalanceAfter).to.equal(
-      feeCollectorBalanceBefore.add(relayerFee)
-    );
   });
 
   it("#3: reverts if maxFee is exceeded", async () => {
@@ -351,7 +325,7 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
     );
   });
 
-  it("#3: reverts if transferFee is not called via delegate call", async () => {
+  it("#4: reverts if transferFee is not called via delegate call", async () => {
     //Setup
     const initialBalance = hre.ethers.utils.parseEther("1");
     const relayerFee = ethers.utils.parseEther("0.2");
