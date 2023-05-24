@@ -16,7 +16,7 @@ import {
   setBalance,
   impersonateAccount,
 } from "@nomicfoundation/hardhat-network-helpers";
-import { OperationType, SafeHelper } from "./utils/safeHelper";
+import { OperationType, SafeHelper, ZERO_ADDRESS } from "./utils/safeHelper";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 const EXEC_SIGNER_PK =
@@ -184,6 +184,14 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
     // Counter should be incremented by 1
     const counterAfter = await counter.counter();
     expect(counterAfter).to.equal(counterBefore.add(1));
+
+    // Relay Context should be removed
+    const relayContext =
+      await gelatoRelayPayerContextMemory.getRelayContextByTarget(
+        safeProxy.address
+      );
+    expect(relayContext.fee).to.equal(0);
+    expect(relayContext.feeToken).to.equal(ZERO_ADDRESS);
   });
 
   it("#2: successful relay without maxFee", async () => {
@@ -260,6 +268,14 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
     // Counter should be incremented by 1
     const counterAfter = await counter.counter();
     expect(counterAfter).to.equal(counterBefore.add(1));
+
+    // Relay Context should be removed
+    const relayContext =
+      await gelatoRelayPayerContextMemory.getRelayContextByTarget(
+        safeProxy.address
+      );
+    expect(relayContext.fee).to.equal(0);
+    expect(relayContext.feeToken).to.equal(ZERO_ADDRESS);
   });
 
   it("#3: reverts if maxFee is exceeded", async () => {
@@ -362,6 +378,68 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
       salt,
       deadline,
       feeToken,
+      fee: relayerFee,
+    };
+
+    const domainSeparator = await gelatoDiamond.DOMAIN_SEPARATOR();
+
+    const esKey = new utils.SigningKey(EXEC_SIGNER_PK);
+    const csKey = new utils.SigningKey(CHECKER_SIGNER_PK);
+    const digest = generateDigestRelayContext(msg, domainSeparator);
+    const executorSignerSig = utils.joinSignature(esKey.signDigest(digest));
+    const checkerSignerSig = utils.joinSignature(csKey.signDigest(digest));
+
+    const call: ExecWithSigsRelayContextStruct = {
+      correlationId,
+      msg,
+      executorSignerSig,
+      checkerSignerSig,
+    };
+
+    await expect(
+      gelatoDiamond.execWithSigsRelayContext(call)
+    ).to.be.revertedWith(
+      "ExecWithSigsFacet.execWithSigsRelayContext:GelatoRelayPayerContextMemory.callWithSyncFeeStoreContext:GS013"
+    );
+  });
+
+  it("#5: reverts if fee collector is zero address", async () => {
+    //Setup
+    const initialBalance = hre.ethers.utils.parseEther("1");
+    const relayerFee = ethers.utils.parseEther("0.2");
+    await setBalance(safeProxy.address, initialBalance);
+
+    //Transaction
+    const safePayload = await safeHelper.encodeExecTransactionData([
+      {
+        to: gelatoRelayPayerContextMemory.address,
+        data: gelatoRelayPayerContextMemory.interface.encodeFunctionData(
+          "transferFeeDelegateCall",
+          [safeProxy.address]
+        ),
+        value: "0",
+        operation: OperationType.DelegateCall,
+      },
+      {
+        to: SIMPLE_COUNTER_ETHEREUM,
+        data: targetData,
+        value: "0",
+        operation: OperationType.Call,
+      },
+    ]);
+
+    const relayPayload =
+      gelatoRelayPayerContextMemory.interface.encodeFunctionData(
+        "callWithSyncFeeStoreContext",
+        [safeProxy.address, safePayload, correlationId]
+      );
+
+    const msg: MessageRelayContextStruct = {
+      service: gelatoRelayPayerContextMemory.address,
+      data: relayPayload,
+      salt,
+      deadline,
+      feeToken: ZERO_ADDRESS,
       fee: relayerFee,
     };
 
