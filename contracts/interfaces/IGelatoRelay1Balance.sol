@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
 
 import {SponsoredCall} from "../types/CallTypes.sol";
 
 interface IGelatoRelay1Balance {
-    function gelato() external view returns (address);
-
     function sponsoredCall(
         SponsoredCall calldata _call,
         address _sponsor,
@@ -15,4 +13,6 @@ interface IGelatoRelay1Balance {
         uint256 _nativeToFeeTokenXRateDenominator,
         bytes32 _correlationId
     ) external;
+
+    function gelato() external view returns (address);
 }

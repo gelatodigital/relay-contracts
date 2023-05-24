@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
 
 import {IGelatoRelay1Balance} from "./interfaces/IGelatoRelay1Balance.sol";
 import {IGelato1Balance} from "./interfaces/IGelato1Balance.sol";

@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
+
+// solhint-disable ordering, func-name-mixedcase
 
 struct Message {
     address service;
@@ -49,17 +51,17 @@ struct ExecWithSigsRelayContext {
 /// @dev includes the interfaces of all facets
 interface IGelato {
     // ########## ExecWithSigsFacet #########
-    function execWithSigs(ExecWithSigs calldata _data)
-        external
-        returns (uint256 estimatedGasUsed);
+    function execWithSigs(
+        ExecWithSigs calldata _data
+    ) external returns (uint256 estimatedGasUsed);
 
-    function execWithSigsFeeCollector(ExecWithSigsFeeCollector calldata _call)
-        external
-        returns (uint256 estimatedGasUsed, uint256 observedFee);
+    function execWithSigsFeeCollector(
+        ExecWithSigsFeeCollector calldata _call
+    ) external returns (uint256 estimatedGasUsed, uint256 observedFee);
 
-    function execWithSigsRelayContext(ExecWithSigsRelayContext calldata _call)
-        external
-        returns (uint256 estimatedGasUsed, uint256 observedFee);
+    function execWithSigsRelayContext(
+        ExecWithSigsRelayContext calldata _call
+    ) external returns (uint256 estimatedGasUsed, uint256 observedFee);
 
     function DOMAIN_SEPARATOR() external view returns (bytes32);
 

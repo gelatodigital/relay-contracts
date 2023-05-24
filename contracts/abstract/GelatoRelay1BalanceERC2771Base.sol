@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
 
 import {
     IGelatoRelay1BalanceERC2771Base
@@ -35,10 +35,10 @@ abstract contract GelatoRelay1BalanceERC2771Base is
         gelato = _gelato;
     }
 
-    function _requireChainId(uint256 _chainId, string memory _errorTrace)
-        internal
-        view
-    {
+    function _requireChainId(
+        uint256 _chainId,
+        string memory _errorTrace
+    ) internal view {
         require(_chainId == block.chainid, _errorTrace.suffix("chainid"));
     }
 
@@ -84,11 +84,9 @@ abstract contract GelatoRelay1BalanceERC2771Base is
         );
     }
 
-    function _abiEncodeSponsoredCallERC2771(CallWithERC2771 calldata _call)
-        internal
-        pure
-        returns (bytes memory)
-    {
+    function _abiEncodeSponsoredCallERC2771(
+        CallWithERC2771 calldata _call
+    ) internal pure returns (bytes memory) {
         return
             abi.encode(
                 SPONSORED_CALL_ERC2771_TYPEHASH,

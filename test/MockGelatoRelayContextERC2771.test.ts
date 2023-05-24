@@ -241,8 +241,8 @@ describe("Test MockGelatoRelayContextERC2771 Smart Contract", function () {
 
     await mockERC20.transfer(targetAddress, FEE);
 
-    expect(
-      await gelatoDiamond.execWithSigsRelayContext(call)
+    await expect(
+      gelatoDiamond.execWithSigsRelayContext(call)
     ).to.changeTokenBalance(mockERC20, FEE_COLLECTOR, FEE);
   });
 
@@ -309,8 +309,8 @@ describe("Test MockGelatoRelayContextERC2771 Smart Contract", function () {
 
     await mockERC20.transfer(targetAddress, FEE);
 
-    expect(
-      await gelatoDiamond.execWithSigsRelayContext(call)
+    await expect(
+      gelatoDiamond.execWithSigsRelayContext(call)
     ).to.changeTokenBalance(mockERC20, FEE_COLLECTOR, FEE);
   });
 
@@ -377,8 +377,8 @@ describe("Test MockGelatoRelayContextERC2771 Smart Contract", function () {
 
     await mockERC20.transfer(targetAddress, FEE);
 
-    expect(
-      await gelatoDiamond.execWithSigsRelayContext(call)
+    await expect(
+      gelatoDiamond.execWithSigsRelayContext(call)
     ).to.changeTokenBalance(mockERC20, FEE_COLLECTOR, FEE);
   });
 
