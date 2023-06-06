@@ -18,7 +18,6 @@ const GNOSIS_SAFE_ADDRESS_BOOK = {
 const MULTI_SEND = "0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761";
 
 const SALT = "631570";
-export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 export enum OperationType {
   Call,
@@ -108,8 +107,8 @@ export class SafeHelper {
           0,
           0,
           0,
-          ZERO_ADDRESS,
-          ZERO_ADDRESS,
+          ethers.constants.AddressZero,
+          ethers.constants.AddressZero,
           signature
         );
     }
@@ -145,8 +144,8 @@ export class SafeHelper {
         0,
         0,
         0,
-        ZERO_ADDRESS,
-        ZERO_ADDRESS,
+        ethers.constants.AddressZero,
+        ethers.constants.AddressZero,
         signature,
       ]);
     }
@@ -212,8 +211,8 @@ export class SafeHelper {
         safeTxGas: BigNumber.from(0).toString(),
         baseGas: BigNumber.from(0).toString(),
         gasPrice: BigNumber.from(0).toString(),
-        gasToken: ZERO_ADDRESS,
-        refundReceiver: ZERO_ADDRESS,
+        gasToken: ethers.constants.AddressZero,
+        refundReceiver: ethers.constants.AddressZero,
         nonce: (await this._getNonce()).toString(),
       }
     );
@@ -251,12 +250,12 @@ export class SafeHelper {
     return this.#safeSingleton.interface.encodeFunctionData("setup", [
       [owner],
       BigNumber.from(1),
-      ZERO_ADDRESS,
+      ethers.constants.AddressZero,
       "0x",
       GNOSIS_SAFE_ADDRESS_BOOK.fallbackHandler,
-      ZERO_ADDRESS,
+      ethers.constants.AddressZero,
       BigNumber.from(0),
-      ZERO_ADDRESS,
+      ethers.constants.AddressZero,
     ]);
   }
 }

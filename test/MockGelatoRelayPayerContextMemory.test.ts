@@ -16,7 +16,7 @@ import {
   setBalance,
   impersonateAccount,
 } from "@nomicfoundation/hardhat-network-helpers";
-import { OperationType, SafeHelper, ZERO_ADDRESS } from "./utils/safeHelper";
+import { OperationType, SafeHelper } from "./utils/safeHelper";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 const EXEC_SIGNER_PK =
@@ -191,7 +191,7 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
         safeProxy.address
       );
     expect(relayContext.fee).to.equal(0);
-    expect(relayContext.feeToken).to.equal(ZERO_ADDRESS);
+    expect(relayContext.feeToken).to.equal(ethers.constants.AddressZero);
   });
 
   it("#2: successful relay without maxFee", async () => {
@@ -275,7 +275,7 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
         safeProxy.address
       );
     expect(relayContext.fee).to.equal(0);
-    expect(relayContext.feeToken).to.equal(ZERO_ADDRESS);
+    expect(relayContext.feeToken).to.equal(ethers.constants.AddressZero);
   });
 
   it("#3: reverts if maxFee is exceeded", async () => {
@@ -439,7 +439,7 @@ describe("Test GelatoRelayPayerContextMemory Smart Contract", function () {
       data: relayPayload,
       salt,
       deadline,
-      feeToken: ZERO_ADDRESS,
+      feeToken: ethers.constants.AddressZero,
       fee: relayerFee,
     };
 
