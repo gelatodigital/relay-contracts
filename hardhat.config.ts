@@ -20,6 +20,7 @@ dotenv.config({ path: __dirname + "/.env" });
 const ALCHEMY_ID = process.env.ALCHEMY_ID;
 
 const BICOCCA_RPC_KEY = process.env.BICOCCA_RPC_KEY;
+const GPCHIADO_RPC_KEY = process.env.GPCHIADO_RPC_KEY;
 
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
@@ -68,13 +69,15 @@ const config: HardhatUserConfig = {
     deployer: {
       default: 0,
     },
-    // Relay Deployers
+    // Deploys GelatoRelay.sol
     relayDeployer: {
       default: "0xd1Ac051Dc0E1366502eF3Fe4D754fbeC6986a177",
     },
+    // Deploys GelatoRelay1Balance.sol
     relay1BalanceDeployer: {
       default: "0x562c4e878b5Cd1f64007358695e8187CB4517c64",
     },
+    // Deploys GelatoRelayERC2771.sol and GelatoRelay1BalanceERC2771.sol
     relayERC2771Deployer: {
       default: "0x346389e519536A049588b8ADcde807B69A175939",
     },
@@ -175,6 +178,12 @@ const config: HardhatUserConfig = {
       verifyURL:
         "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
     },
+    zora: {
+      accounts,
+      chainId: 7777777,
+      url: "https://rpc.zora.co",
+      gasPrice: 1500000000,
+    },
 
     // Staging
     arbitrumGoerli: {
@@ -204,10 +213,20 @@ const config: HardhatUserConfig = {
       chainId: 5,
       url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
+    gpchiado: {
+      accounts,
+      chainId: 3155399334,
+      url: `https://rpc.testnet.gnosispay.network/?apiKey=${GPCHIADO_RPC_KEY}`,
+    },
     lineaGoerli: {
       accounts,
       chainId: 59140,
       url: `https://rpc.goerli.linea.build`,
+    },
+    meldkanazawa: {
+      accounts,
+      chainId: 222000222,
+      url: `https://subnets.avax.network/meld/testnet/rpc`,
     },
     mumbai: {
       accounts,
@@ -281,6 +300,10 @@ const config: HardhatUserConfig = {
         version: "0.8.20",
         settings: {
           optimizer: { enabled: true, runs: 999999 },
+          // Some networks don't support opcode PUSH0, we need to override evmVersion
+          // Network list: gpchiado, meldkanazawa
+          // See https://stackoverflow.com/questions/76328677/remix-returned-error-jsonrpc2-0-errorinvalid-opcode-push0-id24
+          evmVersion: "paris",
         },
       },
     ],
