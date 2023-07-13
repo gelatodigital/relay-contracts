@@ -269,6 +269,11 @@ const config: HardhatUserConfig = {
       chainId: 59140,
       url: `https://rpc.goerli.linea.build`,
     },
+    meldkanazawaDev: {
+      accounts: devAccounts,
+      chainId: 222000222,
+      url: `https://subnets.avax.network/meld/testnet/rpc`,
+    },
     mumbaiDev: {
       accounts: devAccounts,
       chainId: 80001,
