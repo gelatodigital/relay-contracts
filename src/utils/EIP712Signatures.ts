@@ -7,6 +7,7 @@ import {
 } from "../../typechain/contracts/interfaces/IGelato";
 
 import { CallWithERC2771Struct } from "../../typechain/contracts/GelatoRelayERC2771";
+import { CallWithConcurrentERC2771Struct } from "../../typechain/contracts/GelatoRelayConcurrentERC2771";
 
 // EXTERNAL FUNCTIONS
 // DIGESTS
@@ -36,6 +37,13 @@ export function generateDigestCallWithSyncFeeERC2771(
   DOMAIN_SEPARATOR: string
 ): string {
   return _getDigestCallWithSyncFeeERC2771(_call, DOMAIN_SEPARATOR);
+}
+
+export function generateDigestCallWithSyncFeeConcurrentERC2771(
+  _call: CallWithConcurrentERC2771Struct,
+  DOMAIN_SEPARATOR: string
+): string {
+  return _getDigestCallWithSyncFeeConcurrentERC2771(_call, DOMAIN_SEPARATOR);
 }
 
 export function recoverAddress(digest: string, signature: string): string {
@@ -97,6 +105,20 @@ function _getDigestCallWithSyncFeeERC2771(
       "\x19\x01",
       DOMAIN_SEPARATOR,
       utils.keccak256(_abiEncodeCallWithSyncFeeERC2771(_call)),
+    ]
+  );
+}
+
+function _getDigestCallWithSyncFeeConcurrentERC2771(
+  _call: CallWithConcurrentERC2771Struct,
+  DOMAIN_SEPARATOR: string
+): string {
+  return utils.solidityKeccak256(
+    ["string", "bytes", "bytes"],
+    [
+      "\x19\x01",
+      DOMAIN_SEPARATOR,
+      utils.keccak256(_abiEncodeCallWithSyncFeeConcurrentERC2771(_call)),
     ]
   );
 }
@@ -189,6 +211,32 @@ function _abiEncodeCallWithSyncFeeERC2771(
   );
 }
 
+function _abiEncodeCallWithSyncFeeConcurrentERC2771(
+  _call: CallWithConcurrentERC2771Struct
+): string {
+  const typeHash = _callWithSyncFeeConcurrentERC2771TypeHash();
+  return new utils.AbiCoder().encode(
+    [
+      "bytes32",
+      "uint256",
+      "address",
+      "bytes32",
+      "address",
+      "bytes32",
+      "uint256",
+    ],
+    [
+      typeHash,
+      _call.chainId,
+      _call.target,
+      utils.keccak256(_call.data as string),
+      _call.user,
+      _call.userSalt,
+      _call.userDeadline,
+    ]
+  );
+}
+
 // TYPE HASHES
 function _execWithSigsTypeHash() {
   return utils.keccak256(
@@ -218,6 +266,14 @@ function _callWithSyncFeeERC2771TypeHash() {
   return utils.keccak256(
     utils.toUtf8Bytes(
       "CallWithSyncFeeERC2771(uint256 chainId,address target,bytes data,address user,uint256 userNonce,uint256 userDeadline)"
+    )
+  );
+}
+
+function _callWithSyncFeeConcurrentERC2771TypeHash() {
+  return utils.keccak256(
+    utils.toUtf8Bytes(
+      "CallWithSyncFeeConcurrentERC2771(uint256 chainId,address target,bytes data,address user,bytes32 userSalt,uint256 userDeadline)"
     )
   );
 }

@@ -2,10 +2,12 @@
 pragma solidity 0.8.20;
 
 import {
-    GelatoRelayContextERC2771
-} from "@gelatonetwork/relay-context/contracts/GelatoRelayContextERC2771.sol";
+    GelatoRelayContextConcurrentERC2771
+} from "@gelatonetwork/relay-context/contracts/GelatoRelayContextConcurrentERC2771.sol";
 
-contract MockGelatoRelayContextERC2771 is GelatoRelayContextERC2771 {
+contract MockGelatoRelayContextConcurrentERC2771 is
+    GelatoRelayContextConcurrentERC2771
+{
     event LogMsgData(bytes data);
     event LogContext(
         address feeCollector,
@@ -33,5 +35,8 @@ contract MockGelatoRelayContextERC2771 is GelatoRelayContextERC2771 {
     }
 
     // solhint-disable-next-line no-empty-blocks
-    function testOnlyGelatoRelayERC2771() external onlyGelatoRelayERC2771 {}
+    function testOnlyGelatoRelayConcurrentERC2771()
+        external
+        onlyGelatoRelayConcurrentERC2771
+    {}
 }

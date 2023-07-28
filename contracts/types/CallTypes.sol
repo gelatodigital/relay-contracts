@@ -18,6 +18,16 @@ struct CallWithERC2771 {
     uint256 userDeadline;
 }
 
+// Concurrent relay call with user signature verification for ERC 2771 compliance
+struct CallWithConcurrentERC2771 {
+    uint256 chainId;
+    address target;
+    bytes data;
+    address user;
+    bytes32 userSalt;
+    uint256 userDeadline;
+}
+
 struct RelayContext {
     address feeToken;
     uint256 fee;

@@ -452,7 +452,7 @@ describe("Test MockGelatoRelayContextERC2771 Smart Contract", function () {
     );
   });
 
-  it("#6: testOnlyGelatoRelayERC2771 reverts if not gelatoRelayERC2771", async () => {
+  it("#6: testOnlyGelatoRelayERC2771: reverts if not gelatoRelayERC2771", async () => {
     await expect(
       mockGelatoRelayContextERC2771.testOnlyGelatoRelayERC2771()
     ).to.be.revertedWith("onlyGelatoRelayERC2771");
