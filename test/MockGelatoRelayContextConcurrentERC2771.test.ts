@@ -21,6 +21,7 @@ import {
   setBalance,
   impersonateAccount,
   time,
+  setCode,
 } from "@nomicfoundation/hardhat-network-helpers";
 
 const EXEC_SIGNER_PK =
@@ -66,22 +67,24 @@ describe("Test MockGelatoRelayContextConcurrentERC2771 Smart Contract", function
     msgSenderAddress = await msgSender.getAddress();
 
     const {
-      gelatoRelayConcurrentERC2771: gelatoRelayConcurrentERC2771Address,
+      gelatoRelayERC2771: gelatoRelayERC2771Address,
       gelatoDiamond: gelatoDiamondAddress,
     } = await hre.getNamedAccounts();
 
-    /*const gelatoRelayConcurrentERC2771Local = await (
+    const gelatoRelayConcurrentERC2771Local = await (
       await deployments.get("GelatoRelayConcurrentERC2771")
     ).address;
 
+    // We overwrite the GelatoRelayERC2771 deployment since
+    // this is where GelatoRelayContextERC2771 expects it
     await setCode(
-      gelatoRelayConcurrentERC2771Address,
+      gelatoRelayERC2771Address,
       await hre.ethers.provider.getCode(gelatoRelayConcurrentERC2771Local)
-    );*/
+    );
 
     gelatoRelayConcurrentERC2771 = (await hre.ethers.getContractAt(
       "GelatoRelayConcurrentERC2771",
-      gelatoRelayConcurrentERC2771Address
+      gelatoRelayERC2771Address
     )) as GelatoRelayConcurrentERC2771;
 
     mockGelatoRelayContextConcurrentERC2771 = (await hre.ethers.getContractAt(
@@ -503,14 +506,14 @@ describe("Test MockGelatoRelayContextConcurrentERC2771 Smart Contract", function
     await expect(
       gelatoDiamond.execWithSigsRelayContext(call)
     ).to.be.revertedWith(
-      "ExecWithSigsFacet.execWithSigsRelayContext:GelatoRelayConcurrentERC2771.callWithSyncFeeConcurrentERC2771:GelatoRelayContextConcurrentERC2771._transferRelayFeeCapped: maxFee"
+      "ExecWithSigsFacet.execWithSigsRelayContext:GelatoRelayConcurrentERC2771.callWithSyncFeeConcurrentERC2771:GelatoRelayContextERC2771._transferRelayFeeCapped: maxFee"
     );
   });
 
   it("#6: testOnlyGelatoRelayConcurrentERC2771: reverts if not gelatoRelayConcurrentERC2771", async () => {
     await expect(
       mockGelatoRelayContextConcurrentERC2771.testOnlyGelatoRelayConcurrentERC2771()
-    ).to.be.revertedWith("onlyGelatoRelayConcurrentERC2771");
+    ).to.be.revertedWith("onlyGelatoRelayERC2771");
   });
 
   it("#7: testOnlyGelatoRelayConcurrentERC2771: reverts if replay", async () => {

@@ -33,17 +33,14 @@ contract GelatoRelay1BalanceConcurrentERC2771 is
     //solhint-disable-next-line const-name-snakecase
     string public constant version = "1";
 
-    // solhint-disable-next-line no-empty-blocks
+    // solhint-disable no-empty-blocks
     constructor(
         address _gelato
     ) GelatoRelay1BalanceConcurrentERC2771Base(_gelato) {}
 
     /// @notice Relay call + One Balance payment with _msgSender user signature verification
     /// @dev    Payment is handled with off-chain accounting using Gelato's 1Balance system
-    /// @dev    The userNonce abstraction does not support multiple calls (call concurrency)
-    /// @dev    Apps that need concurrent user calls will need to implement multi-calling
-    /// @dev    on their end via encoding into _call.data.
-    /// @param _call Relay call data packed into CallWithERC2771 struct
+    /// @param _call Relay call data packed into CallWithConcurrentERC2771 struct
     /// @param _userSignature EIP-712 compliant signature from _call.user
     /// @param  _nativeToFeeTokenXRateNumerator Exchange rate numerator
     /// @param  _nativeToFeeTokenXRateDenominator Exchange rate denominator
@@ -73,7 +70,7 @@ contract GelatoRelay1BalanceConcurrentERC2771 is
         bytes32 callHash = _hashSponsoredCallConcurrentERC2771(_call);
 
         // For the user, we enforce hash-based replay protection
-        _requireHash(
+        _requireUnusedHash(
             callHash,
             "GelatoRelay1BalanceConcurrentERC2771.sponsoredCallConcurrentERC2771:"
         );

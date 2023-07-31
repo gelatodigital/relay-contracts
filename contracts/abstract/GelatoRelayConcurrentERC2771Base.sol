@@ -53,7 +53,7 @@ abstract contract GelatoRelayConcurrentERC2771Base is
         );
     }
 
-    function _requireHash(
+    function _requireUnusedHash(
         bytes32 _callWithSyncFeeConcurrentHash,
         string memory _errorTrace
     ) internal view {
