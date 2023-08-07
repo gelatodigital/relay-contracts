@@ -9,8 +9,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
   const {
     deployer: hardhatAccount,
-    relayERC2771Deployer,
-    devRelayERC2771Deployer,
+    relayConcurrentERC2771Deployer,
+    devRelayConcurrentERC2771Deployer,
     //gelatoRelayConcurrentERC2771,
   } = await getNamedAccounts();
 
@@ -27,7 +27,9 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     );
     console.log(`\n IS DEV ENV: ${isDevEnv} \n`);
 
-    deployer = isDevEnv ? devRelayERC2771Deployer : relayERC2771Deployer;
+    deployer = isDevEnv
+      ? devRelayConcurrentERC2771Deployer
+      : relayConcurrentERC2771Deployer;
 
     await sleep(5000);
   }
@@ -45,6 +47,9 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     log: !isHardhat,
   });
 
+  // Overwrites already deployed relay contract for local testing
+  // Since relay context expects it at a certain address
+  // Can be uncommented once deployed
   /*if (isHardhat) {
     const gelatoRelayConcurrentERC2771Local = await (
       await deployments.get("GelatoRelayConcurrentERC2771")

@@ -26,23 +26,29 @@ const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 const RELAY_DEPLOYER_PK = process.env.RELAY_DEPLOYER_PK;
 const RELAY_1BALANCE_DEPLOYER_PK = process.env.RELAY_1BALANCE_DEPLOYER_PK;
 const RELAY_ERC2771_DEPLOYER_PK = process.env.RELAY_ERC2771_DEPLOYER_PK;
+const RELAY_CONCURRENT_ERC2771_DEPLOYER_PK =
+  process.env.RELAY_CONCURRENT_ERC2771_DEPLOYER_PK;
 
 const DEV_RELAY_DEPLOYER_PK = process.env.DEV_RELAY_DEPLOYER_PK;
 const DEV_RELAY_1BALANCE_DEPLOYER_PK =
   process.env.DEV_RELAY_1BALANCE_DEPLOYER_PK;
 const DEV_RELAY_ERC2771_DEPLOYER_PK = process.env.DEV_RELAY_ERC2771_DEPLOYER_PK;
+const DEV_RELAY_CONCURRENT_ERC2771_DEPLOYER_PK =
+  process.env.DEV_RELAY_CONCURRENT_ERC2771_DEPLOYER_PK;
 
 // CAUTION: for deployments put ALL keys in .env
 let accounts: string[] = [];
 if (
   RELAY_DEPLOYER_PK &&
   RELAY_1BALANCE_DEPLOYER_PK &&
-  RELAY_ERC2771_DEPLOYER_PK
+  RELAY_ERC2771_DEPLOYER_PK &&
+  RELAY_CONCURRENT_ERC2771_DEPLOYER_PK
 ) {
   accounts = [
     RELAY_DEPLOYER_PK,
     RELAY_1BALANCE_DEPLOYER_PK,
     RELAY_ERC2771_DEPLOYER_PK,
+    RELAY_CONCURRENT_ERC2771_DEPLOYER_PK,
   ];
 }
 
@@ -51,12 +57,14 @@ let devAccounts: string[] = [];
 if (
   DEV_RELAY_DEPLOYER_PK &&
   DEV_RELAY_1BALANCE_DEPLOYER_PK &&
-  DEV_RELAY_ERC2771_DEPLOYER_PK
+  DEV_RELAY_ERC2771_DEPLOYER_PK &&
+  DEV_RELAY_CONCURRENT_ERC2771_DEPLOYER_PK
 ) {
   devAccounts = [
     DEV_RELAY_DEPLOYER_PK,
     DEV_RELAY_1BALANCE_DEPLOYER_PK,
     DEV_RELAY_ERC2771_DEPLOYER_PK,
+    DEV_RELAY_CONCURRENT_ERC2771_DEPLOYER_PK,
   ];
 }
 
@@ -78,6 +86,9 @@ const config: HardhatUserConfig = {
     relayERC2771Deployer: {
       default: "0x346389e519536A049588b8ADcde807B69A175939",
     },
+    relayConcurrentERC2771Deployer: {
+      default: "0x4e503a754507D04d6c4ac323b0bB77636C1EC80C",
+    },
 
     // Dev Relay Deployers
     devRelayDeployer: {
@@ -88,6 +99,9 @@ const config: HardhatUserConfig = {
     },
     devRelayERC2771Deployer: {
       default: "0xbfdFA5b712F5F36981E09945A5d6aF180dbF4b94",
+    },
+    devRelayConcurrentERC2771Deployer: {
+      default: "0xD45e83690D56906b784D0e7f2cd79aD1bBEe31dc",
     },
 
     // Smart Contracts for local testing
