@@ -130,6 +130,11 @@ const config: HardhatUserConfig = {
       url: "https://api.avax.network/ext/bc/C/rpc",
       chainId: 43114,
     },
+    base: {
+      accounts,
+      chainId: 8453,
+      url: `https://mainnet.base.org`,
+    },
     bnb: {
       accounts,
       chainId: 56,
@@ -144,6 +149,11 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 100,
       url: `https://rpc.gnosischain.com/`,
+    },
+    linea: {
+      accounts,
+      chainId: 59144,
+      url: `https://rpc.linea.build`,
     },
     moonbeam: {
       accounts,
@@ -306,7 +316,7 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: { enabled: true, runs: 999999 },
           // Some networks don't support opcode PUSH0, we need to override evmVersion
-          // Network list: gpchiado, meldkanazawa
+          // Network list: gpchiado, meldkanazawa, base, linea
           // See https://stackoverflow.com/questions/76328677/remix-returned-error-jsonrpc2-0-errorinvalid-opcode-push0-id24
           evmVersion: "paris",
         },
