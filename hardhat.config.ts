@@ -295,6 +295,9 @@ const config: HardhatUserConfig = {
         version: "0.8.20",
         settings: {
           optimizer: { enabled: true, runs: 999999 },
+          // Some networks don't support opcode PUSH0, we need to override evmVersion
+          // See https://stackoverflow.com/questions/76328677/remix-returned-error-jsonrpc2-0-errorinvalid-opcode-push0-id24
+          evmVersion: "paris",
         },
       },
     ],
