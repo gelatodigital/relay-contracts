@@ -19,74 +19,22 @@ export const gelato = task(
   }
 });
 
-export const ownerGelatoRelay = task(
-  "ownerGelatoRelay",
-  "return owner address stored on GelatoRelay.sol"
-).setAction(async (_, { deployments, ethers }) => {
-  try {
-    const ABI = ["function owner() view returns (address)"];
-    const gelatoRelay = await ethers.getContractAt(
-      ABI,
-      (
-        await deployments.get("GelatoRelay")
-      ).address
-    );
-    console.log(await gelatoRelay.owner());
-  } catch (error) {
-    console.error(error, "\n");
-    process.exit(1);
-  }
-});
-
-export const ownerGelatoRelay1Balance = task(
-  "ownerGelatoRelay1Balance",
-  "return owner address stored on GelatoRelay1Balance.sol"
-).setAction(async (_, { deployments, ethers }) => {
-  try {
-    const ABI = ["function owner() view returns (address)"];
-    const gelatoRelay1Balance = await ethers.getContractAt(
-      ABI,
-      (
-        await deployments.get("GelatoRelay1Balance")
-      ).address
-    );
-    console.log(await gelatoRelay1Balance.owner());
-  } catch (error) {
-    console.error(error, "\n");
-    process.exit(1);
-  }
-});
-
-export const transferOwnershipGelatoRelay = task(
-  "transferOwnershipGelatoRelay",
-  "GelatoRelay.transferOwnership"
-)
-  .addPositionalParam("newOwner")
+export const owner = task("owner", "Return owner address of the proxy contract")
+  .addPositionalParam("contractName")
   .setAction(
-    async ({ newOwner }: { newOwner: string }, { deployments, ethers }) => {
+    async (
+      { contractName }: { contractName: string },
+      { deployments, ethers }
+    ) => {
       try {
-        const gelatoRelay = (await ethers.getContractAt(
-          "IEIP173Proxy",
+        const ABI = ["function owner() view returns (address)"];
+        const proxy = await ethers.getContractAt(
+          ABI,
           (
-            await deployments.get("GelatoRelay")
+            await deployments.get(contractName)
           ).address
-        )) as IEIP173Proxy;
-
-        const ownerAddress = await gelatoRelay.owner();
-        const owner = await ethers.getSigner(ownerAddress);
-
-        console.log(`Old owner: ${ownerAddress}`);
-
-        const txResponse = await gelatoRelay
-          .connect(owner)
-          .transferOwnership(newOwner);
-
-        console.log("\n waiting for mining\n");
-        console.log(`Tx hash: ${txResponse.hash}`);
-
-        await txResponse.wait();
-
-        console.log(`\nNew owner: ${await gelatoRelay.owner()}`);
+        );
+        console.log(await proxy.owner());
       } catch (error) {
         console.error((error as Error).message);
         process.exit(1);
@@ -94,27 +42,31 @@ export const transferOwnershipGelatoRelay = task(
     }
   );
 
-export const transferOwnershipGelatoRelay1Balance = task(
-  "transferOwnershipGelatoRelay1Balance",
-  "GelatoRelay1Balance.transferOwnership"
+export const transferOwnership = task(
+  "transferOwnership",
+  "Transfer ownership of the proxy contract"
 )
+  .addPositionalParam("contractName")
   .addPositionalParam("newOwner")
   .setAction(
-    async ({ newOwner }: { newOwner: string }, { deployments, ethers }) => {
+    async (
+      { contractName, newOwner }: { contractName: string; newOwner: string },
+      { deployments, ethers }
+    ) => {
       try {
-        const gelatoRelay1Balance = (await ethers.getContractAt(
+        const proxy = (await ethers.getContractAt(
           "IEIP173Proxy",
           (
-            await deployments.get("GelatoRelay1Balance")
+            await deployments.get(contractName)
           ).address
         )) as IEIP173Proxy;
 
-        const ownerAddress = await gelatoRelay1Balance.owner();
+        const ownerAddress = await proxy.owner();
         const owner = await ethers.getSigner(ownerAddress);
 
         console.log(`Old owner: ${ownerAddress}`);
 
-        const txResponse = await gelatoRelay1Balance
+        const txResponse = await proxy
           .connect(owner)
           .transferOwnership(newOwner);
 
@@ -123,7 +75,46 @@ export const transferOwnershipGelatoRelay1Balance = task(
 
         await txResponse.wait();
 
-        console.log(`\nNew owner: ${await gelatoRelay1Balance.owner()}`);
+        console.log(`\nNew owner: ${await proxy.owner()}`);
+      } catch (error) {
+        console.error((error as Error).message);
+        process.exit(1);
+      }
+    }
+  );
+
+export const upgradeTo = task("upgradeTo", "Upgrade proxy contract")
+  .addPositionalParam("contractName")
+  .addPositionalParam("newImplementation")
+  .setAction(
+    async (
+      {
+        contractName,
+        newImplementation,
+      }: { contractName: string; newImplementation: string },
+      { deployments, ethers }
+    ) => {
+      try {
+        const proxy = (await ethers.getContractAt(
+          "IEIP173Proxy",
+          (
+            await deployments.get(contractName)
+          ).address
+        )) as IEIP173Proxy;
+
+        const ownerAddress = await proxy.owner();
+        const owner = await ethers.getSigner(ownerAddress);
+
+        const txResponse = await proxy
+          .connect(owner)
+          .upgradeTo(newImplementation);
+
+        console.log("\n waiting for mining\n");
+        console.log(`Tx hash: ${txResponse.hash}`);
+
+        await txResponse.wait();
+
+        console.log(`\nUpgraded to implementation: ${newImplementation}`);
       } catch (error) {
         console.error((error as Error).message);
         process.exit(1);
