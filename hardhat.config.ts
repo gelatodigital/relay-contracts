@@ -27,23 +27,29 @@ const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 const RELAY_DEPLOYER_PK = process.env.RELAY_DEPLOYER_PK;
 const RELAY_1BALANCE_DEPLOYER_PK = process.env.RELAY_1BALANCE_DEPLOYER_PK;
 const RELAY_ERC2771_DEPLOYER_PK = process.env.RELAY_ERC2771_DEPLOYER_PK;
+const RELAY_CONCURRENT_ERC2771_DEPLOYER_PK =
+  process.env.RELAY_CONCURRENT_ERC2771_DEPLOYER_PK;
 
 const DEV_RELAY_DEPLOYER_PK = process.env.DEV_RELAY_DEPLOYER_PK;
 const DEV_RELAY_1BALANCE_DEPLOYER_PK =
   process.env.DEV_RELAY_1BALANCE_DEPLOYER_PK;
 const DEV_RELAY_ERC2771_DEPLOYER_PK = process.env.DEV_RELAY_ERC2771_DEPLOYER_PK;
+const DEV_RELAY_CONCURRENT_ERC2771_DEPLOYER_PK =
+  process.env.DEV_RELAY_CONCURRENT_ERC2771_DEPLOYER_PK;
 
 // CAUTION: for deployments put ALL keys in .env
 let accounts: string[] = [];
 if (
   RELAY_DEPLOYER_PK &&
   RELAY_1BALANCE_DEPLOYER_PK &&
-  RELAY_ERC2771_DEPLOYER_PK
+  RELAY_ERC2771_DEPLOYER_PK &&
+  RELAY_CONCURRENT_ERC2771_DEPLOYER_PK
 ) {
   accounts = [
     RELAY_DEPLOYER_PK,
     RELAY_1BALANCE_DEPLOYER_PK,
     RELAY_ERC2771_DEPLOYER_PK,
+    RELAY_CONCURRENT_ERC2771_DEPLOYER_PK,
   ];
 }
 
@@ -52,12 +58,14 @@ let devAccounts: string[] = [];
 if (
   DEV_RELAY_DEPLOYER_PK &&
   DEV_RELAY_1BALANCE_DEPLOYER_PK &&
-  DEV_RELAY_ERC2771_DEPLOYER_PK
+  DEV_RELAY_ERC2771_DEPLOYER_PK &&
+  DEV_RELAY_CONCURRENT_ERC2771_DEPLOYER_PK
 ) {
   devAccounts = [
     DEV_RELAY_DEPLOYER_PK,
     DEV_RELAY_1BALANCE_DEPLOYER_PK,
     DEV_RELAY_ERC2771_DEPLOYER_PK,
+    DEV_RELAY_CONCURRENT_ERC2771_DEPLOYER_PK,
   ];
 }
 
@@ -81,6 +89,9 @@ const config: HardhatUserConfig = {
     relayERC2771Deployer: {
       default: "0x346389e519536A049588b8ADcde807B69A175939",
     },
+    relayConcurrentERC2771Deployer: {
+      default: "0x4e503a754507D04d6c4ac323b0bB77636C1EC80C",
+    },
 
     // Dev Relay Deployers
     devRelayDeployer: {
@@ -91,6 +102,9 @@ const config: HardhatUserConfig = {
     },
     devRelayERC2771Deployer: {
       default: "0xbfdFA5b712F5F36981E09945A5d6aF180dbF4b94",
+    },
+    devRelayConcurrentERC2771Deployer: {
+      default: "0xD45e83690D56906b784D0e7f2cd79aD1bBEe31dc",
     },
 
     // Smart Contracts for local testing
@@ -103,8 +117,14 @@ const config: HardhatUserConfig = {
     gelatoRelayERC2771: {
       hardhat: "0xb539068872230f20456CF38EC52EF2f91AF4AE49",
     },
+    gelatoRelayConcurrentERC2771: {
+      hardhat: "0x8598806401A63Ddf52473F1B3C55bC9E33e2d73b",
+    },
     gelatoRelay1BalanceERC2771: {
       hardhat: "0xd8253782c45a12053594b9deB72d8e8aB2Fca54c",
+    },
+    gelatoRelay1BalanceConcurrentERC2771: {
+      hardhat: "0xc65d82ECE367EF06bf2AB791B3f3CF037Dc0e816",
     },
     gelatoDiamond: {
       hardhat: "0x3caca7b48d0573d793d3b0279b5f0029180e83b6",
@@ -205,6 +225,7 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 84531,
       url: "https://goerli.base.org",
+      gasPrice: 150000005,
     },
     bicocca: {
       accounts,
@@ -267,6 +288,7 @@ const config: HardhatUserConfig = {
       accounts: devAccounts,
       chainId: 84531,
       url: "https://goerli.base.org",
+      gasPrice: 150000005,
     },
     bicoccaDev: {
       accounts: devAccounts,
@@ -329,7 +351,7 @@ const config: HardhatUserConfig = {
   },
 
   zksolc: {
-    version: "1.3.8",
+    version: "1.3.13",
     compilerSource: "binary",
     settings: {
       isSystem: false,
