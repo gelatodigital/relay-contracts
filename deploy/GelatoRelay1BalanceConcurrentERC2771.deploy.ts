@@ -3,7 +3,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { sleep } from "../src/utils";
 import { getAddresses } from "../src/addresses";
-//import { setCode } from "@nomicfoundation/hardhat-network-helpers";
+import { setCode } from "@nomicfoundation/hardhat-network-helpers";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
@@ -11,7 +11,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     deployer: hardhatAccount,
     relayConcurrentERC2771Deployer,
     devRelayConcurrentERC2771Deployer,
-    //gelatoRelay1BalanceConcurrentERC2771,
+    gelatoRelay1BalanceConcurrentERC2771,
   } = await getNamedAccounts();
 
   const isHardhat = hre.network.name === "hardhat";
@@ -48,9 +48,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   });
 
   // Overwrites already deployed relay contract for local testing
-  // Since relay context expects it at a certain address
-  // Can be uncommented once deployed
-  /*if (isHardhat) {
+  if (isHardhat) {
     const gelatoRelay1BalanceConcurrentERC2771Local = await (
       await deployments.get("GelatoRelay1BalanceConcurrentERC2771")
     ).address;
@@ -61,7 +59,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         gelatoRelay1BalanceConcurrentERC2771Local
       )
     );
-  }*/
+  }
 };
 
 func.skip = async (hre: HardhatRuntimeEnvironment) => {

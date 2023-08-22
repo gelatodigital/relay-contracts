@@ -117,8 +117,14 @@ const config: HardhatUserConfig = {
     gelatoRelayERC2771: {
       hardhat: "0xb539068872230f20456CF38EC52EF2f91AF4AE49",
     },
+    gelatoRelayConcurrentERC2771: {
+      hardhat: "0x8598806401A63Ddf52473F1B3C55bC9E33e2d73b",
+    },
     gelatoRelay1BalanceERC2771: {
       hardhat: "0xd8253782c45a12053594b9deB72d8e8aB2Fca54c",
+    },
+    gelatoRelay1BalanceConcurrentERC2771: {
+      hardhat: "0xc65d82ECE367EF06bf2AB791B3f3CF037Dc0e816",
     },
     gelatoDiamond: {
       hardhat: "0x3caca7b48d0573d793d3b0279b5f0029180e83b6",
