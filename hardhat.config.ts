@@ -281,6 +281,7 @@ const config: HardhatUserConfig = {
       accounts: devAccounts,
       chainId: 84531,
       url: "https://goerli.base.org",
+      gasPrice: 150000005,
     },
     bicoccaDev: {
       accounts: devAccounts,
@@ -343,7 +344,7 @@ const config: HardhatUserConfig = {
   },
 
   zksolc: {
-    version: "1.3.8",
+    version: "1.3.13",
     compilerSource: "binary",
     settings: {
       isSystem: false,
