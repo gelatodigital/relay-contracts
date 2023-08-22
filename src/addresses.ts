@@ -22,6 +22,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x7C5c4Af1618220C090A6863175de47afb20fa9Df",
       };
+    case "base":
+      return {
+        GELATO: "0x08EFb6D315c7e74C39620c9AAEA289730f43a429",
+      };
     case "baseGoerli":
       return {
         GELATO: "0xbe77Cd403Be3F2C7EEBC3427360D3f9e5d528F43",
@@ -58,6 +62,14 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x683913B3A32ada4F8100458A3E1675425BdAa7DF",
       };
+    case "gpchiado":
+      return {
+        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
+      };
+    case "linea":
+      return {
+        GELATO: "0xc2a813699bF2353380c625e3D6b544dC42963941",
+      };
     case "lineaGoerli":
       return {
         GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
@@ -65,6 +77,14 @@ export const getAddresses = (network: string): Addresses => {
     case "lineaGoerliDev":
       return {
         GELATO: "0x1861708A1F55F433BaDE81895815c481e0c33448",
+      };
+    case "meldkanazawa":
+      return {
+        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
+      };
+    case "meldkanazawaDev":
+      return {
+        GELATO: "0xEB9b4944EB937dEE6CC8d721dA982d6019A2Fb8a",
       };
     case "moonbeam":
       return {
@@ -117,6 +137,10 @@ export const getAddresses = (network: string): Addresses => {
     case "zksyncGoerliDev":
       return {
         GELATO: "0x0730d466570f7413Df70298B019B3B775511E974",
+      };
+    case "zora":
+      return {
+        GELATO: "0xaF8447Ae9b68914E771b9C42e309CF76B98E2315",
       };
     default:
       throw new Error(`No addresses for Network: ${network}`);
