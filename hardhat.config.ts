@@ -219,6 +219,7 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 84531,
       url: "https://goerli.base.org",
+      gasPrice: 150000005,
     },
     bicocca: {
       accounts,
