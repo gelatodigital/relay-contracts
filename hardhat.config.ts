@@ -200,6 +200,12 @@ const config: HardhatUserConfig = {
       chainId: 1101,
       url: "https://zkevm-rpc.com",
     },
+    shibarium: {
+      accounts,
+      chainId: 109,
+      url: "https://www.shibrpc.com",
+      gasPrice: 2500000007,
+    },
     zksync: {
       accounts,
       chainId: 324,
