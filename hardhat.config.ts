@@ -280,6 +280,11 @@ const config: HardhatUserConfig = {
       chainId: 1442,
       url: "https://rpc.public.zkevm-test.net",
     },
+    zkatana: {
+      accounts,
+      chainId: 1261120,
+      url: "https://rpc.zkatana.gelato.digital",
+    },
     zksyncGoerli: {
       accounts,
       chainId: 280,
