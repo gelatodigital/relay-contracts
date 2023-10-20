@@ -81,6 +81,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 func.skip = async (hre: HardhatRuntimeEnvironment) => {
   return hre.network.name !== "hardhat";
 };
+
 func.dependencies = ["GelatoRelay1Balance"];
 func.tags = ["GelatoRelay"];
 
