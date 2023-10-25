@@ -280,6 +280,11 @@ const config: HardhatUserConfig = {
       chainId: 1442,
       url: "https://rpc.public.zkevm-test.net",
     },
+    sepolia: {
+      accounts,
+      chainId: 11155111,
+      url: "https://eth-sepolia.public.blastapi.io",
+    },
     zkatana: {
       accounts,
       chainId: 1261120,
