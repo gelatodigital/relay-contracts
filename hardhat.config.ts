@@ -245,6 +245,11 @@ const config: HardhatUserConfig = {
       url: "https://rpc.chiadochain.net",
       gasPrice: 1500000000,
     },
+    geloptestnet: {
+      accounts,
+      chainId: 42069,
+      url: "https://rpc.op-testnet.gelato.digital",
+    },
     goerli: {
       accounts,
       chainId: 5,
