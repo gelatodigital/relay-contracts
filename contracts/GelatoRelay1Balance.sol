@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import {IGelatoRelay1Balance} from "./interfaces/IGelatoRelay1Balance.sol";
 import {IGelato1Balance} from "./interfaces/IGelato1Balance.sol";
 import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
-import {SponsoredCall} from "./types/CallTypes.sol";
+import {SponsoredCall, SponsoredCallV2} from "./types/CallTypes.sol";
 
 /// @title  Gelato Relay contract
 /// @notice This contract deals with synchronous payments and Gelato 1Balance payments
@@ -62,6 +62,21 @@ contract GelatoRelay1Balance is IGelatoRelay1Balance, IGelato1Balance {
             _nativeToFeeTokenXRateNumerator,
             _nativeToFeeTokenXRateDenominator,
             _correlationId
+        );
+    }
+
+    function sponsoredCallV2(
+        SponsoredCallV2 calldata _call,
+        bytes calldata _signedCorrelationId
+    ) external {
+        // INTERACTIONS
+        _call.target.revertingContractCall(
+            _call.data,
+            "GelatoRelay.sponsoredCallV2:"
+        );
+
+        emit LogUseGelato1BalanceV2(
+            _signedCorrelationId
         );
     }
 }
