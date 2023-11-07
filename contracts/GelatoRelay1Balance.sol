@@ -67,7 +67,8 @@ contract GelatoRelay1Balance is IGelatoRelay1Balance, IGelato1Balance {
 
     function sponsoredCallV2(
         SponsoredCallV2 calldata _call,
-        bytes calldata _signedCorrelationId
+        bytes calldata _checkerSignature,
+        bytes32 _correlationId
     ) external {
         // INTERACTIONS
         _call.target.revertingContractCall(
@@ -76,7 +77,8 @@ contract GelatoRelay1Balance is IGelatoRelay1Balance, IGelato1Balance {
         );
 
         emit LogUseGelato1BalanceV2(
-            _signedCorrelationId
+            _checkerSignature,
+            _correlationId
         );
     }
 }

@@ -13,6 +13,7 @@ interface IGelato1Balance {
     );
 
     event LogUseGelato1BalanceV2(
-        bytes signedCorrelationId
+        bytes checkerSignature,
+        bytes32 correlationId
     );
 }
