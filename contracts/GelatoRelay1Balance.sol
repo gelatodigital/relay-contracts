@@ -83,6 +83,6 @@ contract GelatoRelay1Balance is IGelatoRelay1Balance, IGelato1Balance {
             "GelatoRelay.sponsoredCallV2:"
         );
 
-        emit LogUseGelato1BalanceV2(_checkerSignature, _correlationId);
+        emit LogUseGelato1BalanceV2(_correlationId, _checkerSignature);
     }
 }
