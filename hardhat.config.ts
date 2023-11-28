@@ -290,6 +290,11 @@ const config: HardhatUserConfig = {
       chainId: 11155111,
       url: "https://eth-sepolia.public.blastapi.io",
     },
+    unreal: {
+      accounts,
+      chainId: 18231,
+      url: "https://rpc.unreal.gelato.digital",
+    },
     zkatana: {
       accounts,
       chainId: 1261120,
