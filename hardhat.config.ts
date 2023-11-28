@@ -227,6 +227,11 @@ const config: HardhatUserConfig = {
       chainId: 421613,
       url: `https://arb-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
+    arbitrumSepolia: {
+      accounts,
+      url: `https://arb-sepolia.g.alchemy.com/v2/${ALCHEMY_ID}`,
+      chainId: 421614,
+    },
     baseGoerli: {
       accounts,
       chainId: 84531,
@@ -279,6 +284,13 @@ const config: HardhatUserConfig = {
       accounts,
       url: `https://opt-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
       chainId: 420,
+      gasPrice: 3000000057,
+    },
+    optimismSepolia: {
+      accounts,
+      url: `https://opt-sepolia.g.alchemy.com/v2/${ALCHEMY_ID}`,
+      chainId: 11155420,
+      gasPrice: 3000000057,
     },
     polygonZkGoerli: {
       accounts,

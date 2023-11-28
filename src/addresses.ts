@@ -18,6 +18,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
       };
+    case "arbitrumSepolia":
+      return {
+        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
+      };
     case "avalanche":
       return {
         GELATO: "0x7C5c4Af1618220C090A6863175de47afb20fa9Df",
@@ -109,6 +113,10 @@ export const getAddresses = (network: string): Addresses => {
     case "optimismGoerli":
       return {
         GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
+      };
+    case "optimismSepolia":
+      return {
+        GELATO: "0x2d4E9d6ac373d09033BF0b6579A881bF84B9Ee3A",
       };
     case "optimism":
       return {
