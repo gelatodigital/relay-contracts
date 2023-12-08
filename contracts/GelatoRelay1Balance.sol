@@ -80,12 +80,17 @@ contract GelatoRelay1Balance is IGelatoRelay1Balance, IGelato1Balance {
         bytes32 _r,
         bytes32 _vs
     ) external {
+        // These parameters are decoded from calldata
+        (_correlationId);
+        (_r);
+        (_vs);
+
         // INTERACTIONS
         _call.target.revertingContractCall(
             _call.data,
             "GelatoRelay.sponsoredCallV2:"
         );
 
-        emit LogUseGelato1BalanceV2(_correlationId, _r, _vs);
+        emit LogUseGelato1BalanceV2();
     }
 }
