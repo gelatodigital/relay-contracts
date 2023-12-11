@@ -8,12 +8,6 @@ struct SponsoredCall {
     bytes data;
 }
 
-// Sponsored relay call without chainId
-struct SponsoredCallV2 {
-    address target;
-    bytes data;
-}
-
 // Relay call with user signature verification for ERC 2771 compliance
 struct CallWithERC2771 {
     uint256 chainId;
