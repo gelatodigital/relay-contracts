@@ -255,6 +255,11 @@ const config: HardhatUserConfig = {
       chainId: 42069,
       url: "https://rpc.op-testnet.gelato.digital",
     },
+    gelopcelestiatestnet: {
+      accounts,
+      chainId: 123420111,
+      url: "https://rpc.op-celestia-testnet.gelato.digital",
+    },
     goerli: {
       accounts,
       chainId: 5,
