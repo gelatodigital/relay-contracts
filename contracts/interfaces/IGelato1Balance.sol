@@ -11,6 +11,4 @@ interface IGelato1Balance {
         uint256 nativeToFeeTokenXRateDenominator,
         bytes32 correlationId
     );
-
-    event LogUseGelato1BalanceV2();
 }
