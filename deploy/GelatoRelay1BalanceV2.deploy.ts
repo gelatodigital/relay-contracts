@@ -2,7 +2,6 @@ import { deployments, getNamedAccounts } from "hardhat";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { sleep } from "../src/utils";
-import { Create2Factory } from "../src/Create2Factory";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
@@ -14,6 +13,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   const isHardhat = hre.network.name === "hardhat";
   const isDevEnv = hre.network.name.endsWith("Dev");
+  const isZkSync = hre.network.name.startsWith("zksync");
 
   let deployer: string;
 
@@ -30,12 +30,9 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     await sleep(5000);
   }
 
-  const signer = await hre.ethers.getSigner(deployer);
-  await new Create2Factory(hre.ethers.provider).deployFactory(signer);
-
   await deploy("GelatoRelay1BalanceV2", {
     from: deployer,
-    deterministicDeployment: true,
+    deterministicDeployment: !isZkSync,
     log: !isHardhat,
   });
 };
