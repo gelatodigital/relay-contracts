@@ -34,6 +34,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0xbe77Cd403Be3F2C7EEBC3427360D3f9e5d528F43",
       };
+    case "baseSepolia":
+      return {
+        GELATO: "0x683913B3A32ada4F8100458A3E1675425BdAa7DF",
+      };
     case "baseGoerliDev":
       return {
         GELATO: "0xCf8EDB3333Fae73b23f689229F4De6Ac95d1f707",

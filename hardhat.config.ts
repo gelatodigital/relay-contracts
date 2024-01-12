@@ -238,6 +238,12 @@ const config: HardhatUserConfig = {
       url: "https://goerli.base.org",
       gasPrice: 150000005,
     },
+    baseSepolia: {
+      accounts,
+      chainId: 84532,
+      url: `https://sepolia.base.org`,
+      gasPrice: 150000005,
+    },
     bicocca: {
       accounts,
       chainId: 29313331,
