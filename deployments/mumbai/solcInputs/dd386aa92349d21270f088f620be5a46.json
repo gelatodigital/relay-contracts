@@ -215,6 +215,10 @@
       "runs": 999999
     },
     "evmVersion": "paris",
+    "metadata": {
+      "bytecodeHash": "none",
+      "useLiteralContent": true
+    },
     "outputSelection": {
       "*": {
         "*": [
@@ -232,9 +236,6 @@
           "ast"
         ]
       }
-    },
-    "metadata": {
-      "useLiteralContent": true
     }
   }
 }
