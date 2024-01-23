@@ -172,16 +172,6 @@ const config: HardhatUserConfig = {
       chainId: 59144,
       url: `https://rpc.linea.build`,
     },
-    moonbeam: {
-      accounts,
-      chainId: 1284,
-      url: "https://moonbeam.api.onfinality.io/public",
-    },
-    moonriver: {
-      accounts,
-      chainId: 1285,
-      url: "https://moonriver.public.blastapi.io",
-    },
     optimism: {
       accounts,
       url: `https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
