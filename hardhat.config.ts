@@ -19,9 +19,6 @@ dotenv.config({ path: __dirname + "/.env" });
 
 const ALCHEMY_ID = process.env.ALCHEMY_ID;
 
-const BICOCCA_RPC_KEY = process.env.BICOCCA_RPC_KEY;
-const GPCHIADO_RPC_KEY = process.env.GPCHIADO_RPC_KEY;
-
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
 const RELAY_DEPLOYER_PK = process.env.RELAY_DEPLOYER_PK;
@@ -233,12 +230,6 @@ const config: HardhatUserConfig = {
       url: "https://goerli.base.org",
       gasPrice: 150000005,
     },
-    bicocca: {
-      accounts,
-      chainId: 29313331,
-      url: `https://gelato.bicoccachain.net?apikey=${BICOCCA_RPC_KEY}`,
-      gasPrice: 0,
-    },
     chiado: {
       accounts,
       chainId: 10200,
@@ -254,11 +245,6 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 5,
       url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ID}`,
-    },
-    gpchiado: {
-      accounts,
-      chainId: 3155399334,
-      url: `https://rpc.testnet.gnosispay.network/?apiKey=${GPCHIADO_RPC_KEY}`,
     },
     lineaGoerli: {
       accounts,
@@ -315,12 +301,6 @@ const config: HardhatUserConfig = {
       chainId: 84531,
       url: "https://goerli.base.org",
       gasPrice: 150000005,
-    },
-    bicoccaDev: {
-      accounts: devAccounts,
-      chainId: 29313331,
-      url: `https://gelato.bicoccachain.net?apikey=${BICOCCA_RPC_KEY}`,
-      gasPrice: 0,
     },
     lineaGoerliDev: {
       accounts: devAccounts,
