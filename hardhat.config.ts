@@ -228,6 +228,12 @@ const config: HardhatUserConfig = {
     baseSepolia: {
       accounts,
       chainId: 84532,
+      url: `https://sepolia.base.org`,
+      gasPrice: 150000005,
+    },
+    bicocca: {
+      accounts,
+      chainId: 84532,
       url: "https://sepolia.base.org",
     },
     chiado: {
@@ -270,6 +276,7 @@ const config: HardhatUserConfig = {
       accounts,
       url: `https://opt-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
       chainId: 420,
+      gasPrice: 3000000057,
     },
     optimismSepolia: {
       accounts,
@@ -327,6 +334,7 @@ const config: HardhatUserConfig = {
       accounts: devAccounts,
       chainId: 80001,
       url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_ID}`,
+      gasPrice: 1500000000,
     },
     polygonZkGoerliDev: {
       accounts: devAccounts,
