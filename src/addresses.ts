@@ -42,14 +42,6 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0xCf8EDB3333Fae73b23f689229F4De6Ac95d1f707",
       };
-    case "bicocca":
-      return {
-        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
-      };
-    case "bicoccaDev":
-      return {
-        GELATO: "0xEB9b4944EB937dEE6CC8d721dA982d6019A2Fb8a",
-      };
     case "bnb":
       return {
         GELATO: "0x7C5c4Af1618220C090A6863175de47afb20fa9Df",
@@ -78,10 +70,6 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x683913B3A32ada4F8100458A3E1675425BdAa7DF",
       };
-    case "gpchiado":
-      return {
-        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
-      };
     case "linea":
       return {
         GELATO: "0xc2a813699bF2353380c625e3D6b544dC42963941",
@@ -101,14 +89,6 @@ export const getAddresses = (network: string): Addresses => {
     case "meldkanazawaDev":
       return {
         GELATO: "0xEB9b4944EB937dEE6CC8d721dA982d6019A2Fb8a",
-      };
-    case "moonbeam":
-      return {
-        GELATO: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
-      };
-    case "moonriver":
-      return {
-        GELATO: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
       };
     case "mumbai":
       return {

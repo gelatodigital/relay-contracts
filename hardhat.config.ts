@@ -231,11 +231,6 @@ const config: HardhatUserConfig = {
       url: `https://sepolia.base.org`,
       gasPrice: 150000005,
     },
-    bicocca: {
-      accounts,
-      chainId: 84532,
-      url: "https://sepolia.base.org",
-    },
     chiado: {
       accounts,
       chainId: 10200,
