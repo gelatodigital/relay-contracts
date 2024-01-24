@@ -19,9 +19,6 @@ dotenv.config({ path: __dirname + "/.env" });
 
 const ALCHEMY_ID = process.env.ALCHEMY_ID;
 
-const BICOCCA_RPC_KEY = process.env.BICOCCA_RPC_KEY;
-const GPCHIADO_RPC_KEY = process.env.GPCHIADO_RPC_KEY;
-
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
 const RELAY_DEPLOYER_PK = process.env.RELAY_DEPLOYER_PK;
@@ -175,16 +172,6 @@ const config: HardhatUserConfig = {
       chainId: 59144,
       url: `https://rpc.linea.build`,
     },
-    moonbeam: {
-      accounts,
-      chainId: 1284,
-      url: "https://moonbeam.api.onfinality.io/public",
-    },
-    moonriver: {
-      accounts,
-      chainId: 1285,
-      url: "https://moonriver.public.blastapi.io",
-    },
     optimism: {
       accounts,
       url: `https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
@@ -227,17 +214,22 @@ const config: HardhatUserConfig = {
       chainId: 421613,
       url: `https://arb-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
+    arbitrumSepolia: {
+      accounts,
+      url: `https://arb-sepolia.g.alchemy.com/v2/${ALCHEMY_ID}`,
+      chainId: 421614,
+    },
     baseGoerli: {
       accounts,
       chainId: 84531,
       url: "https://goerli.base.org",
       gasPrice: 150000005,
     },
-    bicocca: {
+    baseSepolia: {
       accounts,
-      chainId: 29313331,
-      url: `https://gelato.bicoccachain.net?apikey=${BICOCCA_RPC_KEY}`,
-      gasPrice: 0,
+      chainId: 84532,
+      url: `https://sepolia.base.org`,
+      gasPrice: 150000005,
     },
     chiado: {
       accounts,
@@ -250,15 +242,15 @@ const config: HardhatUserConfig = {
       chainId: 42069,
       url: "https://rpc.op-testnet.gelato.digital",
     },
+    gelopcelestiatestnet: {
+      accounts,
+      chainId: 123420111,
+      url: "https://rpc.op-celestia-testnet.gelato.digital",
+    },
     goerli: {
       accounts,
       chainId: 5,
       url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_ID}`,
-    },
-    gpchiado: {
-      accounts,
-      chainId: 3155399334,
-      url: `https://rpc.testnet.gnosispay.network/?apiKey=${GPCHIADO_RPC_KEY}`,
     },
     lineaGoerli: {
       accounts,
@@ -284,6 +276,13 @@ const config: HardhatUserConfig = {
       accounts,
       url: `https://opt-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
       chainId: 420,
+      gasPrice: 3000000057,
+    },
+    optimismSepolia: {
+      accounts,
+      url: `https://opt-sepolia.g.alchemy.com/v2/${ALCHEMY_ID}`,
+      chainId: 11155420,
+      gasPrice: 3000000057,
     },
     polygonZkGoerli: {
       accounts,
@@ -321,12 +320,6 @@ const config: HardhatUserConfig = {
       url: "https://goerli.base.org",
       gasPrice: 150000005,
     },
-    bicoccaDev: {
-      accounts: devAccounts,
-      chainId: 29313331,
-      url: `https://gelato.bicoccachain.net?apikey=${BICOCCA_RPC_KEY}`,
-      gasPrice: 0,
-    },
     lineaGoerliDev: {
       accounts: devAccounts,
       chainId: 59140,
@@ -341,6 +334,7 @@ const config: HardhatUserConfig = {
       accounts: devAccounts,
       chainId: 80001,
       url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_ID}`,
+      gasPrice: 1500000000,
     },
     polygonZkGoerliDev: {
       accounts: devAccounts,
