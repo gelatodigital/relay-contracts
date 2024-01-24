@@ -63,5 +63,6 @@
   "lint-staged": {
     "*.*{js,sol,json,md,ts,yml,yaml}": "prettier --write",
     "*.*{ts,js}": "eslint -c .eslintrc.json"
-  }
+  },
+  "packageManager": "yarn@3.7.0"
 }
