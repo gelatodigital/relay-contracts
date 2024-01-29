@@ -32,7 +32,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   await deploy("GelatoRelay1BalanceV2", {
     from: deployer,
-    deterministicDeployment: !isZkSync,
+    deterministicDeployment: isZkSync ? false : isDevEnv ? "0xdead" : true,
     log: !isHardhat,
   });
 };
