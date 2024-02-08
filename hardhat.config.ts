@@ -262,6 +262,11 @@ const config: HardhatUserConfig = {
       chainId: 59140,
       url: `https://rpc.goerli.linea.build`,
     },
+    liskSepolia: {
+      accounts,
+      chainId: 4202,
+      url: `https://rpc.lisk-sepolia-testnet.gelato.digital`,
+    },
     meldkanazawa: {
       accounts,
       chainId: 222000222,
