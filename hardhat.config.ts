@@ -236,6 +236,11 @@ const config: HardhatUserConfig = {
       url: `https://sepolia.base.org`,
       gasPrice: 150000005,
     },
+    blastSepolia: {
+      accounts,
+      chainId: 168587773,
+      url: `https://sepolia.blast.io`,
+    },
     chiado: {
       accounts,
       chainId: 10200,
