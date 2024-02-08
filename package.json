@@ -31,7 +31,7 @@
     "@nomicfoundation/hardhat-verify": "1.1.1",
     "@nomiclabs/hardhat-ethers": "2.2.3",
     "@nomiclabs/hardhat-etherscan": "3.1.7",
-    "@openzeppelin/contracts": "4.9.2",
+    "@openzeppelin/contracts": "4.9.5",
     "@tsconfig/recommended": "1.0.2",
     "@typechain/ethers-v5": "10.2.1",
     "@typechain/hardhat": "6.1.6",
@@ -63,5 +63,6 @@
   "lint-staged": {
     "*.*{js,sol,json,md,ts,yml,yaml}": "prettier --write",
     "*.*{ts,js}": "eslint -c .eslintrc.json"
-  }
+  },
+  "packageManager": "yarn@4.0.2"
 }

@@ -18,6 +18,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
       };
+    case "arbitrumSepolia":
+      return {
+        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
+      };
     case "avalanche":
       return {
         GELATO: "0x7C5c4Af1618220C090A6863175de47afb20fa9Df",
@@ -30,17 +34,17 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0xbe77Cd403Be3F2C7EEBC3427360D3f9e5d528F43",
       };
+    case "baseSepolia":
+      return {
+        GELATO: "0x683913B3A32ada4F8100458A3E1675425BdAa7DF",
+      };
     case "baseGoerliDev":
       return {
         GELATO: "0xCf8EDB3333Fae73b23f689229F4De6Ac95d1f707",
       };
-    case "bicocca":
+    case "blastSepolia":
       return {
         GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
-      };
-    case "bicoccaDev":
-      return {
-        GELATO: "0xEB9b4944EB937dEE6CC8d721dA982d6019A2Fb8a",
       };
     case "bnb":
       return {
@@ -62,13 +66,13 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
       };
+    case "gelopcelestiatestnet":
+      return {
+        GELATO: "0x30056FD86993624B72c7400bB4D7b29F05928E59",
+      };
     case "goerli":
       return {
         GELATO: "0x683913B3A32ada4F8100458A3E1675425BdAa7DF",
-      };
-    case "gpchiado":
-      return {
-        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
       };
     case "linea":
       return {
@@ -82,6 +86,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x1861708A1F55F433BaDE81895815c481e0c33448",
       };
+    case "liskSepolia":
+      return {
+        GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
+      };
     case "meldkanazawa":
       return {
         GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
@@ -90,13 +98,9 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0xEB9b4944EB937dEE6CC8d721dA982d6019A2Fb8a",
       };
-    case "moonbeam":
+    case "metis":
       return {
-        GELATO: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
-      };
-    case "moonriver":
-      return {
-        GELATO: "0x91f2A140cA47DdF438B9c583b7E71987525019bB",
+        GELATO: "0xFec1E33eBe899906Ff63546868A26E1028700b0e",
       };
     case "mumbai":
       return {
@@ -109,6 +113,10 @@ export const getAddresses = (network: string): Addresses => {
     case "optimismGoerli":
       return {
         GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
+      };
+    case "optimismSepolia":
+      return {
+        GELATO: "0x2d4E9d6ac373d09033BF0b6579A881bF84B9Ee3A",
       };
     case "optimism":
       return {
