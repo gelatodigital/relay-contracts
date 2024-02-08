@@ -94,6 +94,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0xEB9b4944EB937dEE6CC8d721dA982d6019A2Fb8a",
       };
+    case "metis":
+      return {
+        GELATO: "0xFec1E33eBe899906Ff63546868A26E1028700b0e",
+      };
     case "mumbai":
       return {
         GELATO: "0x25aD59adbe00C2d80c86d01e2E05e1294DA84823",

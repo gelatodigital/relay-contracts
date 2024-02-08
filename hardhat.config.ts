@@ -172,6 +172,11 @@ const config: HardhatUserConfig = {
       chainId: 59144,
       url: `https://rpc.linea.build`,
     },
+    metis: {
+      accounts,
+      chainId: 1088,
+      url: "https://metis-mainnet.public.blastapi.io",
+    },
     optimism: {
       accounts,
       url: `https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
