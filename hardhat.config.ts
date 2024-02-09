@@ -299,6 +299,11 @@ const config: HardhatUserConfig = {
       chainId: 1442,
       url: "https://rpc.public.zkevm-test.net",
     },
+    reyaCronos: {
+      accounts,
+      chainId: 1729,
+      url: "https://rpc.reya-cronos.gelato.digital",
+    },
     sepolia: {
       accounts,
       chainId: 11155111,
