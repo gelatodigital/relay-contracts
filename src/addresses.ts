@@ -138,6 +138,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x1861708A1F55F433BaDE81895815c481e0c33448",
       };
+    case "reyaCronos":
+      return {
+        GELATO: "0x683913B3A32ada4F8100458A3E1675425BdAa7DF",
+      };
     case "sepolia":
       return {
         GELATO: "0xCf8EDB3333Fae73b23f689229F4De6Ac95d1f707",
