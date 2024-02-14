@@ -122,6 +122,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x01051113D81D7d6DA508462F2ad6d7fD96cF42Ef",
       };
+    case "playnanceTestnet":
+      return {
+        GELATO: "0x683913B3A32ada4F8100458A3E1675425BdAa7DF",
+      };
     case "polygon":
       return {
         GELATO: "0x7598e84B2E114AB62CAB288CE5f7d5f6bad35BbA",

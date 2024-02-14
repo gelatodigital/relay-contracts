@@ -294,6 +294,11 @@ const config: HardhatUserConfig = {
       chainId: 11155420,
       gasPrice: 3000000057,
     },
+    playnanceTestnet: {
+      accounts,
+      url: `https://rpc.orbit-anytrust-testnet.gelato.digital`,
+      chainId: 20487629101,
+    },
     polygonZkGoerli: {
       accounts,
       chainId: 1442,
