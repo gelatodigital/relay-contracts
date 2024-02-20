@@ -297,7 +297,7 @@ const config: HardhatUserConfig = {
     playnanceTestnet: {
       accounts,
       url: `https://rpc.orbit-anytrust-testnet.gelato.digital`,
-      chainId: 20487629101,
+      chainId: 80998896642,
     },
     polygonZkGoerli: {
       accounts,
