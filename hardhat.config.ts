@@ -142,6 +142,11 @@ const config: HardhatUserConfig = {
       chainId: 42161,
       url: `https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
+    astarzkevm: {
+      accounts,
+      chainId: 3776,
+      url: `https://rpc.astar-zkevm.gelato.digital`,
+    },
     avalanche: {
       accounts,
       url: "https://api.avax.network/ext/bc/C/rpc",
@@ -176,6 +181,12 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 1088,
       url: "https://metis-mainnet.public.blastapi.io",
+    },
+    mode: {
+      accounts,
+      url: "https://mainnet.mode.network",
+      chainId: 34443,
+      gasPrice: 80000000,
     },
     optimism: {
       accounts,
@@ -223,6 +234,11 @@ const config: HardhatUserConfig = {
       accounts,
       url: `https://arb-sepolia.g.alchemy.com/v2/${ALCHEMY_ID}`,
       chainId: 421614,
+    },
+    astarzkyoto: {
+      accounts,
+      url: `https://rpc.zkyoto.gelato.digital`,
+      chainId: 6038361,
     },
     baseGoerli: {
       accounts,
