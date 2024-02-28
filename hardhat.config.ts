@@ -269,6 +269,11 @@ const config: HardhatUserConfig = {
       url: "https://rpc.chiadochain.net",
       gasPrice: 1500000000,
     },
+    gelatoorbittestnet: {
+      accounts,
+      chainId: 88153591557,
+      url: "https://rpc.gelato-orbit-anytrust-testnet.gelato.digital",
+    },
     geloptestnet: {
       accounts,
       chainId: 42069,
