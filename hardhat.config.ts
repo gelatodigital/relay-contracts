@@ -157,6 +157,12 @@ const config: HardhatUserConfig = {
       chainId: 8453,
       url: `https://mainnet.base.org`,
     },
+    blast: {
+      accounts,
+      chainId: 81457,
+      url: "",
+      gasPrice: 100000000,
+    },
     bnb: {
       accounts,
       chainId: 56,
