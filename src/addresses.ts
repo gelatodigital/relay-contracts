@@ -22,6 +22,14 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
       };
+    case "astarzkevm":
+      return {
+        GELATO: "0xa2351354b39977ea35b1C28A035BD94e48F3ED7D",
+      };
+    case "astarzkyoto":
+      return {
+        GELATO: "0x683913B3A32ada4F8100458A3E1675425BdAa7DF",
+      };
     case "avalanche":
       return {
         GELATO: "0x7C5c4Af1618220C090A6863175de47afb20fa9Df",
@@ -42,6 +50,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0xCf8EDB3333Fae73b23f689229F4De6Ac95d1f707",
       };
+    case "blast":
+      return {
+        GELATO: "0xFec1E33eBe899906Ff63546868A26E1028700b0e",
+      };
     case "blastSepolia":
       return {
         GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
@@ -61,6 +73,10 @@ export const getAddresses = (network: string): Addresses => {
     case "gnosis":
       return {
         GELATO: "0x29b6603D17B9D8f021EcB8845B6FD06E1Adf89DE",
+      };
+    case "gelatoorbittestnet":
+      return {
+        GELATO: "0x683913B3A32ada4F8100458A3E1675425BdAa7DF",
       };
     case "geloptestnet":
       return {
@@ -99,6 +115,10 @@ export const getAddresses = (network: string): Addresses => {
         GELATO: "0xEB9b4944EB937dEE6CC8d721dA982d6019A2Fb8a",
       };
     case "metis":
+      return {
+        GELATO: "0xFec1E33eBe899906Ff63546868A26E1028700b0e",
+      };
+    case "mode":
       return {
         GELATO: "0xFec1E33eBe899906Ff63546868A26E1028700b0e",
       };
