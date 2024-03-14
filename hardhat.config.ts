@@ -199,6 +199,11 @@ const config: HardhatUserConfig = {
       url: `https://opt-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
       chainId: 10,
     },
+    playblock: {
+      accounts,
+      url: `https://rpc.playblock.io`,
+      chainId: 1829,
+    },
     polygon: {
       accounts,
       chainId: 137,
@@ -208,6 +213,16 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 1101,
       url: "https://zkevm-rpc.com",
+    },
+    rari: {
+      accounts,
+      chainId: 1380012617,
+      url: "https://mainnet.rpc.rarichain.org/http",
+    },
+    reya: {
+      accounts,
+      chainId: 1729,
+      url: "https://rpc.reya.network",
     },
     shibarium: {
       accounts,
@@ -333,7 +348,7 @@ const config: HardhatUserConfig = {
     },
     reyaCronos: {
       accounts,
-      chainId: 1729,
+      chainId: 89346161,
       url: "https://rpc.reya-cronos.gelato.digital",
     },
     sepolia: {
@@ -345,6 +360,11 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 18231,
       url: "https://rpc.unreal.gelato.digital",
+    },
+    unrealOrbit: {
+      accounts,
+      chainId: 18233,
+      url: "https://rpc.unreal-orbit.gelato.digital",
     },
     zkatana: {
       accounts,
