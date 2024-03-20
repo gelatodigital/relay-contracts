@@ -219,6 +219,11 @@ const config: HardhatUserConfig = {
       chainId: 1380012617,
       url: "https://mainnet.rpc.rarichain.org/http",
     },
+    real: {
+      accounts,
+      chainId: 111188,
+      url: "https://rpc.realforreal.gelato.digital",
+    },
     reya: {
       accounts,
       chainId: 1729,
