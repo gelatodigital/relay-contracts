@@ -219,6 +219,11 @@ const config: HardhatUserConfig = {
       chainId: 1380012617,
       url: "https://mainnet.rpc.rarichain.org/http",
     },
+    real: {
+      accounts,
+      chainId: 111188,
+      url: "https://rpc.realforreal.gelato.digital",
+    },
     reya: {
       accounts,
       chainId: 1729,
@@ -246,6 +251,12 @@ const config: HardhatUserConfig = {
     },
 
     // Staging
+    amoy: {
+      accounts,
+      chainId: 80002,
+      url: `https://rpc-amoy.polygon.technology`,
+      gasPrice: 40000000000,
+    },
     arbitrumGoerli: {
       accounts,
       chainId: 421613,
@@ -341,6 +352,11 @@ const config: HardhatUserConfig = {
       url: `https://rpc.orbit-anytrust-testnet.gelato.digital`,
       chainId: 80998896642,
     },
+    polygonBlackberry: {
+      accounts,
+      chainId: 94204209,
+      url: `https://rpc.polygon-blackberry.gelato.digital`,
+    },
     polygonZkGoerli: {
       accounts,
       chainId: 1442,
@@ -365,6 +381,11 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 18233,
       url: "https://rpc.unreal-orbit.gelato.digital",
+    },
+    verifyTestnet: {
+      accounts,
+      chainId: 1833,
+      url: `https://rpc.verify-testnet.gelato.digital`,
     },
     zkatana: {
       accounts,

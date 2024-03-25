@@ -10,6 +10,10 @@ export const getAddresses = (network: string): Addresses => {
         // We fork ethereum for local testing
         GELATO: "0x3CACa7b48D0573D793d3b0279b5F0029180E83b6",
       };
+    case "amoy":
+      return {
+        GELATO: "0x30056FD86993624B72c7400bB4D7b29F05928E59",
+      };
     case "arbitrum":
       return {
         GELATO: "0x4775aF8FEf4809fE10bf05867d2b038a4b5B2146",
@@ -154,6 +158,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x7598e84B2E114AB62CAB288CE5f7d5f6bad35BbA",
       };
+    case "polygonBlackberry":
+      return {
+        GELATO: "0x30056FD86993624B72c7400bB4D7b29F05928E59",
+      };
     case "polygonZk":
       return {
         GELATO: "0x08EFb6D315c7e74C39620c9AAEA289730f43a429",
@@ -167,6 +175,10 @@ export const getAddresses = (network: string): Addresses => {
         GELATO: "0x1861708A1F55F433BaDE81895815c481e0c33448",
       };
     case "rari":
+      return {
+        GELATO: "0xb0cb899251086ed70e5d2c8d733D2896Fd989850",
+      };
+    case "real":
       return {
         GELATO: "0xb0cb899251086ed70e5d2c8d733D2896Fd989850",
       };
@@ -191,6 +203,10 @@ export const getAddresses = (network: string): Addresses => {
         GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
       };
     case "unrealOrbit":
+      return {
+        GELATO: "0x30056FD86993624B72c7400bB4D7b29F05928E59",
+      };
+    case "verifyTestnet":
       return {
         GELATO: "0x30056FD86993624B72c7400bB4D7b29F05928E59",
       };
