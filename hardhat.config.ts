@@ -417,7 +417,7 @@ const config: HardhatUserConfig = {
     gelatoorbittestnetDev: {
       accounts: devAccounts,
       chainId: 88153591557,
-      url: `https://rpc.gelato-orbit-anytrust-testnet.gelato.digital`,
+      url: `https://rpc.arb-blueberry.gelato.digital`,
     },
     lineaGoerliDev: {
       accounts: devAccounts,
