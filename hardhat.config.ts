@@ -295,6 +295,11 @@ const config: HardhatUserConfig = {
       url: "https://rpc.chiadochain.net",
       gasPrice: 1500000000,
     },
+    connextSepolia: {
+      accounts,
+      chainId: 6398,
+      url: `https://rpc.connext-sepolia.gelato.digital`,
+    },
     gelatoorbittestnet: {
       accounts,
       chainId: 88153591557,
