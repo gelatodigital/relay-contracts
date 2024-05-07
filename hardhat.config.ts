@@ -183,6 +183,11 @@ const config: HardhatUserConfig = {
       chainId: 59144,
       url: `https://rpc.linea.build`,
     },
+    lisk: {
+      url: `https://rpc.api.lisk.com`,
+      chainId: 1135,
+      accounts,
+    },
     metis: {
       accounts,
       chainId: 1088,
@@ -251,11 +256,21 @@ const config: HardhatUserConfig = {
     },
 
     // Staging
+    alephzeroTestnet: {
+      accounts,
+      chainId: 2039,
+      url: `https://rpc.alephzero-testnet.gelato.digital`,
+    },
     amoy: {
       accounts,
       chainId: 80002,
       url: `https://rpc-amoy.polygon.technology`,
       gasPrice: 40000000000,
+    },
+    anomalyAndromeda: {
+      accounts,
+      chainId: 241120,
+      url: `https://rpc.anomaly-andromeda.anomalygames.io`,
     },
     arbitrumGoerli: {
       accounts,
