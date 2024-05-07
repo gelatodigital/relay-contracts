@@ -295,6 +295,11 @@ const config: HardhatUserConfig = {
       url: "https://rpc.chiadochain.net",
       gasPrice: 1500000000,
     },
+    connextSepolia: {
+      accounts,
+      chainId: 6398,
+      url: `https://rpc.connext-sepolia.gelato.digital`,
+    },
     gelatoorbittestnet: {
       accounts,
       chainId: 88153591557,
@@ -402,11 +407,22 @@ const config: HardhatUserConfig = {
     },
 
     // Dev
+
+    amoyDev: {
+      accounts: devAccounts,
+      chainId: 80002,
+      url: `https://rpc-amoy.polygon.technology`,
+    },
     baseGoerliDev: {
       accounts: devAccounts,
       chainId: 84531,
       url: "https://goerli.base.org",
       gasPrice: 150000005,
+    },
+    gelatoorbittestnetDev: {
+      accounts: devAccounts,
+      chainId: 88153591557,
+      url: `https://rpc.arb-blueberry.gelato.digital`,
     },
     lineaGoerliDev: {
       accounts: devAccounts,
