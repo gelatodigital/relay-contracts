@@ -234,6 +234,11 @@ const config: HardhatUserConfig = {
       chainId: 1729,
       url: "https://rpc.reya.network",
     },
+    rootstock: {
+      url: `https://public-node.rsk.co`,
+      accounts,
+      chainId: 30,
+    },
     shibarium: {
       accounts,
       chainId: 109,
