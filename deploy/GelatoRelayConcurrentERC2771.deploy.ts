@@ -1,21 +1,21 @@
-import { deployments, getNamedAccounts } from "hardhat";
+import hre, { deployments, ethers, getNamedAccounts } from "hardhat";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { sleep } from "../src/utils";
 import { getAddresses } from "../src/addresses";
 import { setCode } from "@nomicfoundation/hardhat-network-helpers";
 
+const isHardhat = hre.network.name === "hardhat";
+const isDevEnv = hre.network.name.endsWith("Dev");
+const isDynamicNetwork = hre.network.isDynamic;
+
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
   const {
     deployer: hardhatAccount,
-    relayConcurrentERC2771Deployer,
-    devRelayConcurrentERC2771Deployer,
+    relayDeployer,
     gelatoRelayConcurrentERC2771,
   } = await getNamedAccounts();
-
-  const isHardhat = hre.network.name === "hardhat";
-  const isDevEnv = hre.network.name.endsWith("Dev");
 
   let deployer: string;
 
@@ -27,14 +27,12 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     );
     console.log(`\n IS DEV ENV: ${isDevEnv} \n`);
 
-    deployer = isDevEnv
-      ? devRelayConcurrentERC2771Deployer
-      : relayConcurrentERC2771Deployer;
+    deployer = relayDeployer;
 
     await sleep(5000);
   }
 
-  const { GELATO } = getAddresses(hre.network.name);
+  const { GELATO } = getAddresses(hre.network.name, isDynamicNetwork);
 
   if (!GELATO) {
     console.error(`GELATO not defined on network: ${hre.network.name}`);
@@ -43,6 +41,9 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   await deploy("GelatoRelayConcurrentERC2771", {
     from: deployer,
+    deterministicDeployment: isDevEnv
+      ? ethers.utils.formatBytes32String("dev")
+      : ethers.utils.formatBytes32String("prod"), // The value is used as salt in create2
     args: [GELATO],
     log: !isHardhat,
   });
@@ -60,8 +61,12 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   }
 };
 
-func.skip = async (hre: HardhatRuntimeEnvironment) => {
-  return hre.network.name !== "hardhat";
+func.skip = async () => {
+  if (isDynamicNetwork) {
+    return false;
+  } else {
+    return !isHardhat;
+  }
 };
 
 func.tags = ["GelatoRelayConcurrentERC2771"];
