@@ -2,8 +2,26 @@
 
 Solidity Contracts + Tests.
 
-## Deploying a new network from the CLI
+## Deploying a new network locally
+
+Create .env file and include the following
 
 ```
-HARDHAT_DYNAMIC_NETWORK_NAME=<network_name> HARDHAT_DYNAMIC_NETWORK_URL=<network_rpc_url> HARDHAT_DYNAMIC_NETWORK_CONTRACTS_GELATO=<gelato_contract_address> npx hardhat deploy --network dynamic
+RELAY_DEPLOYER_PK=
+HARDHAT_DYNAMIC_NETWORK_NAME=
+HARDHAT_DYNAMIC_NETWORK_URL=
+HARDHAT_DYNAMIC_NETWORK_CONTRACTS_GELATO=
+HARDHAT_DYNAMIC_NETWORK_NO_DETERMINISTIC_DEPLOYMENT=
+```
+
+### Via CLI
+
+```
+npx hardhat deploy --network dynamic
+```
+
+### Via Docker
+
+```
+bash src/scripts/deploy-docker.sh
 ```

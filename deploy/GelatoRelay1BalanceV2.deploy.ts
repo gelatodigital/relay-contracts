@@ -6,6 +6,8 @@ import { sleep } from "../src/utils";
 const isHardhat = hre.network.name === "hardhat";
 const isDevEnv = hre.network.name.endsWith("Dev");
 const isDynamicNetwork = hre.network.isDynamic;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const noDeterministicDeployment = hre.network.noDeterministicDeployment;
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
@@ -28,7 +30,9 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   await deploy("GelatoRelay1BalanceV2", {
     from: deployer,
-    deterministicDeployment: isDevEnv
+    deterministicDeployment: noDeterministicDeployment
+      ? false
+      : isDevEnv
       ? ethers.utils.formatBytes32String("dev")
       : ethers.utils.formatBytes32String("prod"), // The value is used as salt in create2
     log: !isHardhat,
