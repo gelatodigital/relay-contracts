@@ -115,7 +115,6 @@ const config: HardhatUserConfig = {
     },
 
     // Smart Contracts for local testing
-    //TODO: Update these addresses when deployed with create2
     gelatoRelay: {
       hardhat: "0xaBcC9b596420A9E9172FD5938620E265a0f9Df92",
     },
