@@ -158,6 +158,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x266E4AB6baD069aFc28d3C2CC129f6F8455b1dc2",
       };
+    case "openCampusCodex":
+      return {
+        GELATO: "0x30056FD86993624B72c7400bB4D7b29F05928E59",
+      };
     case "optimismGoerli":
       return {
         GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",

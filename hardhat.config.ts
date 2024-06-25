@@ -360,6 +360,11 @@ const config: HardhatUserConfig = {
       chainId: 80001,
       url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_ID}`,
     },
+    openCampusCodex: {
+      accounts,
+      url: `https://rpc.open-campus-codex.gelato.digital`,
+      chainId: 656476,
+    },
     optimismGoerli: {
       accounts,
       url: `https://opt-goerli.g.alchemy.com/v2/${ALCHEMY_ID}`,
