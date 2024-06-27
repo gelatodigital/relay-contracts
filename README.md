@@ -25,3 +25,9 @@ npx hardhat deploy --network dynamic
 ```
 bash src/scripts/deploy-docker.sh
 ```
+
+Include the following environment variables to verify the contracts:
+```
+HARDHAT_DYNAMIC_NETWORK_ETHERSCAN_VERIFY_URL=
+HARDHAT_DYNAMIC_NETWORK_ETHERSCAN_API_KEY=
+```
