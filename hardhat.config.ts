@@ -394,7 +394,7 @@ const config: HardhatUserConfig = {
     },
     reyaCronos: {
       accounts,
-      chainId: 89346161,
+      chainId: 89346162,
       url: "https://rpc.reya-cronos.gelato.digital",
     },
     sepolia: {
