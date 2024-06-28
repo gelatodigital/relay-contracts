@@ -1,9 +1,16 @@
+import hre from "hardhat";
 /* eslint-disable @typescript-eslint/naming-convention */
 export interface Addresses {
   GELATO: string;
 }
 
-export const getAddresses = (network: string): Addresses => {
+export const getAddresses = (
+  network: string,
+  isDynamicNetwork: boolean
+): Addresses => {
+  if (isDynamicNetwork) {
+    return hre.network.contracts;
+  }
   switch (network) {
     case "hardhat":
       return {
