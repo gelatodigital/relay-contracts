@@ -216,7 +216,7 @@ export const getAddresses = (network: string): Addresses => {
       };
     case "reyaCronos":
       return {
-        GELATO: "0x30056FD86993624B72c7400bB4D7b29F05928E59",
+        GELATO: "0x683913B3A32ada4F8100458A3E1675425BdAa7DF",
       };
     case "rootstock":
       return {
