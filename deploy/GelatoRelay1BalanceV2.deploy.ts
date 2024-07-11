@@ -1,6 +1,7 @@
-import hre, { deployments, ethers, getNamedAccounts } from "hardhat";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
+import hre, { deployments, getNamedAccounts } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { sleep } from "../src/utils";
 
 const isHardhat = hre.network.name === "hardhat";
@@ -33,8 +34,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     deterministicDeployment: noDeterministicDeployment
       ? false
       : isDevEnv
-      ? ethers.utils.formatBytes32String("dev")
-      : ethers.utils.formatBytes32String("prod"), // The value is used as salt in create2
+      ? keccak256(toUtf8Bytes("GelatoRelay1BalanceV2-dev"))
+      : keccak256(toUtf8Bytes("GelatoRelay1BalanceV2-prod")), // The value is used as salt in create2
     log: !isHardhat,
   });
 };
