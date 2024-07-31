@@ -137,6 +137,11 @@ const config: HardhatUserConfig = {
     },
 
     // Prod
+    alephzero: {
+      accounts,
+      chainId: 41455,
+      url: `https://rpc.alephzero.raas.gelato.cloud`,
+    },
     arbitrum: {
       accounts,
       chainId: 42161,
