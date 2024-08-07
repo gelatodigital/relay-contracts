@@ -309,6 +309,11 @@ const config: HardhatUserConfig = {
       url: `https://sepolia.base.org`,
       gasPrice: 150000005,
     },
+    berachainbartio: {
+      accounts,
+      chainId: 80084,
+      url: `https://bartio.rpc.berachain.com/`,
+    },
     blastSepolia: {
       accounts,
       chainId: 168587773,
