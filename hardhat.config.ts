@@ -137,6 +137,11 @@ const config: HardhatUserConfig = {
     },
 
     // Prod
+    alephzero: {
+      accounts,
+      chainId: 41455,
+      url: `https://rpc.alephzero.raas.gelato.cloud`,
+    },
     arbitrum: {
       accounts,
       chainId: 42161,
@@ -303,6 +308,11 @@ const config: HardhatUserConfig = {
       chainId: 84532,
       url: `https://sepolia.base.org`,
       gasPrice: 150000005,
+    },
+    berachainbartio: {
+      accounts,
+      chainId: 80084,
+      url: `https://bartio.rpc.berachain.com/`,
     },
     blastSepolia: {
       accounts,
