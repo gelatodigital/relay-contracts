@@ -224,6 +224,11 @@ const config: HardhatUserConfig = {
       chainId: 1101,
       url: "https://zkevm-rpc.com",
     },
+    prism: {
+      url: `https://mainnet-rpc.lumia.org`,
+      accounts,
+      chainId: 994873017,
+    },
     rari: {
       accounts,
       chainId: 1380012617,
