@@ -340,6 +340,11 @@ const config: HardhatUserConfig = {
       chainId: 6398,
       url: `https://rpc.connext-sepolia.gelato.digital`,
     },
+    ethernityTestnet: {
+      accounts,
+      chainId: 233,
+      url: `https://testnet.ethernitychain.io`,
+    },
     gelatoorbittestnet: {
       accounts,
       chainId: 88153591557,
