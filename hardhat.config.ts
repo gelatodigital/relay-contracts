@@ -1,15 +1,15 @@
-import { extendEnvironment, HardhatUserConfig, subtask } from "hardhat/config";
 import { TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD } from "hardhat/builtin-tasks/task-names";
+import { extendEnvironment, HardhatUserConfig, subtask } from "hardhat/config";
 import path from "path";
 
 // PLUGINS
-import "@nomiclabs/hardhat-ethers";
+import "@matterlabs/hardhat-zksync-deploy";
+import "@matterlabs/hardhat-zksync-solc";
+import "@matterlabs/hardhat-zksync-verify";
 import "@nomicfoundation/hardhat-chai-matchers";
+import "@nomiclabs/hardhat-ethers";
 import "@typechain/hardhat";
 import "hardhat-deploy";
-import "@matterlabs/hardhat-zksync-solc";
-import "@matterlabs/hardhat-zksync-deploy";
-import "@matterlabs/hardhat-zksync-verify";
 
 // ================================= TASKS =========================================
 // ❗COMMENT IN to use || COMMENT OUT before git push to have CI work
@@ -111,7 +111,8 @@ const config: HardhatUserConfig = {
       default: 0,
     },
     relayDeployer: {
-      default: "0xd1Ac051Dc0E1366502eF3Fe4D754fbeC6986a177",
+      // default: "0xd1Ac051Dc0E1366502eF3Fe4D754fbeC6986a177", //Todo: update relay deployer
+      default: 0,
     },
 
     // Smart Contracts for local testing
