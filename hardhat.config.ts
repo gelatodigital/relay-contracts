@@ -324,6 +324,11 @@ const config: HardhatUserConfig = {
       chainId: 168587773,
       url: `https://sepolia.blast.io`,
     },
+    bonito: {
+      accounts,
+      chainId: 69658185,
+      url: `https://rpc.bonito-testnet.t.raas.gelato.cloud`,
+    },
     chiado: {
       accounts,
       chainId: 10200,
