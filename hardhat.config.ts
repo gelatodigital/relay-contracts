@@ -178,6 +178,11 @@ const config: HardhatUserConfig = {
       chainId: 1,
       url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ID}`,
     },
+    ethernity: {
+      url: `https://mainnet.ethernitychain.io`,
+      accounts,
+      chainId: 183,
+    },
     gnosis: {
       accounts,
       chainId: 100,
