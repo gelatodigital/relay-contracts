@@ -10,6 +10,10 @@ export const getAddresses = (network: string): Addresses => {
         // We fork ethereum for local testing
         GELATO: "0x3CACa7b48D0573D793d3b0279b5F0029180E83b6",
       };
+    case "alephzero":
+      return {
+        GELATO: "0xb0cb899251086ed70e5d2c8d733D2896Fd989850",
+      };
     case "alephzeroTestnet":
       return {
         GELATO: "0x30056FD86993624B72c7400bB4D7b29F05928E59",
@@ -66,6 +70,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0xCf8EDB3333Fae73b23f689229F4De6Ac95d1f707",
       };
+    case "berachainbartio":
+      return {
+        GELATO: "0x30056FD86993624B72c7400bB4D7b29F05928E59",
+      };
     case "blast":
       return {
         GELATO: "0xFec1E33eBe899906Ff63546868A26E1028700b0e",
@@ -78,6 +86,10 @@ export const getAddresses = (network: string): Addresses => {
       return {
         GELATO: "0x7C5c4Af1618220C090A6863175de47afb20fa9Df",
       };
+    case "bonito":
+      return {
+        GELATO: "0x30056FD86993624B72c7400bB4D7b29F05928E59",
+      };
     case "chiado":
       return {
         GELATO: "0xF82D64357D9120a760e1E4C75f646C0618eFc2F3",
@@ -89,6 +101,14 @@ export const getAddresses = (network: string): Addresses => {
     case "ethereum":
       return {
         GELATO: "0x3CACa7b48D0573D793d3b0279b5F0029180E83b6",
+      };
+    case "ethernityTestnet":
+      return {
+        GELATO: "0x30056FD86993624B72c7400bB4D7b29F05928E59",
+      };
+    case "ethernity":
+      return {
+        GELATO: "0xb0cb899251086ed70e5d2c8d733D2896Fd989850",
       };
     case "gnosis":
       return {
@@ -201,6 +221,10 @@ export const getAddresses = (network: string): Addresses => {
     case "polygonZkGoerliDev":
       return {
         GELATO: "0x1861708A1F55F433BaDE81895815c481e0c33448",
+      };
+    case "prism":
+      return {
+        GELATO: "0xb0cb899251086ed70e5d2c8d733D2896Fd989850",
       };
     case "rari":
       return {

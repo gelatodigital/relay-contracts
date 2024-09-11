@@ -137,6 +137,11 @@ const config: HardhatUserConfig = {
     },
 
     // Prod
+    alephzero: {
+      accounts,
+      chainId: 41455,
+      url: `https://rpc.alephzero.raas.gelato.cloud`,
+    },
     arbitrum: {
       accounts,
       chainId: 42161,
@@ -172,6 +177,11 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 1,
       url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_ID}`,
+    },
+    ethernity: {
+      url: `https://mainnet.ethernitychain.io`,
+      accounts,
+      chainId: 183,
     },
     gnosis: {
       accounts,
@@ -218,6 +228,11 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 1101,
       url: "https://zkevm-rpc.com",
+    },
+    prism: {
+      url: `https://mainnet-rpc.lumia.org`,
+      accounts,
+      chainId: 994873017,
     },
     rari: {
       accounts,
@@ -304,10 +319,20 @@ const config: HardhatUserConfig = {
       url: `https://sepolia.base.org`,
       gasPrice: 150000005,
     },
+    berachainbartio: {
+      accounts,
+      chainId: 80084,
+      url: `https://bartio.rpc.berachain.com/`,
+    },
     blastSepolia: {
       accounts,
       chainId: 168587773,
       url: `https://sepolia.blast.io`,
+    },
+    bonito: {
+      accounts,
+      chainId: 69658185,
+      url: `https://rpc.bonito-testnet.t.raas.gelato.cloud`,
     },
     chiado: {
       accounts,
@@ -319,6 +344,11 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 6398,
       url: `https://rpc.connext-sepolia.gelato.digital`,
+    },
+    ethernityTestnet: {
+      accounts,
+      chainId: 233,
+      url: `https://testnet.ethernitychain.io`,
     },
     gelatoorbittestnet: {
       accounts,
