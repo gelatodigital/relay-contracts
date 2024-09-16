@@ -183,6 +183,16 @@ const config: HardhatUserConfig = {
       accounts,
       chainId: 183,
     },
+    everclear: {
+      url: `https://rpc.everclear.raas.gelato.cloud`,
+      accounts,
+      chainId: 25327,
+    },
+    filecoin: {
+      url: `https://filecoin.chainup.net/rpc/v1`,
+      accounts,
+      chainId: 314,
+    },
     gnosis: {
       accounts,
       chainId: 100,
