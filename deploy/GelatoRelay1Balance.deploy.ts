@@ -1,25 +1,28 @@
-import { deployments, getNamedAccounts } from "hardhat";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { DeployFunction } from "hardhat-deploy/types";
-import { sleep } from "../src/utils";
-import { getAddresses } from "../src/addresses";
-import { IEIP173Proxy } from "../typechain";
 import {
   impersonateAccount,
   setBalance,
 } from "@nomicfoundation/hardhat-network-helpers";
+import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
+import hre, { deployments, ethers, getNamedAccounts } from "hardhat";
+import { DeployFunction } from "hardhat-deploy/types";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { getAddresses } from "../src/addresses";
+import { sleep } from "../src/utils";
+import { EIP173Proxy, IEIP173Proxy } from "../typechain";
+
+const isHardhat = hre.network.name === "hardhat";
+const isDevEnv = hre.network.name.endsWith("Dev");
+const isDynamicNetwork = hre.network.isDynamic;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const noDeterministicDeployment = hre.network.noDeterministicDeployment;
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
   const {
     deployer: hardhatAccount,
-    relay1BalanceDeployer,
-    devRelay1BalanceDeployer,
+    relayDeployer,
     gelatoRelay1Balance,
   } = await getNamedAccounts();
-
-  const isHardhat = hre.network.name === "hardhat";
-  const isDevEnv = hre.network.name.endsWith("Dev");
 
   let deployer: string;
 
@@ -31,26 +34,47 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     );
     console.log(`\n IS DEV ENV: ${isDevEnv} \n`);
 
-    deployer = isDevEnv ? devRelay1BalanceDeployer : relay1BalanceDeployer;
+    deployer = relayDeployer;
 
     await sleep(5000);
   }
 
-  const { GELATO } = getAddresses(hre.network.name);
+  const { GELATO } = getAddresses(hre.network.name, isDynamicNetwork);
 
   if (!GELATO) {
     console.error(`GELATO not defined on network: ${hre.network.name}`);
     process.exit(1);
   }
 
-  await deploy("GelatoRelay1Balance", {
+  const deployment = await deploy("GelatoRelay1Balance", {
     from: deployer,
     proxy: {
       proxyContract: "EIP173Proxy",
+      proxyArgs: [ethers.constants.AddressZero, deployer, "0x"],
     },
+    deterministicDeployment: noDeterministicDeployment
+      ? false
+      : isDevEnv
+      ? keccak256(toUtf8Bytes("GelatoRelay1Balance-dev"))
+      : keccak256(toUtf8Bytes("GelatoRelay1Balance-prod")), // The value is used as salt in create2
     args: [GELATO],
     log: !isHardhat,
   });
+
+  if (deployment.newlyDeployed) {
+    const signer = await hre.ethers.getSigner(deployer);
+
+    const proxy = (await hre.ethers.getContractAt(
+      "EIP173Proxy",
+      deployment.address,
+      signer
+    )) as EIP173Proxy;
+
+    const implementation = (
+      await deployments.get("GelatoRelay1Balance_Implementation")
+    ).address;
+    await proxy.upgradeTo(implementation);
+  }
 
   // For local testing we want to upgrade the forked
   // instance of gelatoRelay to our locally deployed implementation
@@ -83,8 +107,12 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   }
 };
 
-func.skip = async (hre: HardhatRuntimeEnvironment) => {
-  return hre.network.name !== "hardhat";
+func.skip = async () => {
+  if (isDynamicNetwork) {
+    return false;
+  } else {
+    return !isHardhat;
+  }
 };
 
 func.tags = ["GelatoRelay1Balance"];

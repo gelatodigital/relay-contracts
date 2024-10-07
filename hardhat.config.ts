@@ -1,13 +1,15 @@
-import { HardhatUserConfig } from "hardhat/config";
+import { TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD } from "hardhat/builtin-tasks/task-names";
+import { extendEnvironment, HardhatUserConfig, subtask } from "hardhat/config";
+import path from "path";
 
 // PLUGINS
-import "@nomiclabs/hardhat-ethers";
+import "@matterlabs/hardhat-zksync-deploy";
+import "@matterlabs/hardhat-zksync-solc";
+import "@matterlabs/hardhat-zksync-verify";
 import "@nomicfoundation/hardhat-chai-matchers";
+import "@nomiclabs/hardhat-ethers";
 import "@typechain/hardhat";
 import "hardhat-deploy";
-import "@matterlabs/hardhat-zksync-solc";
-import "@matterlabs/hardhat-zksync-deploy";
-import "@matterlabs/hardhat-zksync-verify";
 
 // ================================= TASKS =========================================
 // ❗COMMENT IN to use || COMMENT OUT before git push to have CI work
@@ -15,6 +17,8 @@ import "./hardhat/tasks";
 
 // Process Env Variables
 import * as dotenv from "dotenv";
+import { ethers } from "ethers";
+import { verifyRequiredEnvVar } from "./src/utils";
 dotenv.config({ path: __dirname + "/.env" });
 
 const ALCHEMY_ID = process.env.ALCHEMY_ID;
@@ -22,49 +26,81 @@ const ALCHEMY_ID = process.env.ALCHEMY_ID;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
 const RELAY_DEPLOYER_PK = process.env.RELAY_DEPLOYER_PK;
-const RELAY_1BALANCE_DEPLOYER_PK = process.env.RELAY_1BALANCE_DEPLOYER_PK;
-const RELAY_ERC2771_DEPLOYER_PK = process.env.RELAY_ERC2771_DEPLOYER_PK;
-const RELAY_CONCURRENT_ERC2771_DEPLOYER_PK =
-  process.env.RELAY_CONCURRENT_ERC2771_DEPLOYER_PK;
 
-const DEV_RELAY_DEPLOYER_PK = process.env.DEV_RELAY_DEPLOYER_PK;
-const DEV_RELAY_1BALANCE_DEPLOYER_PK =
-  process.env.DEV_RELAY_1BALANCE_DEPLOYER_PK;
-const DEV_RELAY_ERC2771_DEPLOYER_PK = process.env.DEV_RELAY_ERC2771_DEPLOYER_PK;
-const DEV_RELAY_CONCURRENT_ERC2771_DEPLOYER_PK =
-  process.env.DEV_RELAY_CONCURRENT_ERC2771_DEPLOYER_PK;
-
-// CAUTION: for deployments put ALL keys in .env
-let accounts: string[] = [];
-if (
-  RELAY_DEPLOYER_PK &&
-  RELAY_1BALANCE_DEPLOYER_PK &&
-  RELAY_ERC2771_DEPLOYER_PK &&
-  RELAY_CONCURRENT_ERC2771_DEPLOYER_PK
-) {
-  accounts = [
-    RELAY_DEPLOYER_PK,
-    RELAY_1BALANCE_DEPLOYER_PK,
-    RELAY_ERC2771_DEPLOYER_PK,
-    RELAY_CONCURRENT_ERC2771_DEPLOYER_PK,
-  ];
+if (!RELAY_DEPLOYER_PK) {
+  throw new Error("RELAY_DEPLOYER_PK is missing");
 }
+const accounts: string[] = [RELAY_DEPLOYER_PK];
 
-// CAUTION: for deployments put ALL keys in .env
-let devAccounts: string[] = [];
-if (
-  DEV_RELAY_DEPLOYER_PK &&
-  DEV_RELAY_1BALANCE_DEPLOYER_PK &&
-  DEV_RELAY_ERC2771_DEPLOYER_PK &&
-  DEV_RELAY_CONCURRENT_ERC2771_DEPLOYER_PK
-) {
-  devAccounts = [
-    DEV_RELAY_DEPLOYER_PK,
-    DEV_RELAY_1BALANCE_DEPLOYER_PK,
-    DEV_RELAY_ERC2771_DEPLOYER_PK,
-    DEV_RELAY_CONCURRENT_ERC2771_DEPLOYER_PK,
-  ];
-}
+extendEnvironment((hre) => {
+  if (hre.network.name === "dynamic") {
+    hre.network.isDynamic = true;
+    const networkName = process.env.HARDHAT_DYNAMIC_NETWORK_NAME as
+      | string
+      | undefined;
+    const networkUrl = process.env.HARDHAT_DYNAMIC_NETWORK_URL as
+      | string
+      | undefined;
+    const gelatoContractAddress = process.env
+      .HARDHAT_DYNAMIC_NETWORK_CONTRACTS_GELATO as string | undefined;
+    const noDeterministicDeployment = process.env
+      .HARDHAT_DYNAMIC_NETWORK_NO_DETERMINISTIC_DEPLOYMENT as
+      | string
+      | undefined;
+
+    verifyRequiredEnvVar("HARDHAT_DYNAMIC_NETWORK_NAME", networkName);
+    verifyRequiredEnvVar("HARDHAT_DYNAMIC_NETWORK_URL", networkUrl);
+    verifyRequiredEnvVar(
+      "HARDHAT_DYNAMIC_NETWORK_CONTRACTS_GELATO",
+      gelatoContractAddress
+    );
+
+    hre.network.name = networkName;
+    hre.network.config.url = networkUrl;
+    hre.network.contracts = {
+      GELATO: ethers.utils.getAddress(gelatoContractAddress),
+    };
+    hre.network.noDeterministicDeployment =
+      noDeterministicDeployment === "true";
+  } else {
+    hre.network.isDynamic = false;
+    hre.network.noDeterministicDeployment = hre.network.config.zksync ?? false;
+  }
+});
+
+subtask(
+  TASK_COMPILE_SOLIDITY_GET_SOLC_BUILD,
+  async (
+    args: {
+      solcVersion: string;
+    },
+    hre,
+    runSuper
+  ) => {
+    // Full list of solc versions: https://github.com/ethereum/solc-bin/blob/gh-pages/bin/list.json
+    // Search by the version number in the list, there will be `nightly` versions as well along with the main in the list.json
+    // Find the one that is NOT a nightly build, and copy the `path` field in the build object
+    // The solidity compiler will be found at `https://github.com/ethereum/solc-bin/blob/gh-pages/bin/${path-field-in-the-build}`
+    if (args.solcVersion === "0.8.20") {
+      const compilerPath = path.join(
+        __dirname,
+        "src/solc",
+        "soljson-v0.8.20+commit.a1b79de6.js"
+      );
+
+      return {
+        compilerPath,
+        isSolcJs: true,
+        version: args.solcVersion,
+        longVersion: "0.8.20+commit.a1b79de6",
+      };
+    }
+
+    // Only overrides the compiler for version 0.8.20,
+    // the runSuper function allows us to call the default subtask.
+    return runSuper();
+  }
+);
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -74,34 +110,8 @@ const config: HardhatUserConfig = {
     deployer: {
       default: 0,
     },
-    // Deploys GelatoRelay.sol
     relayDeployer: {
-      default: "0xd1Ac051Dc0E1366502eF3Fe4D754fbeC6986a177",
-    },
-    // Deploys GelatoRelay1Balance.sol
-    relay1BalanceDeployer: {
-      default: "0x562c4e878b5Cd1f64007358695e8187CB4517c64",
-    },
-    // Deploys GelatoRelayERC2771.sol and GelatoRelay1BalanceERC2771.sol
-    relayERC2771Deployer: {
-      default: "0x346389e519536A049588b8ADcde807B69A175939",
-    },
-    relayConcurrentERC2771Deployer: {
-      default: "0x4e503a754507D04d6c4ac323b0bB77636C1EC80C",
-    },
-
-    // Dev Relay Deployers
-    devRelayDeployer: {
-      default: "0x1100555739378dEe764377bbc091ceae1a3574F1",
-    },
-    devRelay1BalanceDeployer: {
-      default: "0x2d20e2882f4052eecDa682F6211477E4eBfe4B06",
-    },
-    devRelayERC2771Deployer: {
-      default: "0xbfdFA5b712F5F36981E09945A5d6aF180dbF4b94",
-    },
-    devRelayConcurrentERC2771Deployer: {
-      default: "0xD45e83690D56906b784D0e7f2cd79aD1bBEe31dc",
+      default: "0x7aD7b5F4F0E5Df7D6Aa5444516429AF77babc3A0",
     },
 
     // Smart Contracts for local testing
@@ -134,6 +144,10 @@ const config: HardhatUserConfig = {
         url: `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_ID}`,
         blockNumber: 17146095,
       },
+    },
+    dynamic: {
+      accounts,
+      url: "",
     },
 
     // Prod
@@ -474,44 +488,44 @@ const config: HardhatUserConfig = {
     // Dev
 
     amoyDev: {
-      accounts: devAccounts,
+      accounts,
       chainId: 80002,
       url: `https://rpc-amoy.polygon.technology`,
     },
     baseGoerliDev: {
-      accounts: devAccounts,
+      accounts,
       chainId: 84531,
       url: "https://goerli.base.org",
       gasPrice: 150000005,
     },
     gelatoorbittestnetDev: {
-      accounts: devAccounts,
+      accounts,
       chainId: 88153591557,
       url: `https://rpc.arb-blueberry.gelato.digital`,
     },
     lineaGoerliDev: {
-      accounts: devAccounts,
+      accounts,
       chainId: 59140,
       url: `https://rpc.goerli.linea.build`,
     },
     meldkanazawaDev: {
-      accounts: devAccounts,
+      accounts,
       chainId: 222000222,
       url: `https://subnets.avax.network/meld/testnet/rpc`,
     },
     mumbaiDev: {
-      accounts: devAccounts,
+      accounts,
       chainId: 80001,
       url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_ID}`,
       gasPrice: 1500000000,
     },
     polygonZkGoerliDev: {
-      accounts: devAccounts,
+      accounts,
       chainId: 1442,
       url: "https://rpc.public.zkevm-test.net",
     },
     zksyncGoerliDev: {
-      accounts: devAccounts,
+      accounts,
       chainId: 280,
       url: "https://testnet.era.zksync.dev",
       zksync: true,
