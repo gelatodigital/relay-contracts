@@ -298,6 +298,12 @@ const config: HardhatUserConfig = {
       url: "https://rpc.zora.co",
       gasPrice: 1500000000,
     },
+    abstract: {
+      accounts,
+      zksync: true,
+      url: "https://solitary-ultra-emerald.abstract-mainnet.quiknode.pro/7e6af119737a70a9b3d9128931ecf0b72e5658c4/",
+      chainId: 2741,
+    },
 
     // Staging
     alephzeroTestnet: {
@@ -559,7 +565,7 @@ const config: HardhatUserConfig = {
   },
 
   zksolc: {
-    version: "1.3.13",
+    version: "1.5.7",
     compilerSource: "binary",
     settings: {
       isSystem: false,
