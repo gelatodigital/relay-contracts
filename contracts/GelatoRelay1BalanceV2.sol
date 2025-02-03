@@ -3,7 +3,7 @@ pragma solidity 0.8.20;
 
 import {IGelatoRelay1BalanceV2} from "./interfaces/IGelatoRelay1BalanceV2.sol";
 import {IGelato1BalanceV2} from "./interfaces/IGelato1BalanceV2.sol";
-import {GelatoBytes} from "./lib/GelatoBytes.sol";
+import {GelatoCallUtils} from "./lib/GelatoCallUtils.sol";
 
 /// @title  Gelato Relay V2 contract
 /// @notice This contract deals with Gelato 1Balance payments
@@ -11,7 +11,7 @@ import {GelatoBytes} from "./lib/GelatoBytes.sol";
 /// @dev    Maliciously crafted transaction payloads could wipe out any funds left here
 // solhint-disable-next-line max-states-count
 contract GelatoRelay1BalanceV2 is IGelatoRelay1BalanceV2, IGelato1BalanceV2 {
-    using GelatoBytes for bytes;
+    using GelatoCallUtils for address;
 
     /// @notice Relay call + One Balance payment - with sponsor authentication
     /// @dev    This method can be called directly without passing through the diamond
@@ -36,8 +36,10 @@ contract GelatoRelay1BalanceV2 is IGelatoRelay1BalanceV2, IGelato1BalanceV2 {
         (_vs);
 
         // INTERACTIONS
-        (bool success, bytes memory data) = _target.call(_data);
-        if (!success) data.revertWithError("GelatoRelay.sponsoredCallV2:");
+        _target.revertingContractCallNoCopy(
+            _data,
+            "GelatoRelay.sponsoredCallV2:"
+        );
 
         emit LogUseGelato1BalanceV2();
     }
