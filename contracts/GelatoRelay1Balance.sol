@@ -49,7 +49,7 @@ contract GelatoRelay1Balance is IGelatoRelay1Balance, IGelato1Balance {
         );
 
         // INTERACTIONS
-        _call.target.revertingContractCall(
+        _call.target.revertingContractCallNoCopy(
             _call.data,
             "GelatoRelay.sponsoredCall:"
         );

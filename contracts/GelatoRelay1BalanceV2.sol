@@ -36,7 +36,10 @@ contract GelatoRelay1BalanceV2 is IGelatoRelay1BalanceV2, IGelato1BalanceV2 {
         (_vs);
 
         // INTERACTIONS
-        _target.revertingContractCall(_data, "GelatoRelay.sponsoredCallV2:");
+        _target.revertingContractCallNoCopy(
+            _data,
+            "GelatoRelay.sponsoredCallV2:"
+        );
 
         emit LogUseGelato1BalanceV2();
     }

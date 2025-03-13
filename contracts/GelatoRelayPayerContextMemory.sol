@@ -58,7 +58,7 @@ contract GelatoRelayPayerContextMemory is IGelatoRelayPayerContextMemory {
 
         _relayContextByTarget[_target] = RelayContext(feeToken, fee);
 
-        _target.revertingContractCall(
+        _target.revertingContractCallNoCopy(
             _data,
             "GelatoRelayPayerContextMemory.callWithSyncFeeStoreContext:"
         );
