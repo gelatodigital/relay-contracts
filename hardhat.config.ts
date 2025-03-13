@@ -148,6 +148,7 @@ const config: HardhatUserConfig = {
     dynamic: {
       accounts,
       url: "",
+      
     },
 
     // Prod
