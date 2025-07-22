@@ -1,6 +1,6 @@
 import { setCode } from "@nomicfoundation/hardhat-network-helpers";
-import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
-import hre, { deployments, getNamedAccounts } from "hardhat";
+import { keccak256, toUtf8Bytes } from "ethers";
+import hre, { deployments, ethers, getNamedAccounts } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { getAddresses } from "../src/addresses";
@@ -9,6 +9,7 @@ import { sleep } from "../src/utils";
 const isHardhat = hre.network.name === "hardhat";
 const isDevEnv = hre.network.name.endsWith("Dev");
 const isDynamicNetwork = hre.network.isDynamic;
+const isTron = hre.network.name === "nile" || hre.network.name === "shasta";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const noDeterministicDeployment = hre.network.noDeterministicDeployment;
 
@@ -44,7 +45,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   await deploy("GelatoRelayConcurrentERC2771", {
     from: deployer,
-    deterministicDeployment: noDeterministicDeployment
+    deterministicDeployment: noDeterministicDeployment || isTron
       ? false
       : isDevEnv
       ? keccak256(toUtf8Bytes("GelatoRelayConcurrentERC2771-dev"))
@@ -53,21 +54,21 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     log: !isHardhat,
   });
 
-  // Overwrites already deployed relay contract for local testing
-  if (isHardhat) {
-    const gelatoRelayConcurrentERC2771Local = await (
-      await deployments.get("GelatoRelayConcurrentERC2771")
-    ).address;
+  // // Overwrites already deployed relay contract for local testing
+  // if (isHardhat) {
+  //   const gelatoRelayConcurrentERC2771Local = await (
+  //     await deployments.get("GelatoRelayConcurrentERC2771")
+  //   ).address;
 
-    await setCode(
-      gelatoRelayConcurrentERC2771,
-      await hre.ethers.provider.getCode(gelatoRelayConcurrentERC2771Local)
-    );
-  }
+  //   await setCode(
+  //     gelatoRelayConcurrentERC2771,
+  //     await ethers.provider.getCode(gelatoRelayConcurrentERC2771Local)
+  //   );
+  // }
 };
 
 func.skip = async () => {
-  if (isDynamicNetwork) {
+  if (isDynamicNetwork || isTron) {
     return false;
   } else {
     return !isHardhat;

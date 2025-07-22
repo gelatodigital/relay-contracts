@@ -301,6 +301,15 @@ export const getAddresses = (
       return {
         GELATO: "0xaF8447Ae9b68914E771b9C42e309CF76B98E2315",
       };
+    // TRON Networks - using deployed Gelato Diamond address
+    case "nile":
+      return {
+        GELATO: "0x58b7e84103F1ba7F1e4A0042aD60C12B38c54A14",
+      };
+    case "shasta":
+      return {
+        GELATO: "0x58b7e84103F1ba7F1e4A0042aD60C12B38c54A14",
+      };
     default:
       throw new Error(`No addresses for Network: ${network}`);
   }

@@ -1,6 +1,6 @@
 import { setCode } from "@nomicfoundation/hardhat-network-helpers";
-import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
-import hre, { deployments, getNamedAccounts } from "hardhat";
+import { keccak256, toUtf8Bytes } from "ethers";
+import hre, { deployments, ethers, getNamedAccounts } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { getAddresses } from "../src/addresses";
@@ -9,6 +9,7 @@ import { sleep } from "../src/utils";
 const isHardhat = hre.network.name === "hardhat";
 const isDevEnv = hre.network.name.endsWith("Dev");
 const isDynamicNetwork = hre.network.isDynamic;
+const isTron = hre.network.name === "nile" || hre.network.name === "shasta";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const noDeterministicDeployment = hre.network.noDeterministicDeployment;
 
@@ -44,7 +45,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   await deploy("GelatoRelay1BalanceERC2771", {
     from: deployer,
-    deterministicDeployment: noDeterministicDeployment
+    deterministicDeployment: noDeterministicDeployment || isTron
       ? false
       : isDevEnv
       ? keccak256(toUtf8Bytes("GelatoRelay1BalanceERC2771-dev"))
@@ -53,20 +54,21 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     log: !isHardhat,
   });
 
-  if (isHardhat) {
-    const gelatoRelay1BalanceERC2771Local = await (
-      await deployments.get("GelatoRelay1BalanceERC2771")
-    ).address;
+  // // For local testing - comment out for TRON deployment
+  // if (isHardhat) {
+  //   const gelatoRelay1BalanceERC2771Local = await (
+  //     await deployments.get("GelatoRelay1BalanceERC2771")
+  //   ).address;
 
-    await setCode(
-      gelatoRelay1BalanceERC2771,
-      await hre.ethers.provider.getCode(gelatoRelay1BalanceERC2771Local)
-    );
-  }
+  //   await setCode(
+  //     gelatoRelay1BalanceERC2771,
+  //     await ethers.provider.getCode(gelatoRelay1BalanceERC2771Local)
+  //   );
+  // }
 };
 
 func.skip = async () => {
-  if (isDynamicNetwork) {
+  if (isDynamicNetwork || isTron) {
     return false;
   } else {
     return !isHardhat;

@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "GelatoRelayFeeCollectorERC2771",
+  "sourceName": "@gelatonetwork/relay-context/contracts/GelatoRelayFeeCollectorERC2771.sol",
+  "abi": [],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

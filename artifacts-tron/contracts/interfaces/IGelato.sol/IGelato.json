@@ -1,0 +1,290 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IGelato",
+  "sourceName": "contracts/interfaces/IGelato.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "DOMAIN_SEPARATOR",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "_checkerSigners",
+          "type": "address[]"
+        }
+      ],
+      "name": "addCheckerSigners",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "_executorSigners",
+          "type": "address[]"
+        }
+      ],
+      "name": "addExecutorSigners",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "correlationId",
+              "type": "bytes32"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "service",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "data",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "salt",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "deadline",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct Message",
+              "name": "msg",
+              "type": "tuple"
+            },
+            {
+              "internalType": "bytes",
+              "name": "executorSignerSig",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "checkerSignerSig",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct ExecWithSigs",
+          "name": "_data",
+          "type": "tuple"
+        }
+      ],
+      "name": "execWithSigs",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "estimatedGasUsed",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "correlationId",
+              "type": "bytes32"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "service",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "data",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "salt",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "deadline",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address",
+                  "name": "feeToken",
+                  "type": "address"
+                }
+              ],
+              "internalType": "struct MessageFeeCollector",
+              "name": "msg",
+              "type": "tuple"
+            },
+            {
+              "internalType": "bytes",
+              "name": "executorSignerSig",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "checkerSignerSig",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct ExecWithSigsFeeCollector",
+          "name": "_call",
+          "type": "tuple"
+        }
+      ],
+      "name": "execWithSigsFeeCollector",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "estimatedGasUsed",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "observedFee",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "correlationId",
+              "type": "bytes32"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "service",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "data",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "salt",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "deadline",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address",
+                  "name": "feeToken",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "fee",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct MessageRelayContext",
+              "name": "msg",
+              "type": "tuple"
+            },
+            {
+              "internalType": "bytes",
+              "name": "executorSignerSig",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "checkerSignerSig",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct ExecWithSigsRelayContext",
+          "name": "_call",
+          "type": "tuple"
+        }
+      ],
+      "name": "execWithSigsRelayContext",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "estimatedGasUsed",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "observedFee",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "feeCollector",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "owner_",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

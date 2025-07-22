@@ -3,13 +3,14 @@ import { extendEnvironment, HardhatUserConfig, subtask } from "hardhat/config";
 import path from "path";
 
 // PLUGINS
-import "@matterlabs/hardhat-zksync-deploy";
-import "@matterlabs/hardhat-zksync-solc";
-import "@matterlabs/hardhat-zksync-verify";
-import "@nomicfoundation/hardhat-chai-matchers";
-import "@nomiclabs/hardhat-ethers";
+// import "@matterlabs/hardhat-zksync-deploy";
+// import "@matterlabs/hardhat-zksync-solc";
+// import "@matterlabs/hardhat-zksync-verify";
+// import "@nomicfoundation/hardhat-chai-matchers";
+import "@nomicfoundation/hardhat-ethers";
 import "@typechain/hardhat";
 import "hardhat-deploy";
+import "@layerzerolabs/hardhat-tron";
 
 // ================================= TASKS =========================================
 // ❗COMMENT IN to use || COMMENT OUT before git push to have CI work
@@ -26,6 +27,8 @@ const ALCHEMY_ID = process.env.ALCHEMY_ID;
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
 const RELAY_DEPLOYER_PK = process.env.RELAY_DEPLOYER_PK;
+const TRON_PRIVATE_KEY = process.env.TRON_PRIVATE_KEY;
+const TRON_PRO_API_KEY = process.env.TRON_PRO_API_KEY;
 
 if (!RELAY_DEPLOYER_PK) {
   throw new Error("RELAY_DEPLOYER_PK is missing");
@@ -58,13 +61,13 @@ extendEnvironment((hre) => {
     hre.network.name = networkName;
     hre.network.config.url = networkUrl;
     hre.network.contracts = {
-      GELATO: ethers.utils.getAddress(gelatoContractAddress),
+      GELATO: gelatoContractAddress,
     };
     hre.network.noDeterministicDeployment =
       noDeterministicDeployment === "true";
   } else {
     hre.network.isDynamic = false;
-    hre.network.noDeterministicDeployment = hre.network.config.zksync ?? false;
+    hre.network.noDeterministicDeployment = (hre.network.config.zksync || hre.network.config.tron) ?? false;
   }
 });
 
@@ -285,19 +288,33 @@ const config: HardhatUserConfig = {
       url: "https://www.shibrpc.com",
       gasPrice: 2500000007,
     },
-    zksync: {
-      accounts,
-      chainId: 324,
-      url: "https://mainnet.era.zksync.io",
-      zksync: true,
-      verifyURL:
-        "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
-    },
+    // zksync: {
+    //   accounts,
+    //   chainId: 324,
+    //   url: "https://mainnet.era.zksync.io",
+    //   zksync: true,
+    //   verifyURL:
+    //     "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
+    // },
     zora: {
       accounts,
       chainId: 7777777,
       url: "https://rpc.zora.co",
       gasPrice: 1500000000,
+    },
+
+    // TRON Networks
+    nile: {
+      url: "https://nile.trongrid.io/jsonrpc",
+      accounts: TRON_PRIVATE_KEY ? [TRON_PRIVATE_KEY] : [],
+      httpHeaders: { "TRON-PRO-API-KEY": TRON_PRO_API_KEY || "" },
+      tron: true,
+    },
+    shasta: {
+      url: "https://api.shasta.trongrid.io/jsonrpc",
+      accounts: TRON_PRIVATE_KEY ? [TRON_PRIVATE_KEY] : [],
+      httpHeaders: { "TRON-PRO-API-KEY": TRON_PRO_API_KEY || "" },
+      tron: true,
     },
 
     // Staging
@@ -477,14 +494,14 @@ const config: HardhatUserConfig = {
       chainId: 1261120,
       url: "https://rpc.zkatana.gelato.digital",
     },
-    zksyncGoerli: {
-      accounts,
-      chainId: 280,
-      url: "https://testnet.era.zksync.dev",
-      zksync: true,
-      verifyURL:
-        "https://zksync2-testnet-explorer.zksync.dev/contract_verification",
-    },
+    // zksyncGoerli: {
+    //   accounts,
+    //   chainId: 280,
+    //   url: "https://testnet.era.zksync.dev",
+    //   zksync: true,
+    //   verifyURL:
+    //     "https://zksync2-testnet-explorer.zksync.dev/contract_verification",
+    // },
 
     // Dev
 
@@ -525,19 +542,25 @@ const config: HardhatUserConfig = {
       chainId: 1442,
       url: "https://rpc.public.zkevm-test.net",
     },
-    zksyncGoerliDev: {
-      accounts,
-      chainId: 280,
-      url: "https://testnet.era.zksync.dev",
-      zksync: true,
-      verifyURL:
-        "https://zksync2-testnet-explorer.zksync.dev/contract_verification",
-    },
+    // zksyncGoerliDev: {
+    //   accounts,
+    //   chainId: 280,
+    //   url: "https://testnet.era.zksync.dev",
+    //   zksync: true,
+    //   verifyURL:
+    //     "https://zksync2-testnet-explorer.zksync.dev/contract_verification",
+    // },
   },
   verify: {
     etherscan: {
       apiKey: ETHERSCAN_API_KEY ? ETHERSCAN_API_KEY : "",
     },
+  },
+
+  tronSolc: {
+    enable: true,
+    filter: [],
+    compilers: [{ version: "0.8.20" }],
   },
 
   solidity: {
@@ -556,21 +579,21 @@ const config: HardhatUserConfig = {
 
   typechain: {
     outDir: "typechain",
-    target: "ethers-v5",
+    target: "ethers-v6",
   },
 
-  zksolc: {
-    version: "1.3.13",
-    compilerSource: "binary",
-    settings: {
-      isSystem: false,
-      forceEvmla: false,
-      optimizer: {
-        enabled: true,
-        mode: "3",
-      },
-    },
-  },
+  // zksolc: {
+  //   version: "1.3.13",
+  //   compilerSource: "binary",
+  //   settings: {
+  //     isSystem: false,
+  //     forceEvmla: false,
+  //     optimizer: {
+  //       enabled: true,
+  //       mode: "3",
+  //     },
+  //   },
+  // },
 };
 
 export default config;

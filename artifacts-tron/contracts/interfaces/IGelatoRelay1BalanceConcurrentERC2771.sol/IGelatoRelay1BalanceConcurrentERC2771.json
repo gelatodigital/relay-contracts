@@ -1,0 +1,91 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IGelatoRelay1BalanceConcurrentERC2771",
+  "sourceName": "contracts/interfaces/IGelatoRelay1BalanceConcurrentERC2771.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "chainId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "target",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            },
+            {
+              "internalType": "address",
+              "name": "user",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "userSalt",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "userDeadline",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct CallWithConcurrentERC2771",
+          "name": "_call",
+          "type": "tuple"
+        },
+        {
+          "internalType": "address",
+          "name": "_sponsor",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_feeToken",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_oneBalanceChainId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_userSignature",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_nativeToFeeTokenXRateNumerator",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_nativeToFeeTokenXRateDenominator",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_correlationId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "sponsoredCallConcurrentERC2771",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
