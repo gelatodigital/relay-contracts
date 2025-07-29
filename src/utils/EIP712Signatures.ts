@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { utils } from "ethers";
+import {
+  computeAddress,
+  keccak256,
+  SigningKey,
+  solidityPackedKeccak256,
+  toUtf8Bytes,
+  AbiCoder,
+} from "ethers";
 import {
   MessageStruct,
   MessageFeeCollectorStruct,
@@ -47,22 +54,21 @@ export function generateDigestCallWithSyncFeeConcurrentERC2771(
 }
 
 export function recoverAddress(digest: string, signature: string): string {
-  const publicKey = utils.recoverPublicKey(digest, signature);
-  return utils.computeAddress(publicKey);
+  return SigningKey.recoverPublicKey(digest, signature);
 }
 
 // INTERNAL FUNCTIONS
 // DIGESTS
 function _getDigest(_msg: MessageStruct, DOMAIN_SEPARATOR: string): string {
-  // console.log("hashAbiEncode: ", utils.keccak256(_abiEncodeExecWithSigs(_msg)));
+  // console.log("hashAbiEncode: ", keccak256(_abiEncodeExecWithSigs(_msg)));
 
   // console.log("abiEncoded: ", _abiEncodeExecWithSigs(_msg));
-  return utils.solidityKeccak256(
+  return solidityPackedKeccak256(
     ["string", "bytes32", "bytes32"],
     [
       "\x19\x01",
       DOMAIN_SEPARATOR,
-      utils.keccak256(_abiEncodeExecWithSigs(_msg)),
+      keccak256(_abiEncodeExecWithSigs(_msg)),
     ]
   );
 }
@@ -71,12 +77,12 @@ function _getDigestFeeCollector(
   _msg: MessageFeeCollectorStruct,
   DOMAIN_SEPARATOR: string
 ): string {
-  return utils.solidityKeccak256(
+  return solidityPackedKeccak256(
     ["string", "bytes", "bytes"],
     [
       "\x19\x01",
       DOMAIN_SEPARATOR,
-      utils.keccak256(_abiEncodeExecWithSigsFeeCollector(_msg)),
+      keccak256(_abiEncodeExecWithSigsFeeCollector(_msg)),
     ]
   );
 }
@@ -85,12 +91,12 @@ function _getDigestRelayContext(
   _msg: MessageRelayContextStruct,
   DOMAIN_SEPARATOR: string
 ): string {
-  return utils.solidityKeccak256(
+  return solidityPackedKeccak256(
     ["string", "bytes", "bytes"],
     [
       "\x19\x01",
       DOMAIN_SEPARATOR,
-      utils.keccak256(_abiEncodeExecWithSigsRelayContext(_msg)),
+      keccak256(_abiEncodeExecWithSigsRelayContext(_msg)),
     ]
   );
 }
@@ -99,12 +105,12 @@ function _getDigestCallWithSyncFeeERC2771(
   _call: CallWithERC2771Struct,
   DOMAIN_SEPARATOR: string
 ): string {
-  return utils.solidityKeccak256(
+  return solidityPackedKeccak256(
     ["string", "bytes", "bytes"],
     [
       "\x19\x01",
       DOMAIN_SEPARATOR,
-      utils.keccak256(_abiEncodeCallWithSyncFeeERC2771(_call)),
+      keccak256(_abiEncodeCallWithSyncFeeERC2771(_call)),
     ]
   );
 }
@@ -113,12 +119,12 @@ function _getDigestCallWithSyncFeeConcurrentERC2771(
   _call: CallWithConcurrentERC2771Struct,
   DOMAIN_SEPARATOR: string
 ): string {
-  return utils.solidityKeccak256(
+  return solidityPackedKeccak256(
     ["string", "bytes", "bytes"],
     [
       "\x19\x01",
       DOMAIN_SEPARATOR,
-      utils.keccak256(_abiEncodeCallWithSyncFeeConcurrentERC2771(_call)),
+      keccak256(_abiEncodeCallWithSyncFeeConcurrentERC2771(_call)),
     ]
   );
 }
@@ -126,12 +132,12 @@ function _getDigestCallWithSyncFeeConcurrentERC2771(
 // ABI ENCODING STRUCTS
 function _abiEncodeExecWithSigs(_msg: MessageStruct): string {
   const typeHash = _execWithSigsTypeHash();
-  return new utils.AbiCoder().encode(
+  return new AbiCoder().encode(
     ["bytes32", "address", "bytes32", "uint256", "uint256"],
     [
       typeHash,
       _msg.service,
-      utils.keccak256(_msg.data as string),
+      keccak256(_msg.data as string),
       _msg.salt,
       _msg.deadline,
     ]
@@ -142,8 +148,8 @@ function _abiEncodeExecWithSigsFeeCollector(
   _msg: MessageFeeCollectorStruct
 ): string {
   const typeHash = _execWithSigsFeeCollectorTypeHash();
-  const abi = utils.defaultAbiCoder;
-  const hashedPayload = utils.keccak256(_msg.data as string);
+  const abi = AbiCoder.defaultAbiCoder();
+  const hashedPayload = keccak256(_msg.data as string);
   return abi.encode(
     ["bytes32", "address", "bytes32", "uint256", "uint256", "address"],
     [
@@ -161,8 +167,8 @@ function _abiEncodeExecWithSigsRelayContext(
   _msg: MessageRelayContextStruct
 ): string {
   const typeHash = _execWithSigsRelayContextTypeHash();
-  const abi = utils.defaultAbiCoder;
-  const hashedPayload = utils.keccak256(_msg.data as string);
+  const abi = AbiCoder.defaultAbiCoder();
+  const hashedPayload = keccak256(_msg.data as string);
   return abi.encode(
     [
       "bytes32",
@@ -189,7 +195,7 @@ function _abiEncodeCallWithSyncFeeERC2771(
   _call: CallWithERC2771Struct
 ): string {
   const typeHash = _callWithSyncFeeERC2771TypeHash();
-  return new utils.AbiCoder().encode(
+  return new AbiCoder().encode(
     [
       "bytes32",
       "uint256",
@@ -203,7 +209,7 @@ function _abiEncodeCallWithSyncFeeERC2771(
       typeHash,
       _call.chainId,
       _call.target,
-      utils.keccak256(_call.data as string),
+      keccak256(_call.data as string),
       _call.user,
       _call.userNonce,
       _call.userDeadline,
@@ -215,7 +221,7 @@ function _abiEncodeCallWithSyncFeeConcurrentERC2771(
   _call: CallWithConcurrentERC2771Struct
 ): string {
   const typeHash = _callWithSyncFeeConcurrentERC2771TypeHash();
-  return new utils.AbiCoder().encode(
+  return new AbiCoder().encode(
     [
       "bytes32",
       "uint256",
@@ -229,7 +235,7 @@ function _abiEncodeCallWithSyncFeeConcurrentERC2771(
       typeHash,
       _call.chainId,
       _call.target,
-      utils.keccak256(_call.data as string),
+      keccak256(_call.data as string),
       _call.user,
       _call.userSalt,
       _call.userDeadline,
@@ -239,40 +245,40 @@ function _abiEncodeCallWithSyncFeeConcurrentERC2771(
 
 // TYPE HASHES
 function _execWithSigsTypeHash() {
-  return utils.keccak256(
-    utils.toUtf8Bytes(
+  return keccak256(
+    toUtf8Bytes(
       "Message(address service,bytes data,uint256 salt,uint256 deadline)"
     )
   );
 }
 
 function _execWithSigsFeeCollectorTypeHash() {
-  return utils.keccak256(
-    utils.toUtf8Bytes(
+  return keccak256(
+    toUtf8Bytes(
       "MessageFeeCollector(address service,bytes data,uint256 salt,uint256 deadline,address feeToken)"
     )
   );
 }
 
 function _execWithSigsRelayContextTypeHash() {
-  return utils.keccak256(
-    utils.toUtf8Bytes(
+  return keccak256(
+    toUtf8Bytes(
       "MessageRelayContext(address service,bytes data,uint256 salt,uint256 deadline,address feeToken,uint256 fee)"
     )
   );
 }
 
 function _callWithSyncFeeERC2771TypeHash() {
-  return utils.keccak256(
-    utils.toUtf8Bytes(
+  return keccak256(
+    toUtf8Bytes(
       "CallWithSyncFeeERC2771(uint256 chainId,address target,bytes data,address user,uint256 userNonce,uint256 userDeadline)"
     )
   );
 }
 
 function _callWithSyncFeeConcurrentERC2771TypeHash() {
-  return utils.keccak256(
-    utils.toUtf8Bytes(
+  return keccak256(
+    toUtf8Bytes(
       "CallWithSyncFeeConcurrentERC2771(uint256 chainId,address target,bytes data,address user,bytes32 userSalt,uint256 userDeadline)"
     )
   );
