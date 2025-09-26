@@ -76,14 +76,14 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     await proxy.upgradeTo(implementation);
 
     // Transfer ownership to target owner if different from deployer
-    const getTargetOwner = (networkName: string) => {
-      const isTestnet = /testnet|sepolia|goerli|mumbai|dev$/.test(networkName);
+    const getTargetOwner = () => {
+      const isTestnet = process.env.IS_TESTNET === 'true';
       return isTestnet
         ? process.env.TESTNET_OWNER_ADDRESS
         : process.env.MAINNET_OWNER_ADDRESS;
     };
 
-    const targetOwner = getTargetOwner(hre.network.name);
+    const targetOwner = getTargetOwner();
 
     if (targetOwner && targetOwner !== deployer) {
       console.log(`Transferring GelatoRelay1Balance proxy ownership from ${deployer} to ${targetOwner}`);
