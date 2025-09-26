@@ -74,6 +74,35 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       await deployments.get("GelatoRelay1Balance_Implementation")
     ).address;
     await proxy.upgradeTo(implementation);
+
+    // Transfer ownership to target owner if different from deployer
+    const getTargetOwner = (networkName: string) => {
+      const isTestnet = /testnet|sepolia|goerli|mumbai|dev$/.test(networkName);
+      return isTestnet
+        ? process.env.TESTNET_OWNER_ADDRESS
+        : process.env.MAINNET_OWNER_ADDRESS;
+    };
+
+    const targetOwner = getTargetOwner(hre.network.name);
+
+    if (targetOwner && targetOwner !== deployer) {
+      console.log(`Transferring GelatoRelay1Balance proxy ownership from ${deployer} to ${targetOwner}`);
+
+      const currentOwner = await proxy.owner();
+      console.log(`Current proxy owner: ${currentOwner}`);
+
+      const tx = await proxy.transferOwnership(targetOwner);
+      console.log(`Transfer transaction: ${tx.hash}`);
+      await tx.wait();
+
+      const newOwner = await proxy.owner();
+      console.log(`New proxy owner: ${newOwner}`);
+      console.log("✅ GelatoRelay1Balance ownership transferred successfully");
+    } else if (!targetOwner) {
+      console.log("⚠️ No target owner address configured, keeping deployer as owner");
+    } else {
+      console.log("ℹ️ Target owner is same as deployer, no transfer needed");
+    }
   }
 
   // For local testing we want to upgrade the forked

@@ -111,7 +111,7 @@ const config: HardhatUserConfig = {
       default: 0,
     },
     relayDeployer: {
-      default: "0x7aD7b5F4F0E5Df7D6Aa5444516429AF77babc3A0",
+      default: 0, // Use the same deployer account as other contracts
     },
 
     // Smart Contracts for local testing
