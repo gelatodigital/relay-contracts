@@ -148,8 +148,8 @@ const config: HardhatUserConfig = {
     dynamic: {
       accounts,
       url: "",
-      gasPrice: 1000000000, // 1 gwei
-      gas: 36_000_000, // 1e11
+      gas: 8_000_000, // 30M gas limit (reasonable for most networks)
+      // gasPrice: 10_000_000, // 0.01 gwei
       
     },
 
